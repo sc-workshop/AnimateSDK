@@ -1,0 +1,172 @@
+#pragma once
+
+#include "animate/core/common/FCMMacros.h"
+
+namespace Animate
+{
+	namespace DOM
+	{
+		FORWARD_DECLARE_INTERFACE(ICamera);
+		FORWARD_DECLARE_INTERFACE(IFilterable);
+		FORWARD_DECLARE_INTERFACE(IFLADocument);
+		FORWARD_DECLARE_INTERFACE(IFrame);
+		FORWARD_DECLARE_INTERFACE(IFrame1);
+		FORWARD_DECLARE_INTERFACE(ILayer);
+		FORWARD_DECLARE_INTERFACE(ILayer1);
+		FORWARD_DECLARE_INTERFACE(ILayer2);
+		FORWARD_DECLARE_INTERFACE(ILibraryItem);
+		FORWARD_DECLARE_INTERFACE(ITimeline);
+		FORWARD_DECLARE_INTERFACE(ITimeline1);
+		FORWARD_DECLARE_INTERFACE(ITween);
+
+		namespace Layer
+		{
+			FORWARD_DECLARE_INTERFACE(ILayerFolder);
+			FORWARD_DECLARE_INTERFACE(ILayerNormal);
+			FORWARD_DECLARE_INTERFACE(ILayerMask);
+			FORWARD_DECLARE_INTERFACE(ILayerGuide);
+		}
+
+		namespace FillStyle
+		{
+			FORWARD_DECLARE_INTERFACE(IBitmapFillStyle);
+			FORWARD_DECLARE_INTERFACE(IGradientFillStyle);
+			FORWARD_DECLARE_INTERFACE(ISolidFillStyle);
+		}
+
+		namespace FrameElement
+		{
+			FORWARD_DECLARE_INTERFACE(IBitmapInstance);
+			FORWARD_DECLARE_INTERFACE(IButton);
+			FORWARD_DECLARE_INTERFACE(IClassicText);
+			FORWARD_DECLARE_INTERFACE(IComponentInstance);
+			FORWARD_DECLARE_INTERFACE(IFrameDisplayElement);
+			FORWARD_DECLARE_INTERFACE(IGraphic);
+			FORWARD_DECLARE_INTERFACE(IGroup);
+			FORWARD_DECLARE_INTERFACE(IInstance);
+			FORWARD_DECLARE_INTERFACE(IMovieClip);
+			FORWARD_DECLARE_INTERFACE(IParagraph);
+			FORWARD_DECLARE_INTERFACE(IShape);
+			FORWARD_DECLARE_INTERFACE(ISound);
+			FORWARD_DECLARE_INTERFACE(ISymbolInstance);
+			FORWARD_DECLARE_INTERFACE(ITextBehaviour);
+			FORWARD_DECLARE_INTERFACE(IStaticTextBehaviour);
+			FORWARD_DECLARE_INTERFACE(IModifiableTextBehaviour);
+			FORWARD_DECLARE_INTERFACE(IDynamicTextBehaviour);
+			FORWARD_DECLARE_INTERFACE(IInputTextBehaviour);
+			FORWARD_DECLARE_INTERFACE(ITextRun);
+			FORWARD_DECLARE_INTERFACE(ITextStyle);
+		}
+
+		namespace GraphicFilter
+		{
+			FORWARD_DECLARE_INTERFACE(IAdjustColorFilter);
+			FORWARD_DECLARE_INTERFACE(IBevelFilter);
+			FORWARD_DECLARE_INTERFACE(IBlurFilter);
+			FORWARD_DECLARE_INTERFACE(IDropShadowFilter);
+			FORWARD_DECLARE_INTERFACE(IGlowFilter);
+			FORWARD_DECLARE_INTERFACE(IGradientBevelFilter);
+			FORWARD_DECLARE_INTERFACE(IGradientGlowFilter);
+		}
+
+		namespace LibraryItem
+		{
+			FORWARD_DECLARE_INTERFACE(IComponentItem);
+			FORWARD_DECLARE_INTERFACE(IFolderItem);
+			FORWARD_DECLARE_INTERFACE(IFontItem);
+			FORWARD_DECLARE_INTERFACE(IMediaItem);
+		}
+
+		namespace MediaInfo
+		{
+			FORWARD_DECLARE_INTERFACE(IBitmapInfo);
+			FORWARD_DECLARE_INTERFACE(ISoundInfo);
+		}
+
+		namespace Service
+		{
+			namespace Document
+			{
+				FORWARD_DECLARE_INTERFACE(IFLADocService);
+			}
+
+			namespace FontTable
+			{
+				FORWARD_DECLARE_INTERFACE(IFontTable);
+				FORWARD_DECLARE_INTERFACE(IFontTableGeneratorService);
+				FORWARD_DECLARE_INTERFACE(IGlyph);
+				FORWARD_DECLARE_INTERFACE(IKerningPair);
+			}
+
+			namespace Image
+			{
+				FORWARD_DECLARE_INTERFACE(IBitmapExportService);
+			}
+
+			namespace Media3D
+			{
+				FORWARD_DECLARE_INTERFACE(IMedia3DExportService);
+			}
+
+			namespace Shape
+			{
+				FORWARD_DECLARE_INTERFACE(IEdge);
+				FORWARD_DECLARE_INTERFACE(IFilledRegion);
+				FORWARD_DECLARE_INTERFACE(IPath);
+				FORWARD_DECLARE_INTERFACE(IRegionGeneratorService);
+				FORWARD_DECLARE_INTERFACE(IShapeService);
+				FORWARD_DECLARE_INTERFACE(IStrokeGroup);
+			}
+
+			namespace Sound
+			{
+				FORWARD_DECLARE_INTERFACE(ISoundExportService);
+			}
+
+			namespace TextLayout
+			{
+				FORWARD_DECLARE_INTERFACE(ITextLine);
+				FORWARD_DECLARE_INTERFACE(ITextLinesGeneratorService);
+			}
+
+			namespace Tween
+			{
+				FORWARD_DECLARE_INTERFACE(IColorTweener);
+				FORWARD_DECLARE_INTERFACE(IColorTweenInfo);
+				FORWARD_DECLARE_INTERFACE(IEasingInfo);
+				FORWARD_DECLARE_INTERFACE(IFilterTweener);
+				FORWARD_DECLARE_INTERFACE(IFilterTweenInfo);
+				FORWARD_DECLARE_INTERFACE(IGeometricTweener);
+				FORWARD_DECLARE_INTERFACE(IGeometricTweenInfo);
+				FORWARD_DECLARE_INTERFACE(IPropertyTweenInfo);
+				FORWARD_DECLARE_INTERFACE(IShapeHintInfo);
+				FORWARD_DECLARE_INTERFACE(IShapeTweener);
+				FORWARD_DECLARE_INTERFACE(IShapeTweenInfo);
+				FORWARD_DECLARE_INTERFACE(ITweenerService);
+				FORWARD_DECLARE_INTERFACE(ITweenInfoService);
+			}
+		}
+
+		namespace StrokeStyle
+		{
+			FORWARD_DECLARE_INTERFACE(IDashedStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(IDottedStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(IHatchedStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(IPaintBrushStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(IRaggedStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(ISolidStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(IStippleStrokeStyle);
+			FORWARD_DECLARE_INTERFACE(IStrokeWidth);
+
+		}
+
+		namespace Utils
+		{
+			FORWARD_DECLARE_INTERFACE(ILinearColorGradient);
+			FORWARD_DECLARE_INTERFACE(IMatrix2D);
+			FORWARD_DECLARE_INTERFACE(IRadialColorGradient);
+			FORWARD_DECLARE_INTERFACE(IRect);
+			FORWARD_DECLARE_INTERFACE(ISoundEffect);
+		}
+	}
+}
