@@ -17,10 +17,10 @@ namespace Animate::Publisher
 					solid_style->GetColor(solid.color);
 				}
 				else {
-					// throw PluginException(
-					// 	"TID_UNKNOWN_FILL_STYLE_TYPE",
-					// 	symbol.name.c_str()
-					// );
+					throw FCM::FCMPluginException(
+						symbol, 
+						FCM::FCMPluginException::Reason::UNKNOWN_FILL_STYLE
+					);
 				}
 			}
 

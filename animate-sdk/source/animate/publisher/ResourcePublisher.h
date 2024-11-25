@@ -14,7 +14,7 @@ namespace Animate::Publisher
 {
 	class ResourcePublisher {
 	public:
-		void Publish();
+		void PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document);
 
 	private:
 		static void GetItems(

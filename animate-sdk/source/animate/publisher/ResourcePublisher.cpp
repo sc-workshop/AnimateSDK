@@ -2,67 +2,37 @@
 
 namespace Animate::Publisher
 {
-	void ResourcePublisher::Publish() {
-		// //PluginSessionConfig& config = PluginSessionConfig::Instance();
-		// 
-		// //StatusComponent* publishStatus = context.Window()->CreateStatusBarComponent(
-		// //	context.locale.GetString("TID_STATUS_INIT")
-		// //);
-		// 
-		// FCM::FCMListPtr libraryItems;
-		// config.document->GetLibraryItems(libraryItems.m_Ptr);
-		// 
-		// std::vector<FCM::AutoPtr<DOM::ILibraryItem>> items;
-		// GetItems(libraryItems, items);
-		// 
-		// publishStatus->SetRange(items.size());
-		// publishStatus->SetStatusLabel(
-		// 	context.locale.GetString("TID_BAR_LABEL_LIBRARY_ITEMS")
-		// );
-		// 
-		// for (size_t i = 0; items.size() > i; i++)
-		// {
-		// 	FCM::AutoPtr<DOM::ILibraryItem>& item = items[i];
-		// 
-		// 	FCM::AutoPtr<FCM::IFCMDictionary> dict;
-		// 	Result status = item->GetProperties(dict.m_Ptr);
-		// 
-		// 	if (FCM_FAILURE_CODE(status) || dict == nullptr) continue;
-		// 
-		// 	std::string linkage;
-		// 	dict->Get(kLibProp_LinkageClass_DictKey, linkage);
-		// 
-		// 	if (linkage.empty()) continue;
-		// 
-		// 	SymbolContext symbol(item, linkage);
-		// 	publishStatus->SetStatus(symbol.name);
-		// 
-		// 	uint16_t id = AddLibraryItem(symbol, item, true);
-		// 
-		// 	if (id == UINT16_MAX)
-		// 	{
-		// 		throw PluginException("TID_FAILED_TO_EXPORT_SYMBOL", symbol.name.c_str());
-		// 	}
-		// 
-		// 	if (context.Window()->aboutToExit) {
-		// 		context.DestroyWindow();
-		// 		return;
-		// 	}
-		// 	publishStatus->SetProgress(i + 1);
-		// }
-		// 
-		// publishStatus->SetStatusLabel(
-		// 	context.locale.GetString("TID_STATUS_SAVE")
-		// );
-		// publishStatus->SetStatus(u"");
-		// 
-		// // Disable Close Button for writer finalizing process
-		// // TODO: make it possible to stop in finalize
-		// context.Window()->EnableCloseButton(false);
-		// 
-		// m_writer.Finalize();
-		// 
-		// context.Window()->DestroyStatusBar(publishStatus);
+	void ResourcePublisher::PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document) {
+		FCM::FCMListPtr libraryItems;
+		document->GetLibraryItems(libraryItems.m_Ptr);
+
+		std::vector<FCM::AutoPtr<DOM::ILibraryItem>> items;
+		GetItems(libraryItems, items);
+
+		for (size_t i = 0; items.size() > i; i++)
+		{
+			FCM::AutoPtr<DOM::ILibraryItem>& item = items[i];
+
+			FCM::AutoPtr<FCM::IFCMDictionary> dict;
+			FCM::Result status = item->GetProperties(dict.m_Ptr);
+
+			if (FCM_FAILURE_CODE(status) || dict == nullptr) continue;
+
+			std::string linkage;
+			dict->Get(kLibProp_LinkageClass_DictKey, linkage);
+
+			if (linkage.empty()) continue;
+
+			SymbolContext symbol(item, linkage);
+			uint16_t id = AddLibraryItem(symbol, item, true);
+
+			if (id == UINT16_MAX)
+			{
+				throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
+			}
+		}
+
+		m_writer.Finalize();
 	}
 
 	void ResourcePublisher::GetItems(FCM::FCMListPtr libraryItems, std::vector<FCM::AutoPtr<DOM::ILibraryItem>>& result) {
@@ -132,7 +102,7 @@ namespace Animate::Publisher
 			}
 		}
 
-		//throw PluginException("TID_UNKNOWN_LIBRARY_ITEM_TYPE", symbol.name.c_str());
+		throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::UNKNOWN_LIBRARY_ITEM);
 	}
 
 	uint16_t ResourcePublisher::AddSymbol(
@@ -216,8 +186,6 @@ namespace Animate::Publisher
 		m_writer.AddTextField(identifer, symbol, field);
 		m_textfieldDict.push_back({ field ,identifer });
 
-		// context.logger->info("Added TextField from: {}", Localization::ToUtf8(symbol.name));
-
 		return identifer;
 	}
 
@@ -263,8 +231,6 @@ namespace Animate::Publisher
 		}
 
 		m_filledShapeDict.push_back({ elements, identifer });
-
-		// context.logger->info("Added FilledElement from: {}", Localization::ToUtf8(symbol.name));
 
 		return identifer;
 	}

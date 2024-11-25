@@ -3,6 +3,7 @@
 #include "animate/core/common/FCMTypes.h"
 #include "animate/core/common/FCMErrors.h"
 #include "animate/core/common/FCMMacros.h"
+#include "animate/core/common/FCMPluginException.h"
 
 #include "animate/core/IFCMCallback.h"
 #include "animate/core/IFCMCalloc.h"

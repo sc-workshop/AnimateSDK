@@ -5,7 +5,7 @@
 #include <string>
 
 #include "animate/publisher/symbol/SlicingContext.h"
-//#include "AnimateDOM.h"
+#include "AnimateDOM.h"
 
 namespace Animate {
 	namespace Publisher

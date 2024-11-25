@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "AnimateDOM.h"
+#include "AnimateService.h"
 
 namespace Animate::Publisher
 {
@@ -13,8 +14,8 @@ namespace Animate::Publisher
 		~SpriteElement();
 
 	public:
-		const char16_t* name() const;
-		void exportImage(std::filesystem::path path) const;
+		const char16_t* Name() const;
+		void ExportImage(std::filesystem::path path) const;
 
 	private:
 		DOM::ILibraryItem* m_item;
