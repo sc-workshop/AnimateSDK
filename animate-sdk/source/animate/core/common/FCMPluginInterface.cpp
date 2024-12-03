@@ -63,7 +63,7 @@ namespace FCM
 			FCMInterfaceMap* pIntfIndex = pNode->m_ClassMap.pGetInterfaceTable();
 			for (; pIntfIndex && (pIntfIndex->iid != FCMIID_NULL); ++pIntfIndex)
 			{
-				if (pIntfIndex->iid == FCMIID_IFCMUnknown)
+				if (pIntfIndex->iid == ID_IFCMUnknown)
 					continue;
 				arrClsIntfinfo[pairCount + 1].classID = pNode->m_ClassMap.clsid;
 				arrClsIntfinfo[pairCount + 1].classVersion = pNode->m_ClassMap.classVersion;

@@ -45,7 +45,7 @@ namespace Animate
 		 *
 		 * @note  Textual Representation:  {745F0985-43A9-4F11-BB66-6021D52223D7}
 		 */
-		FCM::ConstFCMIID ID_IFEATURE_MATRIX =
+		FCM::ConstFCMIID ID_IFeatureMatrix =
 		{ 0x745f0985, 0x43a9, 0x4f11, {0xbb, 0x66, 0x60, 0x21, 0xd5, 0x22, 0x23, 0xd7} };
 	}
 
@@ -60,7 +60,7 @@ namespace Animate
 		 *        document type.
 		 */
 
-		class IFeatureMatrix : public FCM::VirtualClass<ID_IFEATURE_MATRIX>
+		class IFeatureMatrix : public FCM::VirtualClass<ID_IFeatureMatrix>
 		{
 			/**
 			 * @brief This function indicates whether a feature is supported or not.

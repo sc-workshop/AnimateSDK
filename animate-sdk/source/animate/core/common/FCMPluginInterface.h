@@ -724,7 +724,7 @@ namespace FCM
 		FCMClassFactory()
 		{
 		}
-		BEGIN_INTERFACE_MAP(FCMClassFactory, FCM_VERSION)
+		BEGIN_INTERFACE_MAP(FCMClassFactory)
 			INTERFACE_ENTRY(IFCMClassFactory)
 		END_INTERFACE_MAP
 

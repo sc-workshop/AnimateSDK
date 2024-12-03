@@ -435,7 +435,8 @@ namespace FCM
 	 *
 	 *  @brief   Represents the constant interface ID type.
 	 */
-	typedef const FCMIID        ConstFCMIID;
+	//typedef const FCMIID        ConstFCMIID;
+	using ConstFCMIID = const FCMIID;
 
 	/**
 	 *  @typedef ConstFCMCLSID

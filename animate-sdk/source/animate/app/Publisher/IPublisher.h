@@ -47,7 +47,7 @@ namespace Animate
 		*
 		* @note Textual Representation: {3ACF3427-4FD-44EF-9FBA-3EBB62F044A2}
 		*/
-		FCM::ConstFCMIID FCMIID_IPublisher =
+		FCM::ConstFCMIID ID_IPublisher =
 		{ 0x3acf3427, 0x4fd, 0x44ef, {0x9f, 0xba, 0x3e, 0xbb, 0x62, 0xf0, 0x44, 0xa2} };
 	}
 }

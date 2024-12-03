@@ -43,7 +43,7 @@ namespace FCM
      *
      * @note  Textual Representation:  {775C253A-376D-4069-8336-C51AFD11163F}
      */
-    ConstFCMIID FCMIID_IFCMUnknown = 
+    ConstFCMIID ID_IFCMUnknown = 
      {0x775c253a, 0x376d, 0x4069, {0x83, 0x36, 0xc5, 0x1a, 0xfd, 0x11, 0x16, 0x3f}};
 }
 
@@ -67,7 +67,7 @@ namespace FCM
     {
     public:
 		inline static FCMIID GetIID() {
-            return FCMIID_IFCMUnknown;
+            return ID_IFCMUnknown;
 		};
 
     public:

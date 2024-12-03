@@ -85,7 +85,7 @@ namespace FCM
 	*
 	* @brief Utility macro to define interface ID easily.
 	*/
-#define IID(ifx) IID_##ifx
+#define IID(ifx) ID_##ifx
 
 	/*
 	* @def   _FCM_SIMPLEMAPENTRY
@@ -182,7 +182,7 @@ namespace FCM
 	* @brief Utility macro to get offset of a derived class. Used for internal purposes.
 	*/
 #define offsetofclass(base, derived) \
-	((FCM::S_Int64)(static_cast<base*>((derived*)_FCM_PACKING))-_FCM_PACKING)
+	((FCM::S_Int64)(static_cast<base*>((derived*)FCM::_FCM_PACKING))-FCM::_FCM_PACKING)
 
 	/**
 	* @def   offsetofclasscustom
@@ -190,7 +190,7 @@ namespace FCM
 	* @brief Custom Class offset. Used for internal purposes.
 	*/
 #define offsetofclasscustom(base,custom, derived) \
-	((FCM::S_Int64)(static_cast<base*>((custom*)((derived*)_FCM_PACKING)))-_FCM_PACKING)
+	((FCM::S_Int64)(static_cast<base*>((custom*)((derived*)FCM::_FCM_PACKING)))-FCM::_FCM_PACKING)
 
 	/**
 	* @def   offsetofmem
@@ -205,11 +205,10 @@ namespace FCM
 	*
 	* @brief Format to begin Interface map.
 	*/
-	#define BEGIN_INTERFACE_MAP(impl,implVersion) \
+	#define BEGIN_INTERFACE_MAP(impl) \
 	public:  \
 	virtual FCM::PIFCMCallback GetCallback()=0; \
 	typedef impl _ClassImpl; \
-	static FCM::U_Int32 GetVersion(){ return (FCM::U_Int32)implVersion;} \
 	static FCM::FCMInterfaceMap* GetInterfaceMap() \
 	{ static FCM::FCMInterfaceMap _pInterfaceMap [] ={ \
 	INTERFACE_ENTRY(IFCMUnknown)
@@ -220,11 +219,10 @@ namespace FCM
 	* @brief Format to Begin multi-interface map. This should be used if a implementation
 	*        class is inheriting from multiple interfaces.
 	*/
-	#define BEGIN_MULTI_INTERFACE_MAP(impl,implVersion) \
+	#define BEGIN_MULTI_INTERFACE_MAP(impl) \
 	public:  \
 		virtual FCM::PIFCMCallback GetCallback()=0; \
 		typedef impl _ClassImpl; \
-		static FCM::U_Int32 GetVersion(){ return (FCM::U_Int32)implVersion;} \
 		static FCM::FCMInterfaceMap* GetInterfaceMap() \
 		{ static FCM::FCMInterfaceMap _pInterfaceMap [] ={
 	/**
