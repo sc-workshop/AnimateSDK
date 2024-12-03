@@ -451,22 +451,8 @@ namespace FCM
 		FCM::U_Int32					m_objectCounter;
 		PIFCMCallback					m_callback;
 
-		PluginModule(PIFCMCallback pCallback)
-		{
-			PluginModule::m_instance = this;
-			m_firstNode = 0;
-			falloc = 0;
-			m_objectCounter = 0;
-			m_callback = pCallback;
-
-			falloc = GetService<FCM::IFCMCalloc>(SRVCID_Core_Memory);
-			console = GetService<Animate::Application::Service::IOutputConsoleService>(Animate::Application::Service::APP_OUTPUT_CONSOLE_SERVICE);
-			appService = GetService<Animate::Application::Service::IApplicationService>(Animate::Application::Service::APP_SERVICE);
-		}
-
-		virtual ~PluginModule()
-		{
-		}
+		PluginModule(PIFCMCallback pCallback);
+		virtual ~PluginModule() = default;
 
 	public:
 		virtual FCM::U_Int32 IncrementAliveCount();
