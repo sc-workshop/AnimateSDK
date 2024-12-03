@@ -43,8 +43,6 @@
 #include <exception>
 #include <filesystem>
 
-
-
 #include "animate/core/common/FCMPreConfig.h"
 
 namespace FCM
@@ -453,12 +451,17 @@ namespace FCM
 		FCM::U_Int32					m_objectCounter;
 		PIFCMCallback					m_callback;
 
-		PluginModule()
+		PluginModule(PIFCMCallback pCallback)
 		{
+			PluginModule::m_instance = this;
 			m_firstNode = 0;
 			falloc = 0;
 			m_objectCounter = 0;
-			m_callback = nullptr;
+			m_callback = pCallback;
+
+			falloc = GetService<FCM::IFCMCalloc>(SRVCID_Core_Memory);
+			console = GetService<Animate::Application::Service::IOutputConsoleService>(Animate::Application::Service::APP_OUTPUT_CONSOLE_SERVICE);
+			appService = GetService<Animate::Application::Service::IApplicationService>(Animate::Application::Service::APP_SERVICE);
 		}
 
 		virtual ~PluginModule()
@@ -468,8 +471,6 @@ namespace FCM
 	public:
 		virtual FCM::U_Int32 IncrementAliveCount();
 		virtual FCM::U_Int32 DecrementAliveCount();
-
-		virtual Result Init(IFCMCallback* pCallback);
 
 		virtual Result GetClassInfo(IFCMCalloc* pCalloc, FCM::PFCMClassInterfaceInfo* ppClassInfo);
 		virtual Result GetClassObject(FCM::ConstRefFCMCLSID clsid, FCM::ConstRefFCMIID iid, PPVoid pAny);

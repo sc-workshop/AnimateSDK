@@ -20,18 +20,6 @@ namespace FCM
 		return --m_objectCounter;
 	}
 
-	Result PluginModule::Init(PIFCMCallback pCallback)
-	{
-		m_callback = pCallback;
-		PluginModule::m_instance = this;
-
-		falloc = GetService<FCM::IFCMCalloc>(SRVCID_Core_Memory);
-		console = GetService<Animate::Application::Service::IOutputConsoleService>(Animate::Application::Service::APP_OUTPUT_CONSOLE_SERVICE);
-		appService = GetService<Animate::Application::Service::IApplicationService>(Animate::Application::Service::APP_SERVICE);
-
-		return FCM_SUCCESS;
-	}
-
 	Result PluginModule::GetClassInfo(IFCMCalloc* pCalloc, FCM::PFCMClassInterfaceInfo* ppClassInfo)
 	{
 		FCM::U_Int32 pairCount = 0;
