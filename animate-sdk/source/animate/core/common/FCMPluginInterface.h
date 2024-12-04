@@ -561,9 +561,6 @@ namespace FCM
 		}
 
 	public:
-		std::string LanguageCode() const;
-
-	public:
 		enum class PathType
 		{
 			Module,		// Path to Binaries
@@ -575,6 +572,8 @@ namespace FCM
 		static std::filesystem::path CurrentPath(PathType type = PathType::Extension);
 
 		static std::string SystemInfo();
+
+		std::string LanguageCode() const;
 
 	protected:
 		void AddClassEntry(FCMCLSID clsid, FactorCreatorProc pFactoryCreator, InterfaceMapGetProc pGetInterfaceTable, FCM::U_Int32 classVersion);

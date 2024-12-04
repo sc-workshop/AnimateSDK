@@ -29,10 +29,12 @@ namespace Animate::Publisher
 		FCM::Result _FCMCALL Publish(DOM::PIFLADocument document, const FCM::PIFCMDictionary publishConfig, const FCM::PIFCMDictionary projectConfig)
 		{
 			ConfigT config(document, projectConfig, publishConfig);
-			PublisherT publisher{};
+			m_activeConfig = &config;
 
+			PublisherT publisher{};
 			publisher.Publish(config);
 
+			m_activeConfig = nullptr;
 			return FCM_SUCCESS;
 		}
 
@@ -50,6 +52,12 @@ namespace Animate::Publisher
 
 	public:
 		static const Animate::FCMPluginID PluginID;
+		static const ConfigT& ActiveConfig() {
+			return m_activeConfig
+		};
+
+	private:
+		static ConfigT* m_activeConfig = nullptr;
 	};
 
 	static FCM::Result RegisterPublisher(
