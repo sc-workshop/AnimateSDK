@@ -7,9 +7,11 @@ namespace Animate::Publisher
 	class GenericPublisherConfig
 	{
 	public:
-		GenericPublisherConfig(DOM::PIFLADocument document, const FCM::PIFCMDictionary dict) : activeDocument(document)
+		GenericPublisherConfig(DOM::PIFLADocument document, const FCM::PIFCMDictionary settings, const FCM::PIFCMDictionary publishSettings) : activeDocument(document)
 		{
-			FromDict(dict);
+			FromDict(publishSettings);
+
+			// TODO: parse settings dict?
 		}
 
 		virtual void FromDict(const FCM::PIFCMDictionary dict)

@@ -28,9 +28,9 @@ namespace Animate::Publisher
 		END_INTERFACE_MAP
 
 	public:
-		FCM::Result _FCMCALL Publish(DOM::PIFLADocument document, const FCM::PIFCMDictionary publishSettings, const FCM::PIFCMDictionary config)
+		FCM::Result _FCMCALL Publish(DOM::PIFLADocument document, const FCM::PIFCMDictionary publishConfig, const FCM::PIFCMDictionary config)
 		{
-			ConfigT config(document, publishSettings);
+			ConfigT config(document, config, publishConfig);
 			PublisherT publisher{};
 
 			publisher.Publish(config);

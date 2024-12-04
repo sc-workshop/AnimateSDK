@@ -43,9 +43,6 @@ namespace Animate::DocType
 
 	private:
 		FCM::AutoPtr<DocType::FeatureMatrix> m_features;
-
-	public:
-		
 	};
 
 	static FCM::Result RegisterDocument(
