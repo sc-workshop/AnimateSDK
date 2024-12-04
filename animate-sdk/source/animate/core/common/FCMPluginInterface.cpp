@@ -14,12 +14,13 @@ namespace FCM
 
 	PluginModule* PluginModule::m_instance = nullptr;
 
-	PluginModule::PluginModule(PIFCMCallback pCallback)
+	PluginModule::PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module) : 
+		m_module(module),
+		m_firstNode(0), 
+		falloc(nullptr), 
+		m_objectCounter(0)
 	{
 		PluginModule::m_instance = this;
-		m_firstNode = 0;
-		falloc = 0;
-		m_objectCounter = 0;
 		m_callback = pCallback;
 
 		falloc = GetService<FCM::IFCMCalloc>(SRVCID_Core_Memory);

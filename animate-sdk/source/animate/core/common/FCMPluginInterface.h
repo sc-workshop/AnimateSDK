@@ -36,6 +36,7 @@
 
 #include "animate/app/Application/Service/IApplicationService.h"
 #include "animate/app/Application/Service/IOutputConsoleService.h"
+#include "animate/module/Types.hpp"
 
 #include "assert.h"
 
@@ -450,8 +451,9 @@ namespace FCM
 		ClassNode*						m_firstNode;
 		FCM::U_Int32					m_objectCounter;
 		PIFCMCallback					m_callback;
+		const Animate::ModuleInfo&		m_module;
 
-		PluginModule(PIFCMCallback pCallback);
+		PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module);
 		virtual ~PluginModule() = default;
 
 	public:
