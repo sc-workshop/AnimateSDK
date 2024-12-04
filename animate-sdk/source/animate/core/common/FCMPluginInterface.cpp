@@ -265,12 +265,12 @@ namespace FCM
 
 	namespace Locale
 	{
-		static std::u16string ToUtf16(const std::string& string) {
+		std::u16string ToUtf16(const std::string& string) {
 			static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
 			return convert.from_bytes(string);
 		}
 
-		static std::string ToUtf8(const std::u16string& string) {
+		std::string ToUtf8(const std::u16string& string) {
 			std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
 			return convert.to_bytes(string);
 		}
