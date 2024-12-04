@@ -11,7 +11,8 @@
 namespace Animate::DocType
 {
 	using namespace FCM;
-	template<std::uintptr_t CLS_MATRIX_ID>
+
+	template<typename T>
 	class GenericDocumentType : public IDocType, public FCM::FCMObjectBase
 	{
 	public:
@@ -29,17 +30,13 @@ namespace Animate::DocType
 				res = GetCallback()->CreateInstance(
 					NULL,
 					*((ConstFCMCLSID*)CLS_MATRIX_ID),
-					ID_IFEATURE_MATRIX,
+					T::PluginID.FeatureMatrixID,
 					(FCM::PPVoid)&m_features.m_Ptr);
 			}
 
 			featureMatrix = m_features;
 			return res;
 		}
-
-		GenericDocumentType();
-
-		virtual ~GenericDocumentType();
 
 	private:
 		FCM::AutoPtr<DocType::IFeatureMatrix> m_features;

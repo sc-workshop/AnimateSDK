@@ -17,6 +17,8 @@
 namespace Animate::DocType
 {
 	using namespace FCM;
+
+	template<typename T>
 	class GenericFeatureMatrix : public FCM::FCMObjectBase, public IFeatureMatrix
 	{
 	public:

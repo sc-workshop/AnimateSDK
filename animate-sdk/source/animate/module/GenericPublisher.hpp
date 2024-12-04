@@ -4,9 +4,7 @@
 
 #include "animate/app/Publisher/IPublisher.h"
 #include "GenericPublisherConfig.hpp"
-
-#include <filesystem>
-namespace fs = std::filesystem;
+#include "Types.hpp"
 
 namespace Animate::Publisher
 {
@@ -47,6 +45,9 @@ namespace Animate::Publisher
 		}
 
 		FCM::Result _FCMCALL ClearCache() { return FCM_SERVICE_NOT_FOUND; };
+
+	public:
+		static Animate::FCMPluginID PluginID;
 	};
 
 	static FCM::Result RegisterPublisher(FCM::PIFCMDictionary plugins, FCM::FCMCLSID publisher_id, const ModuleInfo& module)

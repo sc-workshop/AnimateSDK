@@ -512,7 +512,7 @@ namespace FCM
 			Trace(message.c_str(), args...);
 		}
 
-		template<typename T>
+		template<typename T = FCM::FCMObjectBase>
 		void AddClassEntry(FCMCLSID clsid)
 		{
 			AddClassEntry(clsid, &FCM::FCMClassFactory<T>::GetFactory, &T::GetInterfaceMap, m_module.version);
@@ -713,7 +713,7 @@ namespace FCM
 	};
 
 	template<class T>
-	class FCMClassFactory :public IFCMClassFactory, public FCMObjectBase
+	class FCMClassFactory : public IFCMClassFactory, public FCMObjectBase
 	{
 	public:
 		FCMClassFactory()

@@ -117,4 +117,11 @@ namespace Animate {
 		std::string description;
 		std::string publisher_ui_id;
 	};
+
+	struct FCMPluginID
+	{
+		FCM::FCMCLSID PublisherID;
+		FCM::FCMCLSID DocumentTypeID;
+		FCM::FCMCLSID FeatureMatrixID;
+	};
 }
