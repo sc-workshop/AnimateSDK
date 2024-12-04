@@ -37,7 +37,7 @@ namespace FCM
      *
      * @note  Textual Representation:  {B249192E-D262-43BA-8652-C41FCB3420F5}
      */
-    ConstFCMIID FCMIID_IFCMClassFactory =
+    ConstFCMIID ID_IFCMClassFactory =
         {0xb249192e, 0xd262, 0x43ba, {0x86, 0x52, 0xc4, 0x1f, 0xcb, 0x34, 0x20, 0xf5}};
 }
 
@@ -52,7 +52,7 @@ namespace FCM
      * @brief Defines the interface that represents the ClassFactory.
      */
 
-    class IFCMClassFactory : public FCM::VirtualClass<FCMIID_IFCMClassFactory>
+    class IFCMClassFactory : public FCM::VirtualClass<ID_IFCMClassFactory>
     {
     public:
         /**

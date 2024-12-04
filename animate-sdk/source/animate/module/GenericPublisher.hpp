@@ -16,7 +16,7 @@ namespace Animate::Publisher
 	public:
 		virtual void Publish(const ConfigT& config) = 0;
 	};
-	
+
 	template<class ConfigT = GenericPublisherConfig, class PublisherT = GenericPublisherInterface<ConfigT>>
 	class GenericPublisher : public IPublisher, public FCM::FCMObjectBase
 	{
@@ -26,12 +26,14 @@ namespace Animate::Publisher
 		END_INTERFACE_MAP
 
 	public:
-		FCM::Result _FCMCALL Publish(DOM::PIFLADocument document, const FCM::PIFCMDictionary publishConfig, const FCM::PIFCMDictionary config)
+		FCM::Result _FCMCALL Publish(DOM::PIFLADocument document, const FCM::PIFCMDictionary publishConfig, const FCM::PIFCMDictionary projectConfig)
 		{
-			ConfigT config(document, config, publishConfig);
+			ConfigT config(document, projectConfig, publishConfig);
 			PublisherT publisher{};
 
 			publisher.Publish(config);
+
+			return FCM_SUCCESS;
 		}
 
 		FCM::Result _FCMCALL Publish(
@@ -47,7 +49,7 @@ namespace Animate::Publisher
 		FCM::Result _FCMCALL ClearCache() { return FCM_SERVICE_NOT_FOUND; };
 
 	public:
-		static Animate::FCMPluginID PluginID;
+		static const Animate::FCMPluginID PluginID;
 	};
 
 	static FCM::Result RegisterPublisher(FCM::PIFCMDictionary plugins, FCM::FCMCLSID publisher_id, const ModuleInfo& module)

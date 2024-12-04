@@ -110,18 +110,35 @@ namespace Animate {
 
 	struct ModuleInfo
 	{
-		FCM::U_Int32 version;
+		const FCM::U_Int32& version;
 
-		std::string name;
-		std::string universal_name;
-		std::string description;
-		std::string publisher_ui_id;
+		const std::string& name;
+		const std::string& universal_name;
+		const std::string& description;
+		const std::string& publisher_ui_id;
+
+		ModuleInfo(const FCM::U_Int32& ver, const std::string& nam, const std::string& uvn, const std::string& dsc, const std::string& puiid) :
+			version(ver),
+			name(nam),
+			universal_name(uvn),
+			description(dsc),
+			publisher_ui_id(puiid)
+		{
+		}
 	};
 
 	struct FCMPluginID
 	{
-		FCM::FCMCLSID PublisherID;
-		FCM::FCMCLSID DocumentTypeID;
-		FCM::FCMCLSID FeatureMatrixID;
+		using T = const FCM::FCMCLSID&;
+		T PublisherID;
+		T DocumentTypeID;
+		T FeatureMatrixID;
+
+		FCMPluginID(T p, T d, T f) :
+			PublisherID(p),
+			DocumentTypeID(d),
+			FeatureMatrixID(f)
+		{
+		}
 	};
 }

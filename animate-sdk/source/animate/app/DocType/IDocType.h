@@ -48,7 +48,7 @@ namespace Animate
 		 *
 		 * @note  Textual Representation:  {1667C414-52E0-438F-9BFF-7D896D90139B}
 		 */
-		FCM::ConstFCMIID ID_IDOC_TYPE =
+		FCM::ConstFCMIID ID_IDocType =
 		{ 0x1667c414, 0x52e0, 0x438f, {0x9b, 0xff, 0x7d, 0x89, 0x6d, 0x90, 0x13, 0x9b} };
 	}
 
@@ -59,7 +59,7 @@ namespace Animate
 		 *
 		 * @brief Defines an interface that represents the document type.
 		 */
-		class IDocType : public FCM::VirtualClass<ID_IDOC_TYPE>
+		class IDocType : public FCM::VirtualClass<ID_IDocType>
 		{
 			/**
 			 * @brief This function must return the FeatureMatrix for the associated document type.

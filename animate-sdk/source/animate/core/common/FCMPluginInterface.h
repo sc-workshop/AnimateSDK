@@ -448,10 +448,10 @@ namespace FCM
 		FCM::AutoPtr<Animate::Application::Service::IApplicationService> appService = nullptr;
 
 	protected:
-		ClassNode*						m_firstNode;
+		ClassNode* m_firstNode;
 		FCM::U_Int32					m_objectCounter;
 		PIFCMCallback					m_callback;
-		const Animate::ModuleInfo&		m_module;
+		const Animate::ModuleInfo& m_module;
 
 		PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module);
 		virtual ~PluginModule() = default;
@@ -653,7 +653,7 @@ namespace FCM
 				{
 					if (pIntfMap->innerObjectFunc == _FCM_SIMPLEMAPENTRY)
 					{
-						if (pInterfaceID == IID_IFCMUnknown) {
+						if (pInterfaceID == ID_IFCMUnknown) {
 							*ppvObj = static_cast<IFCMNoAggregationUnknown*>(this);
 						}
 						else
@@ -726,7 +726,7 @@ namespace FCM
 		Result CreateInstance(PIFCMUnknown pUnkOuter, PIFCMCallback pCallback, ConstRefFCMIID iid, PPVoid pAny)
 		{
 			Result res = FCM_GENERAL_ERROR;
-			if (pUnkOuter && (iid != IID_IFCMUnknown))
+			if (pUnkOuter && (iid != ID_IFCMUnknown))
 				return FCM_NO_AGGREGATION;
 
 			FCMObject<T>* pNewObject = 0;

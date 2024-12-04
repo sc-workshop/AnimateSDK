@@ -25,12 +25,12 @@ namespace Animate::DocType
 		{
 			FCM::Result res = FCM_SUCCESS;
 
-			if (m_features == NULL)
+			if (m_features.m_Ptr == nullptr)
 			{
 				res = GetCallback()->CreateInstance(
 					NULL,
-					*((ConstFCMCLSID*)CLS_MATRIX_ID),
-					T::PluginID.FeatureMatrixID,
+					*((ConstFCMCLSID*)&T::PluginID.FeatureMatrixID),
+					ID_IFeatureMatrix,
 					(FCM::PPVoid)&m_features.m_Ptr);
 			}
 
