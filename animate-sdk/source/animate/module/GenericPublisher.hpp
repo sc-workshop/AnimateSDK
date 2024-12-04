@@ -57,7 +57,7 @@ namespace Animate::Publisher
 		};
 
 	private:
-		static ConfigT* m_activeConfig = nullptr;
+		static inline ConfigT* m_activeConfig = nullptr;
 	};
 
 	static FCM::Result RegisterPublisher(

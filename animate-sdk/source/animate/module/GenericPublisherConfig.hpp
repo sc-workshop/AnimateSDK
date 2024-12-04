@@ -19,6 +19,6 @@ namespace Animate::Publisher
 		}
 
 	public:
-		const DOM::PIFLADocument activeDocument;
+		DOM::PIFLADocument activeDocument;
 	};
 }

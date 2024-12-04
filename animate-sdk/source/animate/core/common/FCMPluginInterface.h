@@ -438,7 +438,6 @@ namespace FCM
 	{
 	private:
 		PluginModule();
-		~PluginModule() = default;
 		PluginModule(const PluginModule&) = delete;
 		PluginModule& operator=(const PluginModule&) = delete;
 
@@ -470,6 +469,8 @@ namespace FCM
 		const Animate::ModuleInfo& m_module;
 
 		PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module);
+
+		~PluginModule() = default;
 
 	public:
 		virtual FCM::U_Int32 IncrementAliveCount();
