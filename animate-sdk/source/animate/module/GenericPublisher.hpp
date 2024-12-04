@@ -54,6 +54,7 @@ namespace Animate::Publisher
 
 	static FCM::Result RegisterPublisher(
 		FCM::PIFCMDictionary plugins,
+		FCM::FCMCLSID document_id,
 		FCM::FCMCLSID publisher_id,
 		const ModuleInfo& module_info)
 	{
@@ -135,12 +136,11 @@ namespace Animate::Publisher
 			result = category->AddLevel((const FCM::StringRep8)Application::kApplicationPublisherKey_TargetDocs, pDocs.m_Ptr);
 
 			// Level 4 Dictionary
-			std::string emptyString = ""; // TODO: ???
 			result = pDocs->Add(
-				((std::string)publisher_id).c_str(),
+				((std::string)document_id).c_str(),
 				FCMDictRecTypeID::StringRep8,
-				(FCM::PVoid)emptyString.c_str(),
-				(FCM::U_Int32)emptyString.length() + 1
+				"",
+				1
 			);
 		}
 

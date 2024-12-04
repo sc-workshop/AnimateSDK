@@ -48,7 +48,7 @@
 
 namespace Animate::Publisher
 {
-	static FCM::Result RegisterPublisher(FCM::PIFCMDictionary, FCM::FCMCLSID, const ModuleInfo&);
+	static FCM::Result RegisterPublisher(FCM::PIFCMDictionary, FCM::FCMCLSID, FCM::FCMCLSID, const ModuleInfo&);
 }
 
 namespace Animate::DocType
@@ -546,7 +546,7 @@ namespace FCM
 				return res;
 			}
 
-			return Animate::Publisher::RegisterPublisher(plugins, Publisher::PluginID.PublisherID, m_module);
+			return Animate::Publisher::RegisterPublisher(plugins, Publisher::PluginID.DocumentTypeID, Publisher::PluginID.PublisherID, m_module);
 		}
 
 		template<typename T = FCM::FCMObjectBase>
