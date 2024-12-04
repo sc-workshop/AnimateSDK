@@ -107,4 +107,12 @@ namespace Animate {
 		bool m_isSupported;
 		Property::Map m_properties;
 	};
+
+	struct ModuleInfo
+	{
+		std::string name;
+		std::string universal_name;
+		std::string description;
+		std::string publisher_ui_id;
+	};
 }

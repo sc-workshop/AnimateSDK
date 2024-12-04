@@ -12,12 +12,12 @@
 #include "animate/app/DocType/IFeatureMatrix.h"
 #include "animate/core/common/FCMPluginInterface.h"
 
-#include "FeaturesTypes.hpp"
+#include "Types.hpp"
 
 namespace Animate::DocType
 {
 	using namespace FCM;
-	class GenericFeatureMatrix final : public FCM::FCMObjectBase, public IFeatureMatrix
+	class GenericFeatureMatrix : public FCM::FCMObjectBase, public IFeatureMatrix
 	{
 	public:
 		using json = nlohmann::json;
