@@ -164,11 +164,63 @@ namespace Animate::DocType
 		}
 
 		virtual FCM::Result _FCMCALL GetDefaultValue(
-			FCM::CStringRep16 inFeatureName,
-			FCM::CStringRep16 inPropName,
-			FCM::VARIANT& outDefVal)
+			FCM::CStringRep16 featureName,
+			FCM::CStringRep16 propertyName,
+			FCM::VARIANT& output)
 		{
+			FCM::Result res = FCM_INVALID_PARAM;
 
+#if WK_DEBUG
+			return res;
+#endif
+
+			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
+			std::string propertyNameStr = FCM::Locale::ToUtf8((const char16_t*)propertyName);
+
+			Property* property = NULL;
+			auto maybe_feature = FindFeature(featureNameStr);
+			if (!maybe_feature.has_value()) return res;
+
+			const Feature& feature = maybe_feature.value();
+			if (!feature.IsSupported()) return res;
+			
+			auto maybe_property = feature.FindProperty(propertyNameStr);
+			if (!maybe_property.has_value()) return res;
+
+			const Property& feature_property = maybe_property.value();
+			if (!feature_property.IsSupported()) return res;
+
+			std::string stringValue = property->GetDefault();
+			if (stringValue.empty()) {
+				return FCM_INVALID_PARAM;
+			}
+
+			res = FCM_SUCCESS;
+			switch (output.type) {
+			case FCM::VarType::UInt32:
+				output.value.uVal = std::stoi(stringValue);
+				break;
+			case FCM::VarType::Float:
+				output.value.fVal = std::stof(stringValue);
+				break;
+			case FCM::VarType::Bool:
+				output.value.bVal = (stringValue == "true");
+				break;
+			case FCM::VarType::String:
+			{
+				std::u16string u16StringValue = FCM::Locale::ToUtf16(stringValue);
+				output.value.strVal = (FCM::StringRep16)u16StringValue.c_str();
+			}
+			break;
+			case FCM::VarType::Double:
+				output.value.dVal = std::stod(stringValue);
+				break;
+			default:
+				res = FCM_INVALID_PARAM;
+				break;
+			}
+
+			return res;
 		}
 
 		void FromJSON(std::filesystem::path path)

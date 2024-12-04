@@ -348,7 +348,7 @@ namespace FCM
 	struct VARIANT
 	{
 		/** Type of value */
-		VarType    m_type;
+		VarType    type;
 
 		/** Represents actual value */
 		union
@@ -370,7 +370,7 @@ namespace FCM
 
 			/** This value is reserved for future use */
 			PVoid           reserved;
-		} m_value;
+		} value;
 	};
 
 	/**
