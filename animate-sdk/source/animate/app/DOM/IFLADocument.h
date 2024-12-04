@@ -66,7 +66,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetBackgroundColor(Utils::COLOR& color) = 0;
+            virtual FCM::Result _FCMCALL GetBackgroundColor(Utils::COLOR& color) const = 0;
 
 
             /**
@@ -78,7 +78,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetFrameRate(FCM::Double& frameRate) = 0;
+            virtual FCM::Result _FCMCALL GetFrameRate(FCM::Double& frameRate) const = 0;
 
 
             /**
@@ -89,7 +89,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetStageHeight(FCM::U_Int32& height) = 0;
+            virtual FCM::Result _FCMCALL GetStageHeight(FCM::U_Int32& height) const = 0;
 
 
             /**
@@ -100,7 +100,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetStageWidth(FCM::U_Int32& width) = 0;
+            virtual FCM::Result _FCMCALL GetStageWidth(FCM::U_Int32& width) const = 0;
 
 
             /**
@@ -126,7 +126,7 @@ namespace Animate
              *
              * @see    DOM::LibraryItem::ISymbolItem
              */
-            virtual FCM::Result _FCMCALL GetLibraryItems(FCM::PIFCMList& pLibItemsList) = 0;
+            virtual FCM::Result _FCMCALL GetLibraryItems(FCM::PIFCMList& pLibItemsList) const = 0;
 
 
             /**
@@ -145,9 +145,11 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetLibraryItemByPath(
+            virtual FCM::Result _FCMCALL GetLibraryItemByPath 
+            (
                 FCM::CStringRep16 pPath,
-                PILibraryItem& pLibItem) = 0;
+                PILibraryItem& pLibItem
+            ) const = 0;
 
 
             /**
@@ -160,7 +162,7 @@ namespace Animate
              *
              * @see    DOM::ITimeline
              */
-            virtual FCM::Result _FCMCALL GetTimelines(FCM::PIFCMList& pTimelineList) = 0;
+            virtual FCM::Result _FCMCALL GetTimelines(FCM::PIFCMList& pTimelineList) const = 0;
 
 
             /**
@@ -172,7 +174,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetTypeId(FCM::FCMGUID& docId) = 0;
+            virtual FCM::Result _FCMCALL GetTypeId(FCM::FCMGUID& docId) const = 0;
 
 
             /**
@@ -187,7 +189,7 @@ namespace Animate
              * @note   Memory allocated for ppPath must be released by the caller using
              *         FCM::IFCMCalloc.
              */
-            virtual FCM::Result _FCMCALL GetPath(FCM::StringRep16* ppPath) = 0;
+            virtual FCM::Result _FCMCALL GetPath(FCM::StringRep16* ppPath) const = 0;
 
         };
     }
