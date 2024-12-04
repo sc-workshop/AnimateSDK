@@ -9,7 +9,7 @@
 * the property of Adobe Systems Incorporated and its suppliers,
 * if any.  The intellectual and technical concepts contained
 * herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual 
+* suppliers and are protected by all applicable intellectual
 * property laws, including trade secret and copyright laws.
 * Dissemination of this information or reproduction of this material
 * is strictly forbidden unless prior written permission is obtained
@@ -19,9 +19,9 @@
 /**
  * @file  IFCMDictionary.h
  *
- * @brief This file contains interface for IFCMDictionary. 
+ * @brief This file contains interface for IFCMDictionary.
  *        The IFCMDictionary is an interface for generic container for storing data.
- */ 
+ */
 
 #pragma once
 #include "animate/core/common/FCMTypes.h"
@@ -31,12 +31,12 @@
 
 #include "animate/core/common/FCMPreConfig.h"
 
-/* -------------------------------------------------- Forward Decl */
+ /* -------------------------------------------------- Forward Decl */
 
 
-/* -------------------------------------------------- Macros / Constants */
+ /* -------------------------------------------------- Macros / Constants */
 
-namespace FCM 
+namespace FCM
 {
     /**
      * @brief Defines the universally-unique interface ID for IFCMDictionary.
@@ -44,11 +44,11 @@ namespace FCM
      * @note  Textual Representation:  {8BB58643-057E-4158-8876-6FF334E5ECE6}
      */
     ConstFCMIID FCMIID_IFCMDictionary =
-        {0x8bb58643, 0x57e, 0x4158, {0x88, 0x76, 0x6f, 0xf3, 0x34, 0xe5, 0xec, 0xe6}};
+    { 0x8bb58643, 0x57e, 0x4158, {0x88, 0x76, 0x6f, 0xf3, 0x34, 0xe5, 0xec, 0xe6} };
 
 
     /**
-     * @def   FCMDICT_RUNTIME_KEY_PREFIX  
+     * @def   FCMDICT_RUNTIME_KEY_PREFIX
      * @brief By convention, all keys beginning with these characters will never be written to
      *        persistent storage; they are runtime-only keys.
      */
@@ -76,19 +76,19 @@ namespace FCM
 
         /** Returns a FCM::S_Int32. */
         Long,
-        
+
         /** Returns a 32 bit IEEE single precision floating point number. */
         Float,
-        
+
         /** FCM::Boolean */
         Bool,
-        
+
         /** FCMGUID */
         FCMGUID,
 
         /** Arbitrary bytes */
         Bytes,
-        
+
         /** Null-terminated StringRep8 string */
         StringRep8,
 
@@ -109,7 +109,7 @@ namespace FCM
 /* -------------------------------------------------- Class Declaration */
 
 namespace FCM
-{ 
+{
     /**
      * @class IFCMDictionary
      *
@@ -156,7 +156,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL AddLevel(CStringRep8 pKey, IFCMDictionary** ppDict) = 0;
+        virtual FCM::Result _FCMCALL AddLevel(CStringRep8 pKey, PIFCMDictionary& ppDict) = 0;
 
 
         /**

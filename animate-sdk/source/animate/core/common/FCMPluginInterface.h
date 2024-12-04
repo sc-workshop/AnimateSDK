@@ -46,6 +46,16 @@
 
 #include "animate/core/common/FCMPreConfig.h"
 
+namespace Animate::Publisher
+{
+	static FCM::Result RegisterPublisher(FCM::PIFCMDictionary, FCM::FCMCLSID, const ModuleInfo&);
+}
+
+namespace Animate::DocType
+{
+	static FCM::Result RegisterDocument(FCM::PIFCMDictionary, FCM::ConstFCMCLSID, const ModuleInfo&);
+}
+
 namespace FCM
 {
 	/** @cond HIDE_PRIVATE */
@@ -518,6 +528,25 @@ namespace FCM
 			AddClassEntry<Publisher>(Publisher::PluginID.PublisherID);
 			AddClassEntry<DocumentType>(Publisher::PluginID.DocumentTypeID);
 			AddClassEntry<FeatureMatrix>(Publisher::PluginID.FeatureMatrixID);
+		}
+
+		template<typename Publisher, typename DocumentType>
+		FCM::Result RegisterPlugin(FCM::PIFCMPluginDictionary pluginDict)
+		{
+			FCM::Result res = FCM_SUCCESS;
+
+			FCM::AutoPtr<FCM::IFCMDictionary> dict = pluginDict;
+
+			FCM::AutoPtr<FCM::IFCMDictionary> plugins;
+			dict->AddLevel((const FCM::StringRep8)kFCMComponent, &plugins.m_Ptr);
+
+			res = Animate::DocType::RegisterDocument(plugins, Publisher::PluginID.DocumentTypeID, m_module);
+			if (FCM_FAILURE_CODE(res))
+			{
+				return res;
+			}
+
+			return Animate::Publisher::RegisterPublisher(plugins, Publisher::PluginID.PublisherID, m_module);
 		}
 
 		template<typename T = FCM::FCMObjectBase>
