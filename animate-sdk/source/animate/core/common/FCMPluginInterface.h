@@ -512,6 +512,14 @@ namespace FCM
 			Trace(message.c_str(), args...);
 		}
 
+		template<typename Publisher, typename DocumentType, typename FeatureMatrix>
+		void ConstructPlugin()
+		{
+			AddClassEntry<Publisher>(Publisher::PluginID.PublisherID);
+			AddClassEntry<DocumentType>(Publisher::PluginID.DocumentTypeID);
+			AddClassEntry<FeatureMatrix>(Publisher::PluginID.FeatureMatrixID);
+		}
+
 		template<typename T = FCM::FCMObjectBase>
 		void AddClassEntry(FCMCLSID clsid)
 		{
