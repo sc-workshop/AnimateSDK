@@ -86,12 +86,12 @@ namespace Animate::DocType
 			FCM::AutoPtr<FCM::IFCMDictionary> plugin;
 			res = plugins->AddLevel(
 				(const FCM::StringRep8)(((std::string)docTypeID).c_str()),
-				&plugin.m_Ptr);
+				plugin.m_Ptr);
 
 			{
 				// Level 2 Dictionary
 				FCM::AutoPtr<FCM::IFCMDictionary> category;
-				res = plugin->AddLevel((const FCM::StringRep8)Application::kApplicationCategoryKey_DocType, &category.m_Ptr);
+				res = plugin->AddLevel((const FCM::StringRep8)Application::kApplicationCategoryKey_DocType, category.m_Ptr);
 
 				{
 					// Level 3 Dictionary

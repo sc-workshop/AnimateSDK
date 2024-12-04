@@ -99,14 +99,14 @@ namespace Animate::Publisher
 			FCM::AutoPtr<FCM::IFCMDictionary> plugin;
 			result = plugins->AddLevel(
 				((std::string)publisher_id).c_str(),
-				&plugin.m_Ptr
+				plugin.m_Ptr
 			);
 
 			// Level 2 Dictionary
 			FCM::AutoPtr<FCM::IFCMDictionary> category;
 			result = plugin->AddLevel(
 				(const FCM::StringRep8)Application::kApplicationCategoryKey_Publisher,
-				&category.m_Ptr
+				category.m_Ptr
 			);
 
 			// Level 3 Dictionary
@@ -129,7 +129,7 @@ namespace Animate::Publisher
 				(FCM::U_Int32)module.publisher_ui_id.length() + 1);
 
 			FCM::AutoPtr<FCM::IFCMDictionary> pDocs;
-			result = category->AddLevel((const FCM::StringRep8)Application::kApplicationPublisherKey_TargetDocs, &pDocs.m_Ptr);
+			result = category->AddLevel((const FCM::StringRep8)Application::kApplicationPublisherKey_TargetDocs, pDocs.m_Ptr);
 
 			// Level 4 Dictionary
 			std::string emptyString = ""; // TODO: ???
