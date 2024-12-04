@@ -538,7 +538,7 @@ namespace FCM
 			FCM::AutoPtr<FCM::IFCMDictionary> dict = pluginDict;
 
 			FCM::AutoPtr<FCM::IFCMDictionary> plugins;
-			dict->AddLevel((const FCM::StringRep8)kFCMComponent, &plugins.m_Ptr);
+			dict->AddLevel((const FCM::StringRep8)kFCMComponent, plugins.m_Ptr);
 
 			res = Animate::DocType::RegisterDocument(plugins, Publisher::PluginID.DocumentTypeID, m_module);
 			if (FCM_FAILURE_CODE(res))
