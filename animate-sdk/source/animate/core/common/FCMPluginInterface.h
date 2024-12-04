@@ -436,6 +436,12 @@ namespace FCM
 
 	class PluginModule
 	{
+	private:
+		PluginModule();
+		~PluginModule() = default;
+		PluginModule(const PluginModule&) = delete;
+		PluginModule& operator=(const PluginModule&) = delete;
+
 	public:
 		static const size_t	TraceBufferLength = 1024;
 		static const size_t	TraceWideBufferLength = TraceBufferLength * 2;
@@ -464,7 +470,6 @@ namespace FCM
 		const Animate::ModuleInfo& m_module;
 
 		PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module);
-		virtual ~PluginModule() = default;
 
 	public:
 		virtual FCM::U_Int32 IncrementAliveCount();
