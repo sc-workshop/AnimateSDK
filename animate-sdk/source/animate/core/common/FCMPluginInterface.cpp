@@ -14,10 +14,10 @@ namespace FCM
 
 	PluginModule* PluginModule::m_instance = nullptr;
 
-	PluginModule::PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module) : 
+	PluginModule::PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module) :
 		m_module(module),
-		m_firstNode(0), 
-		falloc(nullptr), 
+		m_firstNode(0),
+		falloc(nullptr),
 		m_objectCounter(0)
 	{
 		PluginModule::m_instance = this;
@@ -72,7 +72,7 @@ namespace FCM
 		{
 			FCMInterfaceMap* pIntfIndex = pNode->m_ClassMap.pGetInterfaceTable();
 			for (; pIntfIndex && (pIntfIndex->iid != FCMIID_NULL); ++pIntfIndex) {
-				if (pIntfIndex->iid == FCMIID_IFCMCalloc)
+				if (pIntfIndex->iid == ID_IFCMUnknown)
 					continue;
 				++pairCount;
 			}

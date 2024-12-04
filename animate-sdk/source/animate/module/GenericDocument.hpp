@@ -45,7 +45,7 @@ namespace Animate::DocType
 	static FCM::Result RegisterDocument(
 			FCM::PIFCMDictionary plugins,
 			FCM::ConstFCMCLSID docTypeID,
-			const ModuleInfo& module
+			const ModuleInfo& module_info
 	)
 	{
 		FCM::Result res = FCM_SUCCESS;
@@ -100,16 +100,16 @@ namespace Animate::DocType
 					res = category->Add(
 						(const FCM::StringRep8)Application::kApplicationCategoryKey_Name,
 						FCMDictRecTypeID::StringRep8,
-						(FCM::PVoid)module.name.c_str(),
-						(FCM::U_Int32)module.name.length() + 1
+						(FCM::PVoid)module_info.name,
+						(FCM::U_Int32)std::strlen(module_info.name) + 1
 					);
 
 					// Add universal name - Used to refer to it from JSFL and used in error messages
 					res = category->Add(
 						(const FCM::StringRep8)Application::kApplicationCategoryKey_UniversalName,
 						FCMDictRecTypeID::StringRep8,
-						(FCM::PVoid)module.universal_name.c_str(),
-						(FCM::U_Int32)module.universal_name.length() + 1
+						(FCM::PVoid)module_info.universal_name,
+						(FCM::U_Int32)std::strlen(module_info.universal_name) + 1
 					);
 
 					// Add plugin description - Appears in the "New Document Dialog"
@@ -117,8 +117,8 @@ namespace Animate::DocType
 					res = category->Add(
 						(const FCM::StringRep8)Application::kApplicationDocTypeKey_Desc,
 						FCMDictRecTypeID::StringRep8,
-						(FCM::PVoid)module.description.c_str(),
-						(FCM::U_Int32)module.description.length() + 1
+						(FCM::PVoid)module_info.description,
+						(FCM::U_Int32)strlen(module_info.description) + 1
 					);
 				}
 			}

@@ -52,7 +52,10 @@ namespace Animate::Publisher
 		static const Animate::FCMPluginID PluginID;
 	};
 
-	static FCM::Result RegisterPublisher(FCM::PIFCMDictionary plugins, FCM::FCMCLSID publisher_id, const ModuleInfo& module)
+	static FCM::Result RegisterPublisher(
+		FCM::PIFCMDictionary plugins,
+		FCM::FCMCLSID publisher_id,
+		const ModuleInfo& module_info)
 	{
 		FCM::Result result;
 
@@ -113,20 +116,20 @@ namespace Animate::Publisher
 			result = category->Add(
 				(const FCM::StringRep8)Application::kApplicationCategoryKey_Name,
 				FCMDictRecTypeID::StringRep8,
-				(FCM::PVoid)module.name.c_str(),
-				(FCM::U_Int32)module.name.length() + 1);
+				(FCM::PVoid)module_info.name,
+				(FCM::U_Int32)std::strlen(module_info.name) + 1);
 
 			result = category->Add(
 				(const FCM::StringRep8)Application::kApplicationCategoryKey_UniversalName,
 				FCMDictRecTypeID::StringRep8,
-				(FCM::PVoid)module.universal_name.c_str(),
-				(FCM::U_Int32)module.universal_name.length() + 1);
+				(FCM::PVoid)module_info.universal_name,
+				(FCM::U_Int32)std::strlen(module_info.universal_name) + 1);
 
 			result = category->Add(
 				(const FCM::StringRep8)Application::kApplicationPublisherKey_UI,
 				FCMDictRecTypeID::StringRep8,
-				(FCM::PVoid)module.publisher_ui_id.c_str(),
-				(FCM::U_Int32)module.publisher_ui_id.length() + 1);
+				(FCM::PVoid)module_info.publisher_ui_id,
+				(FCM::U_Int32)std::strlen(module_info.publisher_ui_id) + 1);
 
 			FCM::AutoPtr<FCM::IFCMDictionary> pDocs;
 			result = category->AddLevel((const FCM::StringRep8)Application::kApplicationPublisherKey_TargetDocs, pDocs.m_Ptr);

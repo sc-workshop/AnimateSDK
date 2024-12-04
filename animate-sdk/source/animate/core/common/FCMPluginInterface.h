@@ -525,9 +525,9 @@ namespace FCM
 		template<typename Publisher, typename DocumentType, typename FeatureMatrix>
 		void ConstructPlugin()
 		{
-			AddClassEntry<Publisher>(Publisher::PluginID.PublisherID);
 			AddClassEntry<DocumentType>(Publisher::PluginID.DocumentTypeID);
 			AddClassEntry<FeatureMatrix>(Publisher::PluginID.FeatureMatrixID);
+			AddClassEntry<Publisher>(Publisher::PluginID.PublisherID);
 		}
 
 		template<typename Publisher, typename DocumentType>

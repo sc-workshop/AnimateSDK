@@ -112,12 +112,12 @@ namespace Animate {
 	{
 		const FCM::U_Int32& version;
 
-		const std::string& name;
-		const std::string& universal_name;
-		const std::string& description;
-		const std::string& publisher_ui_id;
+		const char* name;
+		const char* universal_name;
+		const char* description;
+		const char* publisher_ui_id;
 
-		ModuleInfo(const FCM::U_Int32& ver, const std::string& nam, const std::string& uvn, const std::string& dsc, const std::string& puiid) :
+		ModuleInfo(const FCM::U_Int32& ver, const char* nam, const char* uvn, const char* dsc, const char* puiid) :
 			version(ver),
 			name(nam),
 			universal_name(uvn),
