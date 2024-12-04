@@ -22,13 +22,20 @@ namespace Animate
 		AdobeWheelchair(const AdobeWheelchair&) = delete;
 		AdobeWheelchair& operator=(const AdobeWheelchair&) = delete;
 
+		bool IsWheelchairMoving() const {
+			return m_initialized;
+		}
+
 	public:
 		// Sets offsets by Animate version
-		FCM::Result RunWheelchair(FCM::U_Int32 version);
+		void RunWheelchair(FCM::U_Int32 version);
 
 	public:
 		// For some reason SDK does not support 9slice...
 		size_t CPicPage_Is9SliceEnabled = 0;
 		size_t CPicPage_9SliceGuides = 0;
+
+	private:
+		bool m_initialized = true;
 	};
 }

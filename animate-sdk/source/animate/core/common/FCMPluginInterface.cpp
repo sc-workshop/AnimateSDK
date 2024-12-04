@@ -27,10 +27,6 @@ namespace FCM
 		console = GetService<Animate::Application::Service::IOutputConsoleService>(Animate::Application::Service::APP_OUTPUT_CONSOLE_SERVICE);
 		appService = GetService<Animate::Application::Service::IApplicationService>(Animate::Application::Service::APP_SERVICE);
 
-		//logger->info("Initializing module");
-		//logger->info("	Plugin info: {}", PluginVersion);
-
-		//logger->info("System Info: ");
 		auto application = GetService<Animate::Application::Service::IApplicationService>(Animate::Application::Service::APP_SERVICE);
 
 		{
@@ -38,21 +34,8 @@ namespace FCM
 
 			FCM::U_Int32 version;
 			application->GetVersion(version);
-			FCM::Result status = wheelchair.RunWheelchair(version);
-			if (status != FCM_SUCCESS)
-			{
-				//logger->error("Wheelchair returns FAIL. Some features will be disabled.");
-			}
-
-			//logger->info("	App: Adobe Animate {}.{}.{}.{}",
-			//	((version >> 24) & 0xFF),
-			//	((version >> 16) & 0xFF),
-			//	((version >> 8) & 0xFF),
-			//	((version) & 0xFF)
-			//);
+			wheelchair.RunWheelchair(version);
 		}
-
-		//logger->info("	OS: {}", PluginContext::SystemInfo());
 	}
 
 	FCM::U_Int32 PluginModule::IncrementAliveCount()

@@ -302,12 +302,10 @@ namespace Animate::Publisher
 
 					if (paragraphsCount == 0)
 					{
-						// context.Trace("Failed to get Paragraphs from TextField. Check logs for details.");
-						// context.logger->error("TextField from {} does not have Paragraphs", Localization::ToUtf8(symbol.name));
 						return;
 					};
 
-					if (paragraphsCount > 1) {
+					if (paragraphsCount > 1) { // TODO: Add paragraph vector
 						// context.Trace("Warning. Some of TextField has multiple paragraph");
 					}
 
@@ -414,7 +412,6 @@ namespace Animate::Publisher
 			}
 
 			if (element.id == UINT16_MAX) {
-				// context.logger->info("Object by name {} was stripped at position {}", Localization::ToUtf8(symbol.name), m_position);
 				return;
 			}
 
