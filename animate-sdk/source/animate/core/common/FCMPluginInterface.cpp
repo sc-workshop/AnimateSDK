@@ -12,6 +12,8 @@ namespace FCM
 		return this->m_Ptr->operator[](index);
 	}
 
+	PluginModule* PluginModule::m_instance = nullptr;
+
 	PluginModule::PluginModule(PIFCMCallback pCallback)
 	{
 		PluginModule::m_instance = this;
@@ -263,12 +265,12 @@ namespace FCM
 
 	namespace Locale
 	{
-		std::u16string ToUtf16(const std::string& string) {
+		static std::u16string ToUtf16(const std::string& string) {
 			static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
 			return convert.from_bytes(string);
 		}
 
-		std::string ToUtf8(const std::u16string& string) {
+		static std::string ToUtf8(const std::u16string& string) {
 			std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
 			return convert.to_bytes(string);
 		}
