@@ -51,7 +51,7 @@ namespace Animate::DocType
 				return FCM_SUCCESS;
 			}
 
-			isSupported = feature->IsSupported();
+			isSupported = (feature->get()).IsSupported();
 			return FCM_SUCCESS;
 		};
 
@@ -78,27 +78,29 @@ namespace Animate::DocType
 				return FCM_SUCCESS;
 			}
 
-			auto feature = FindFeature(featureNameStr);
-			if (!feature.has_value())
+			auto maybe_feature = FindFeature(featureNameStr);
+			if (!maybe_feature.has_value())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			if (!feature->IsSupported())
+			const Feature& feature = maybe_feature.value();
+			if (!feature.IsSupported())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			auto property = feature->FindProperty(propertyNameStr);
-			if (!property.has_value())
+			auto maybe_property = feature.FindProperty(propertyNameStr);
+			if (!maybe_property.has_value())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			isSupported = property->IsSupported();
+			const Property& feature_property = maybe_property.value();
+			isSupported = feature_property.IsSupported();
 			return FCM_SUCCESS;
 		}
 
@@ -121,47 +123,53 @@ namespace Animate::DocType
 				return FCM_SUCCESS;
 			}
 
-			auto feature = FindFeature(featureNameStr);
-			if (!feature.has_value())
-			{
-				isSupported = false;
-				return FCM_SUCCESS;
-			}
-			
-			if (!feature->IsSupported())
+			auto maybe_feature = FindFeature(featureNameStr);
+			if (!maybe_feature.has_value())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			auto feature_property = feature->FindProperty(propertyNameStr);
-			if (!feature_property.has_value())
+			const Feature& feature = maybe_feature.value();
+			if (!feature.IsSupported())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			if (!feature_property->IsSupported())
+			auto maybe_property = feature.FindProperty(propertyNameStr);
+			if (!maybe_property.has_value())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			auto property_value = feature_property->FindValue(valueNameStr);
-			if (!property_value.has_value())
+			const Property& feature_property = maybe_property.value();
+			if (!feature_property.IsSupported())
 			{
 				isSupported = false;
 				return FCM_SUCCESS;
 			}
 
-			isSupported = property_value->IsSupported();
+			auto maybe_value = feature_property.FindValue(valueNameStr);
+			if (!maybe_value.has_value())
+			{
+				isSupported = false;
+				return FCM_SUCCESS;
+			}
+
+			const Value& feature_value = maybe_value.value();
+			isSupported = feature_value.IsSupported();
 			return FCM_SUCCESS;
 		}
 
 		virtual FCM::Result _FCMCALL GetDefaultValue(
 			FCM::CStringRep16 inFeatureName,
 			FCM::CStringRep16 inPropName,
-			FCM::VARIANT& outDefVal);
+			FCM::VARIANT& outDefVal)
+		{
+
+		}
 
 		void FromJSON(std::filesystem::path path)
 		{
@@ -234,7 +242,7 @@ namespace Animate::DocType
 			property.AddValue(value["name"], Value(value["supported"]));
 		}
 
-		std::optional<const Feature&> FindFeature(const std::string& inFeatureName) const
+		std::optional<std::reference_wrapper<const Feature>> FindFeature(const std::string& inFeatureName) const
 		{
 			Feature::Map::const_iterator itr = m_features.find(inFeatureName);
 			if (itr != m_features.end())

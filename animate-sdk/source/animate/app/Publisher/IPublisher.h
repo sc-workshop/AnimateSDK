@@ -63,7 +63,7 @@ namespace Animate
 		 * @brief Defines an interface that represents publisher. This interface
 		 *        must be implemented by a publisher plugin.
 		 */
-		class IPublisher : public FCM::VirtualClass<FCMIID_IPublisher>
+		class IPublisher : public FCM::VirtualClass<ID_IPublisher>
 		{
 		public:
 			/**

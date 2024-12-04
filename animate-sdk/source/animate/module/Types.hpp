@@ -38,7 +38,7 @@ namespace Animate {
 			m_default = def;
 		}
 
-		std::optional<const Value&> FindValue(const std::string& inValueName) const
+		std::optional<std::reference_wrapper<const Value>> FindValue(const std::string& inValueName) const
 		{
 			Value::Map::const_iterator itr = m_values.find(inValueName);
 			if (itr != m_values.end())
@@ -81,7 +81,7 @@ namespace Animate {
 			m_isSupported = supported;
 		}
 
-		std::optional<const Property&> FindProperty(const std::string& inPropertyName) const
+		std::optional<std::reference_wrapper<const Property>> FindProperty(const std::string& inPropertyName) const
 		{
 			Property::Map::const_iterator itr = m_properties.find(inPropertyName);
 			if (itr != m_properties.end())

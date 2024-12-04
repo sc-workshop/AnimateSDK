@@ -42,7 +42,7 @@ namespace Animate::DocType
 		virtual ~GenericDocumentType();
 
 	private:
-		FCM::AutoPtr<DocType::FeatureMatrix> m_features;
+		FCM::AutoPtr<DocType::IFeatureMatrix> m_features;
 	};
 
 	static FCM::Result RegisterDocument(
