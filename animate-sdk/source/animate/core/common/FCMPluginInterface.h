@@ -512,6 +512,12 @@ namespace FCM
 			Trace(message.c_str(), args...);
 		}
 
+		template<typename T>
+		void AddClassEntry(FCMCLSID clsid)
+		{
+			AddClassEntry(clsid, &FCM::FCMClassFactory<T>::GetFactory, &T::GetInterfaceMap, m_module.version);
+		}
+
 	public:
 		std::string LanguageCode() const;
 

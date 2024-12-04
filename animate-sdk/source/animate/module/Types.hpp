@@ -110,7 +110,7 @@ namespace Animate {
 
 	struct ModuleInfo
 	{
-		int version;
+		FCM::U_Int32 version;
 
 		std::string name;
 		std::string universal_name;
