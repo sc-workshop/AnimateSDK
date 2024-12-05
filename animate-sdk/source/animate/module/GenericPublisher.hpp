@@ -53,7 +53,7 @@ namespace Animate::Publisher
 	public:
 		static const Animate::FCMPluginID PluginID;
 		static const ConfigT& ActiveConfig() {
-			return m_activeConfig
+			return *m_activeConfig;
 		};
 
 	private:
