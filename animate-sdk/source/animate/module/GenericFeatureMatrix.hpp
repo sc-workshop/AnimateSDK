@@ -27,7 +27,7 @@ namespace Animate::DocType
 	public:
 		BEGIN_MULTI_INTERFACE_MAP(GenericFeatureMatrix)
 			INTERFACE_ENTRY(IFeatureMatrix)
-		END_INTERFACE_MAP
+			END_INTERFACE_MAP
 
 	public:
 		virtual FCM::Result _FCMCALL IsSupported(
@@ -70,12 +70,7 @@ namespace Animate::DocType
 			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
 			std::string propertyNameStr = FCM::Locale::ToUtf8((const char16_t*)propertyName);
 
-			if (featureNameStr.empty()) {
-				isSupported = true;
-				return FCM_SUCCESS;
-			}
-
-			if (propertyNameStr.empty()) {
+			if (featureNameStr.empty() || propertyNameStr.empty()) {
 				isSupported = true;
 				return FCM_SUCCESS;
 			}
@@ -112,7 +107,7 @@ namespace Animate::DocType
 			FCM::CStringRep16 valueName,
 			FCM::Boolean& isSupported)
 		{
-#if SC_DEBUG
+#if WK_DEBUG
 			isSupported = true;
 			return FCM_SUCCESS;
 #endif
@@ -179,20 +174,24 @@ namespace Animate::DocType
 			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
 			std::string propertyNameStr = FCM::Locale::ToUtf8((const char16_t*)propertyName);
 
-			Property* property = NULL;
+			if (featureNameStr.empty() || propertyNameStr.empty())
+			{
+				return res;
+			}
+
 			auto maybe_feature = FindFeature(featureNameStr);
 			if (!maybe_feature.has_value()) return res;
 
 			const Feature& feature = maybe_feature.value();
 			if (!feature.IsSupported()) return res;
-			
+
 			auto maybe_property = feature.FindProperty(propertyNameStr);
 			if (!maybe_property.has_value()) return res;
 
 			const Property& feature_property = maybe_property.value();
 			if (!feature_property.IsSupported()) return res;
 
-			std::string stringValue = property->GetDefault();
+			std::string stringValue = feature_property.GetDefault();
 			if (stringValue.empty()) {
 				return FCM_INVALID_PARAM;
 			}
