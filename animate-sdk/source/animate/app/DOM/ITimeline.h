@@ -98,11 +98,11 @@ namespace Animate
 			virtual FCM::Result _FCMCALL GetLayers(FCM::PIFCMList& pLayerList) = 0;
 
 			/**
-			 * @brief  This function returns number of frames in the timeline’s
+			 * @brief  This function returns number of frames in the timelines
 			 *         longest layer.
 			 *
 			 * @param  frameCount (OUT)
-			 *         Number of frames in the timeline’s longest layer
+			 *         Number of frames in the timelines longest layer
 			 *
 			 * @return On success, FCM_SUCCESS is returned, else an error code is returned.
 			 */

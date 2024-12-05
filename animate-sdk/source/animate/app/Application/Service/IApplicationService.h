@@ -100,7 +100,7 @@ namespace Animate
 				 * @brief  This function returns the locale of the application user interface.
 				 *
 				 * @param  ppLanguageCode (OUT)
-				 *         Five character code identifying the locale/language of the application’s user
+				 *         Five character code identifying the locale/language of the applications user
 				 *         interface. Following language codes are supported:
 				 *         "en_US", "ja_JP", "zh_CN", "zh_TW", "ko_KR", "nl_NL", "fr_FR", "de_DE",
 				 *         "it_IT", "es_ES", "sv_SE", "pt_BR", "cs_CZ", "pl_PL", "ru_RU", "tr_TR"
