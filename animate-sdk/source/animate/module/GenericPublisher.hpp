@@ -30,6 +30,7 @@ namespace Animate::Publisher
 		{
 			ConfigT config(document, projectConfig, publishConfig);
 			m_activeConfig = &config;
+			config.FromDict(publishConfig);
 
 			PublisherT publisher{};
 			publisher.Publish(config);
