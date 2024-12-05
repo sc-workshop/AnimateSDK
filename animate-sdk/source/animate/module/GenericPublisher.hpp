@@ -4,6 +4,7 @@
 
 #include "animate/app/Publisher/IPublisher.h"
 #include "GenericPublisherConfig.hpp"
+#include "GenericFeatureMatrix.hpp"
 #include "Types.hpp"
 
 namespace Animate::Publisher

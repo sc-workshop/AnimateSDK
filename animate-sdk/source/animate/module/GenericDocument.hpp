@@ -12,7 +12,7 @@ namespace Animate::DocType
 {
 	using namespace FCM;
 
-	template<typename T>
+	template<class PublisherT, class MatrixT, class MatrixLoaderT = GenericFeatureMatrixLoader<MatrixT>>
 	class GenericDocumentType : public IDocType, public FCM::FCMObjectBase
 	{
 	public:
@@ -29,9 +29,17 @@ namespace Animate::DocType
 			{
 				res = GetCallback()->CreateInstance(
 					NULL,
-					*((ConstFCMCLSID*)&T::PluginID.FeatureMatrixID),
+					*((ConstFCMCLSID*)&PublisherT::PluginID.FeatureMatrixID),
 					ID_IFeatureMatrix,
-					(FCM::PPVoid)&m_features.m_Ptr);
+					(FCM::PPVoid)&m_features.m_Ptr
+				);
+
+				if (FCM_SUCCESS(res))
+				{
+					MatrixLoaderT loader;
+					loader.LoadMatrix((MatrixT*)m_features.m_Ptr);
+				}
+
 			}
 
 			featureMatrix = m_features;

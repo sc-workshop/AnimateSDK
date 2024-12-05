@@ -18,6 +18,12 @@ namespace Animate::DocType
 {
 	using namespace FCM;
 
+	template<typename MatrixT>
+	class GenericFeatureMatrixLoader
+	{
+		virtual void LoadMatrix(MatrixT matrix) = 0;
+	};
+
 	template<typename T>
 	class GenericFeatureMatrix : public FCM::FCMObjectBase, public IFeatureMatrix
 	{
