@@ -34,12 +34,8 @@ namespace Animate::DocType
 					(FCM::PPVoid)&m_features.m_Ptr
 				);
 
-				if (FCM_SUCCESS(res))
-				{
-					MatrixLoaderT loader;
-					loader.LoadMatrix((MatrixT*)m_features.m_Ptr);
-				}
-
+				MatrixLoaderT loader{};
+				loader.LoadMatrix((MatrixT*)m_features.m_Ptr);
 			}
 
 			featureMatrix = m_features;
