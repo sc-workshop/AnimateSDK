@@ -165,6 +165,13 @@ namespace Animate::Publisher
 					LayerBuilder::ProcessLayers(context, current_layer.maskedLayers, writer);
 				}
 			}
+			else
+			{
+				if (!current_layer.maskedLayers.empty())
+				{
+					LayerBuilder::ProcessLayers(context, current_layer.maskedLayers, writer);
+				}
+			}
 		}
 
 		// Final iteration to  change layers current positions
