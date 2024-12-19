@@ -3,8 +3,6 @@
 # workspace
 project(animate-sdk)
 
-set(WK_SERIALIZATION_JSON  ON)
-
 # includes
 include(FetchContent)
 include(cmake/dependencies.cmake)
