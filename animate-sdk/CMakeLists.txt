@@ -30,5 +30,5 @@ add_definitions(
 )
 
 target_link_libraries(${TARGET} PUBLIC 
-    wk::core
+    wk::core nlohmann_json::nlohmann_json
 )
