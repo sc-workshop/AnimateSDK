@@ -46,7 +46,7 @@ namespace Animate::DocType
 		FCM::AutoPtr<DocType::IFeatureMatrix> m_features;
 	};
 
-	static FCM::Result RegisterDocument(
+	inline FCM::Result RegisterDocument(
 			FCM::PIFCMDictionary plugins,
 			FCM::ConstFCMCLSID docTypeID,
 			const ModuleInfo& module_info

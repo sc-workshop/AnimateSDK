@@ -41,11 +41,11 @@ namespace Animate::Publisher
 		}
 
 		FCM::Result _FCMCALL Publish(
-			DOM::PIFLADocument document,
-			DOM::PITimeline pTimeline,
-			const Exporter::Service::RANGE& frameRange,
-			const FCM::PIFCMDictionary publishSettings,
-			const FCM::PIFCMDictionary config
+			DOM::PIFLADocument /*document*/,
+			DOM::PITimeline /*pTimeline*/,
+			const Exporter::Service::RANGE& /*frameRange*/,
+			const FCM::PIFCMDictionary /*publishSettings*/,
+			const FCM::PIFCMDictionary /*config*/
 		) {
 			return FCM_SERVICE_NOT_FOUND;
 		}
@@ -62,7 +62,7 @@ namespace Animate::Publisher
 		static inline ConfigT* m_activeConfig = nullptr;
 	};
 
-	static FCM::Result RegisterPublisher(
+	inline FCM::Result RegisterPublisher(
 		FCM::PIFCMDictionary plugins,
 		FCM::FCMCLSID document_id,
 		FCM::FCMCLSID publisher_id,

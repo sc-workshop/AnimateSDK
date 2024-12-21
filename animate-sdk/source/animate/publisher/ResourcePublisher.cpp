@@ -3,6 +3,12 @@
 namespace Animate::Publisher
 {
 	void ResourcePublisher::PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document) {
+		{
+			FCM::Double framerate;
+			document->GetFrameRate(framerate);
+			m_current_fps = (uint32_t)std::ceil(framerate);
+		}
+
 		FCM::FCMListPtr libraryItems;
 		document->GetLibraryItems(libraryItems.m_Ptr);
 
@@ -31,8 +37,6 @@ namespace Animate::Publisher
 				throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
 			}
 		}
-
-		m_writer.Finalize();
 	}
 
 	void ResourcePublisher::GetItems(FCM::FCMListPtr libraryItems, std::vector<FCM::AutoPtr<DOM::ILibraryItem>>& result) {
@@ -266,5 +270,10 @@ namespace Animate::Publisher
 		}
 
 		return UINT16_MAX;
+	}
+
+	void ResourcePublisher::Finalize()
+	{
+		m_writer.Finalize();
 	}
 }

@@ -244,7 +244,15 @@ namespace FCM
 
 			std::string guid_str = result.str();
 
-			std::transform(guid_str.begin(), guid_str.end(), guid_str.begin(), toupper);
+			std::transform(
+				guid_str.begin(), 
+				guid_str.end(), 
+				guid_str.begin(), 
+				[](const char val) 
+				{ 
+					return (char)std::toupper(val); 
+				}
+			);
 
 			return guid_str;
 		}

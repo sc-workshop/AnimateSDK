@@ -80,7 +80,7 @@ namespace Animate::Publisher
 			for (size_t i = 0; contour.Count() > i; i++)
 			{
 				const FilledElementPathSegment& path_point = contour.GetSegment(i);
-				for (Point2D& point : path_point)
+				for (Point2D point : path_point)
 				{
 					result.bottomRight.x = std::min(result.bottomRight.x, point.x);
 					result.bottomRight.y = std::min(result.bottomRight.y, point.y);

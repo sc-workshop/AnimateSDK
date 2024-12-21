@@ -116,7 +116,7 @@ namespace Animate::Publisher
 			}
 		}
 
-		void ReleaseFilledElements(SymbolContext& symbol, std::u16string& name);
+		void ReleaseFilledElements(SymbolContext& symbol, const std::u16string& name);
 		void InheritFilledElements(const FrameBuilder& frame);
 
 		void Reset();

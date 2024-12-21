@@ -53,11 +53,11 @@ namespace Animate::Publisher
 		{
 			const FilledElementPathSegment& segment = GetSegment(i);
 
-			for (Point2D& point : segment)
+			for (Point2D point : segment)
 			{
 				if (!points.empty())
 				{
-					Point2D& last_point = points[points.size() - 1];
+					const Point2D& last_point = points[points.size() - 1];
 					if (point.x == last_point.x && point.y == last_point.y)
 					{
 						continue;

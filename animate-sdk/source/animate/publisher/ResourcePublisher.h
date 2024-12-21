@@ -47,7 +47,7 @@ namespace Animate::Publisher
 		TextsDict m_textfieldDict;
 		FilledDict m_filledShapeDict;
 
-		uint32_t m_id = 0;
+		uint16_t m_id = 0;
 		uint32_t m_current_fps = 30;
 
 	public:
@@ -98,6 +98,8 @@ namespace Animate::Publisher
 		uint16_t GetIdentifer(
 			const std::vector<FilledElement>& shape
 		) const;
+
+		void Finalize();
 
 	private:
 		uint16_t AddMovieclip(

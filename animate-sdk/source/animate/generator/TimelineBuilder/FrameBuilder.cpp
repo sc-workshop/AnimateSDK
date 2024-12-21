@@ -161,8 +161,6 @@ namespace Animate::Publisher
 		}
 
 		void FrameBuilder::DeclareFrameElements(SymbolContext& symbol, FCM::FCMListPtr frameElements, std::optional<Matrix_t> base_transform, bool reverse) {
-			FCM::PluginModule& context = FCM::PluginModule::Instance();
-
 			uint32_t frameElementsCount = 0;
 			frameElements->Count(frameElementsCount);
 
@@ -420,7 +418,7 @@ namespace Animate::Publisher
 			m_elements.push_back(element);
 		}
 
-		void FrameBuilder::ReleaseFilledElements(SymbolContext& symbol, std::u16string& name)
+		void FrameBuilder::ReleaseFilledElements(SymbolContext& symbol, const std::u16string& name)
 		{
 			if (m_filled_elements.empty()) return;
 

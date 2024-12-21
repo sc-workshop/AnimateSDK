@@ -10,7 +10,7 @@ namespace Animate::Publisher
 
 namespace FCM
 {
-	class FCMPluginException : std::exception
+	class FCMPluginException : public std::exception
 	{
 	public:
 		enum class Reason

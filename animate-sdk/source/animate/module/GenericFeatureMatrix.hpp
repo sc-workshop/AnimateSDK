@@ -33,17 +33,18 @@ namespace Animate::DocType
 	public:
 		BEGIN_MULTI_INTERFACE_MAP(GenericFeatureMatrix)
 			INTERFACE_ENTRY(IFeatureMatrix)
-			END_INTERFACE_MAP
+		END_INTERFACE_MAP
 
 	public:
 		virtual FCM::Result _FCMCALL IsSupported(
 			FCM::CStringRep16 featureName,
 			FCM::Boolean& isSupported)
 		{
-#if WK_DEBUG
-			isSupported = true;
-			return FCM_SUCCESS;
-#endif
+			if (WK_DEBUG)
+			{
+				isSupported = true;
+				return FCM_SUCCESS;
+			}
 
 			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
 
@@ -68,10 +69,11 @@ namespace Animate::DocType
 			FCM::CStringRep16 propertyName,
 			FCM::Boolean& isSupported)
 		{
-#if WK_DEBUG
-			isSupported = true;
-			return FCM_SUCCESS;
-#endif
+			if (WK_DEBUG)
+			{
+				isSupported = true;
+				return FCM_SUCCESS;
+			}
 
 			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
 			std::string propertyNameStr = FCM::Locale::ToUtf8((const char16_t*)propertyName);
@@ -113,10 +115,12 @@ namespace Animate::DocType
 			FCM::CStringRep16 valueName,
 			FCM::Boolean& isSupported)
 		{
-#if WK_DEBUG
-			isSupported = true;
-			return FCM_SUCCESS;
-#endif
+			if (WK_DEBUG)
+			{
+				isSupported = true;
+				return FCM_SUCCESS;
+			}
+
 			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
 			std::string propertyNameStr = FCM::Locale::ToUtf8((const char16_t*)propertyName);
 			std::string valueNameStr = FCM::Locale::ToUtf8((const char16_t*)valueName);
@@ -173,9 +177,10 @@ namespace Animate::DocType
 		{
 			FCM::Result res = FCM_INVALID_PARAM;
 
-#if WK_DEBUG
-			return res;
-#endif
+			if (WK_DEBUG)
+			{
+				return FCM_SUCCESS;
+			}
 
 			std::string featureNameStr = FCM::Locale::ToUtf8((const char16_t*)featureName);
 			std::string propertyNameStr = FCM::Locale::ToUtf8((const char16_t*)propertyName);
