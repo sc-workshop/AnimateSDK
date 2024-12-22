@@ -18,7 +18,7 @@ namespace Animate::Publisher
 		uint32_t m_position = 0;
 
 	public:
-		void Next() {
+		virtual void Next() {
 			m_position++;
 		};
 
