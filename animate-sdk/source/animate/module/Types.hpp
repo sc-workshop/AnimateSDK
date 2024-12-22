@@ -8,7 +8,7 @@ namespace Animate {
 	class Value final
 	{
 	public:
-		using Map = std::map<std::string, Value>;
+		using Map = std::map<std::u16string, Value>;
 
 	public:
 
@@ -29,7 +29,7 @@ namespace Animate {
 	class Property final
 	{
 	public:
-		using Map = std::map<std::string, Property>;
+		using Map = std::map<std::u16string, Property>;
 
 	public:
 		Property(const std::string& def, bool supported)
@@ -38,7 +38,7 @@ namespace Animate {
 			m_default = def;
 		}
 
-		std::optional<std::reference_wrapper<const Value>> FindValue(const std::string& inValueName) const
+		std::optional<std::reference_wrapper<const Value>> FindValue(const std::u16string& inValueName) const
 		{
 			Value::Map::const_iterator itr = m_values.find(inValueName);
 			if (itr != m_values.end())
@@ -46,9 +46,9 @@ namespace Animate {
 			return std::nullopt;
 		}
 
-		bool AddValue(const std::string& valueName, const Value& value)
+		bool AddValue(const std::u16string& valueName, const Value& value)
 		{
-			m_values.insert(std::pair<std::string, Value>(valueName, value));
+			m_values.insert(std::pair<std::u16string, Value>(valueName, value));
 
 			return true;
 		}
@@ -72,7 +72,7 @@ namespace Animate {
 	class Feature final
 	{
 	public:
-		using Map = std::map<std::string, Feature>;
+		using Map = std::map<std::u16string, Feature>;
 
 	public:
 
@@ -81,7 +81,7 @@ namespace Animate {
 			m_isSupported = supported;
 		}
 
-		std::optional<std::reference_wrapper<const Property>> FindProperty(const std::string& inPropertyName) const
+		std::optional<std::reference_wrapper<const Property>> FindProperty(const std::u16string& inPropertyName) const
 		{
 			Property::Map::const_iterator itr = m_properties.find(inPropertyName);
 			if (itr != m_properties.end())
@@ -91,9 +91,9 @@ namespace Animate {
 			return std::nullopt;
 		}
 
-		bool AddProperty(const std::string& name, const Property& property)
+		bool AddProperty(const std::u16string& name, const Property& property)
 		{
-			m_properties.insert(std::pair<std::string, Property>(name, property));
+			m_properties.insert(std::pair<std::u16string, Property>(name, property));
 
 			return true;
 		}

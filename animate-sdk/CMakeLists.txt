@@ -18,6 +18,7 @@ target_include_directories(${TARGET} PUBLIC source)
 
 # setup project
 wk_project_setup(${TARGET})
+wk_set_global(ANIMATE_SDK_USE_FEATURE_MATRIX "${WK_RELEASE}")
 
 file(GLOB_RECURSE PUBLIC_HEADERS include/*.h)
 target_sources(${TARGET} PRIVATE ${PUBLIC_HEADERS})
