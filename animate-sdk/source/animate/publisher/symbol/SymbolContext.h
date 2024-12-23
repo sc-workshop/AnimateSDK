@@ -28,6 +28,7 @@ namespace Animate {
 			const std::u16string name;
 			const std::string linkage_name;
 			const SymbolType type = SymbolType::Unknown;
+			uint32_t current_frame_index = 0;
 
 			SlicingContext slicing;
 		private:

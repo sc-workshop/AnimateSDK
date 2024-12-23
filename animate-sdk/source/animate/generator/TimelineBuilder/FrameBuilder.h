@@ -5,7 +5,6 @@
 #include "AnimateService.h"
 
 #include "FrameElements/FilledElement.h"
-#include "FrameElements/TextElement.h"
 
 namespace Animate::Publisher
 {

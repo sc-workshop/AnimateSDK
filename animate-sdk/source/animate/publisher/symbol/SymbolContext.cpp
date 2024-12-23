@@ -17,7 +17,7 @@ namespace Animate
 			FCM::PluginModule& context = FCM::PluginModule::Instance();
 
 			FCM::StringRep16 itemNamePtr;
-			symbol->GetName(&itemNamePtr);
+			symbol->GetName(itemNamePtr);
 			std::u16string itemName = (const char16_t*)itemNamePtr;
 			context.falloc->Free(itemNamePtr);
 

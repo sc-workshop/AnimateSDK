@@ -37,7 +37,7 @@ namespace Animate::Publisher
 				instance->GetLibraryItem(item.m_Ptr);
 
 				FCM::StringRep16 itemNamePtr;
-				item->GetName(&itemNamePtr);
+				item->GetName(itemNamePtr);
 				std::u16string itemName = (const char16_t*)itemNamePtr;
 				context.falloc->Free(itemNamePtr);
 
@@ -51,7 +51,7 @@ namespace Animate::Publisher
 					FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap = unknownMedia;
 
 					if (bitmap) {
-						SpriteElement element(item, media, bitmap);
+						SpriteElement element(media, bitmap);
 
 						writer.AddGraphic(element, transformation);
 					}
@@ -104,7 +104,7 @@ namespace Animate::Publisher
 		layer->GetLayerType(unknownLayer.m_Ptr);
 
 		FCM::AutoPtr<DOM::Layer::ILayerNormal> normalLayer = unknownLayer;
-		FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = unknownLayer;
+		FCM::AutoPtr<DOM::Layer::ILayerMask> IsMaskLayer = unknownLayer;
 		FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
 		FCM::AutoPtr<DOM::Layer::ILayerFolder> folderLayer = unknownLayer;
 
@@ -120,13 +120,13 @@ namespace Animate::Publisher
 			GenerateLayerList(symbol, writer, childrens);
 			return;
 		}
-		else if (maskLayer) {
+		else if (IsMaskLayer) {
 			// TODO: masks ?
 
 			GenerateLayer(symbol, writer, normalLayer);
 
 			FCM::FCMListPtr maskedLayers;
-			maskLayer->GetChildren(maskedLayers.m_Ptr);
+			IsMaskLayer->GetChildren(maskedLayers.m_Ptr);
 
 			GenerateLayerList(symbol, writer, maskedLayers);
 			return;
@@ -228,7 +228,7 @@ namespace Animate::Publisher
 		layer->GetLayerType(unknownLayer.m_Ptr);
 
 		FCM::AutoPtr<DOM::Layer::ILayerNormal> normalLayer = unknownLayer;
-		FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = unknownLayer;
+		FCM::AutoPtr<DOM::Layer::ILayerMask> IsMaskLayer = unknownLayer;
 		FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
 		FCM::AutoPtr<DOM::Layer::ILayerFolder> folderLayer = unknownLayer;
 
@@ -241,9 +241,9 @@ namespace Animate::Publisher
 		else if (guideLayer) {
 			return true;
 		}
-		else if (maskLayer) {
+		else if (IsMaskLayer) {
 			FCM::FCMListPtr maskedLayers;
-			maskLayer->GetChildren(maskedLayers.m_Ptr);
+			IsMaskLayer->GetChildren(maskedLayers.m_Ptr);
 
 			return ValidateLayerList(maskedLayers);
 		}

@@ -2,8 +2,7 @@
 
 #include "IGraphicWriter.h"
 #include "IMovieclipWriter.h"
-
-#include "animate/generator/TimelineBuilder/FrameElements/TextElement.h"
+#include "ITextFieldWriter.h"
 
 namespace Animate::Publisher
 {
@@ -22,12 +21,10 @@ namespace Animate::Publisher
 
 	public:
 		virtual SharedMovieclipWriter* AddMovieclip(SymbolContext& symbol) = 0;
-
 		virtual SharedShapeWriter* AddShape(SymbolContext& symbol) = 0;
+		virtual SharedTextFieldWriter* AddTextField(SymbolContext& symbol) = 0;
 
 		virtual void AddModifier(uint16_t id, MaskedLayerState type) = 0;
-
-		virtual void AddTextField(uint16_t id, SymbolContext& symbol, TextElement& field) = 0;
 
 		virtual void Finalize() = 0;
 	};

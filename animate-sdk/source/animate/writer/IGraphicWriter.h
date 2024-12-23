@@ -6,13 +6,15 @@
 #include "AnimateCore.h"
 #include "AnimateDOM.h"
 
+#include "IDisplayObjectWriter.h"
 #include "animate/generator/TimelineBuilder/FrameElements/SpriteElement.h"
 #include "animate/generator/TimelineBuilder/FrameElements/FilledElement.h"
 
 namespace Animate::Publisher
 {
-	class SharedShapeWriter {
+	class SharedShapeWriter : public IDisplayObjectWriter {
 	public:
+		SharedShapeWriter(SymbolContext& context) : IDisplayObjectWriter(context) {};
 		virtual ~SharedShapeWriter() = default;
 
 	public:
@@ -21,13 +23,5 @@ namespace Animate::Publisher
 		virtual void AddFilledElement(const FilledElement& shape) = 0;
 
 		virtual void AddSlicedElements(const std::vector<FilledElement>& elements, const DOM::Utils::RECT& guides) = 0;
-
-		/// <summary>
-		/// Writer must finalize object and add it to its own resource palette here
-		/// </summary>
-		/// <param name="id"> Identifier of object </param>
-		/// <param name="required"> If True then writer must return positive status, else writer can skip object writing and return False </param>
-		/// <returns> True if object was written </returns>
-		virtual bool Finalize(uint16_t id, bool required) = 0;
 	};
 }

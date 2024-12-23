@@ -191,8 +191,6 @@ namespace Animate::Publisher
 			FCM::PluginModule& context = FCM::PluginModule::Instance();
 
 			// Symbol info
-
-			// TODO move to seperate class
 			FrameBuilderElement element;
 
 			// Transform
@@ -251,35 +249,19 @@ namespace Animate::Publisher
 					movieClipElement->GetBlendMode(element.blend_mode);
 				}
 
-				element.id = m_resources.GetIdentifer(librarySymbol.name);
-				if (element.id == UINT16_MAX) {
-					element.id = m_resources.AddLibraryItem(librarySymbol, libraryItem, is_required());
-				}
+				element.id = m_resources.AddLibraryItem(librarySymbol, libraryItem, is_required());
 			}
 
 			// Textfield
 			else if (textfieldElement) {
 				m_last_element = FrameBuilder::LastElementType::TextField;
 
-				TextElement textfield;
+				element.id = m_resources.AddTextField(symbol, textfieldElement);
 
+				if (element.id != 0xFFFF)
 				{
-					frameElement->GetObjectSpaceBounds(textfield.bound);
-
-					FCM::StringRep16 text;
-					textfieldElement->GetText(&text);
-					textfield.text = std::u16string((const char16_t*)text);
-					context.falloc->Free(text);
-
-					textfield.renderingMode.structSize = sizeof(textfield.renderingMode);
-					textfieldElement->GetAntiAliasModeProp(textfield.renderingMode);
-
 					FCM::AutoPtr<DOM::FrameElement::ITextBehaviour> textfieldElementBehaviour;
 					textfieldElement->GetTextBehaviour(textfieldElementBehaviour.m_Ptr);
-
-					textfieldElementBehaviour->IsSelectable(textfield.isSelectable);
-
-					// Instance name
 
 					FCM::AutoPtr<DOM::FrameElement::IModifiableTextBehaviour> modifiableTextfieldBehaviour = textfieldElementBehaviour;
 					if (modifiableTextfieldBehaviour) {
@@ -287,85 +269,7 @@ namespace Animate::Publisher
 						modifiableTextfieldBehaviour->GetInstanceName(&instanceName);
 						element.name = (const char16_t*)instanceName;
 						context.falloc->Free(instanceName);
-
-						modifiableTextfieldBehaviour->GetLineMode(textfield.lineMode);
 					}
-
-					// Textfields properties
-
-					FCM::FCMListPtr paragraphs;
-					uint32_t paragraphsCount = 0;
-					textfieldElement->GetParagraphs(paragraphs.m_Ptr);
-					paragraphs->Count(paragraphsCount);
-
-					if (paragraphsCount == 0)
-					{
-						return;
-					};
-
-					if (paragraphsCount > 1) { // TODO: Add paragraph vector
-						// context.Trace("Warning. Some of TextField has multiple paragraph");
-					}
-
-					FCM::AutoPtr<DOM::FrameElement::IParagraph> paragraph = paragraphs[0];
-					textfield.style.structSize = sizeof(textfield.style);
-					paragraph->GetParagraphStyle(textfield.style);
-
-					FCM::FCMListPtr textRuns;
-					uint32_t textRunCount = 0;
-					paragraph->GetTextRuns(textRuns.m_Ptr);
-					textRuns->Count(textRunCount);
-
-					if (textRunCount == 0) {
-						// context.Trace("Failed to get TextRun from TextField. Check logs for details.");
-						// context.logger->error("TextField from {} does not have TextRuns", Localization::ToUtf8(symbol.name));
-						return;
-					}
-
-					if (textRunCount > 1) {
-						// context.Trace("Warning. Some of TextField has multiple textRun");
-					}
-
-					FCM::AutoPtr<DOM::FrameElement::ITextRun> textRun = textRuns[0];
-					FCM::AutoPtr<DOM::FrameElement::ITextStyle> textStyle;
-					textRun->GetTextStyle(textStyle.m_Ptr);
-
-					textStyle->GetFontColor(textfield.fontColor);
-					textStyle->GetFontSize(textfield.fontSize);
-					textStyle->IsAutoKernEnabled(textfield.autoKern);
-
-					FCM::StringRep16 fontNamePtr;
-					textStyle->GetFontName(&fontNamePtr);
-					textfield.fontName = std::u16string((const char16_t*)fontNamePtr);
-					context.falloc->Free(fontNamePtr);
-
-					FCM::StringRep8 fontStylePtr;
-					textStyle->GetFontStyle(&fontStylePtr);
-					textfield.fontStyle = std::string((const char*)fontStylePtr);
-					context.falloc->Free(fontStylePtr);
-				}
-
-				// Textfield filters
-				if (filterableElement) {
-					FCM::FCMListPtr filters;
-					filterableElement->GetGraphicFilters(filters.m_Ptr);
-					uint32_t filterCount = 0;
-					filters->Count(filterCount);
-
-					for (uint32_t f = 0; filterCount > f; f++) {
-						// And again game "guess who i am"
-						FCM::AutoPtr<DOM::GraphicFilter::IGlowFilter> glowFilter = filters[f];
-
-						if (glowFilter) {
-							textfield.isOutlined = true;
-							glowFilter->GetShadowColor(textfield.outlineColor);
-						}
-					}
-				}
-
-				element.id = m_resources.GetIdentifer(textfield);
-				if (element.id == UINT16_MAX) {
-					element.id = m_resources.AddTextField(symbol, textfield);
 				}
 			}
 
@@ -422,12 +326,7 @@ namespace Animate::Publisher
 		{
 			if (m_filled_elements.empty()) return;
 
-			uint16_t element_id = m_resources.GetIdentifer(m_filled_elements);
-
-			if (element_id == UINT16_MAX)
-			{
-				element_id = m_resources.AddFilledElement(symbol, m_filled_elements);
-			}
+			uint16_t element_id = m_resources.AddFilledElement(symbol, m_filled_elements);
 
 			if (element_id == UINT16_MAX)
 			{
@@ -437,6 +336,9 @@ namespace Animate::Publisher
 			FrameBuilderElement& element = m_elements.emplace_back();
 			element.id = element_id;
 			element.name = name;
+
+			m_filled_elements.clear();
+			m_last_element = LastElementType::SpriteElement;
 		}
 
 		void FrameBuilder::InheritFilledElements(const FrameBuilder& frame)

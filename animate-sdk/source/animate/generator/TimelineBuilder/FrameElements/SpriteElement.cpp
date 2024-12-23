@@ -2,25 +2,19 @@
 
 namespace Animate::Publisher
 {
-	SpriteElement::SpriteElement(DOM::ILibraryItem* library_item, DOM::LibraryItem::IMediaItem* media_item, DOM::MediaInfo::IBitmapInfo* bitmap) :
-		m_item(library_item), m_media_item(media_item), m_info(bitmap)
-	{
-		library_item->GetName((FCM::StringRep16*)&m_name);
-	}
-
-	SpriteElement::~SpriteElement()
+	SpriteElement::SpriteElement(
+			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
+			FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap
+	) : m_media_item(media_item), m_info(bitmap)
 	{
 		FCM::PluginModule& context = FCM::PluginModule::Instance();
-		
-		if (m_name)
-		{
-			context.falloc->Free(m_name);
-		}
-	}
 
-	const char16_t* SpriteElement::Name() const
-	{
-		return (const char16_t*)m_name;
+		FCM::AutoPtr<DOM::ILibraryItem> library_item = media_item;
+
+		FCM::StringRep16 namePtr;
+		library_item->GetName(namePtr);
+		m_name = std::u16string((const char16_t*)namePtr);
+		context.falloc->Free(namePtr);
 	}
 
 	void SpriteElement::ExportImage(std::filesystem::path path) const
@@ -39,5 +33,10 @@ namespace Animate::Publisher
 		if (FCM_FAILURE_CODE(res)) {
 			throw FCM::FCMPluginException(FCM::FCMPluginException::Reason::SERVICE_FAIL);
 		}
+	}
+
+	const std::u16string& SpriteElement::Name() const
+	{
+		return m_name;
 	}
 }

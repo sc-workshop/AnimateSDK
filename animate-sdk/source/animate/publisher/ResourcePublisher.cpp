@@ -6,7 +6,7 @@ namespace Animate::Publisher
 		{
 			FCM::Double framerate;
 			document->GetFrameRate(framerate);
-			m_current_fps = (uint32_t)std::ceil(framerate);
+			m_document_fps = (uint32_t)std::ceil(framerate);
 		}
 
 		FCM::FCMListPtr libraryItems;
@@ -71,42 +71,30 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::ILibraryItem> item,
 		bool required
 	) {
+		if (m_libraryCache.count(symbol.name))
+		{
+			return m_libraryCache[symbol.name];
+		}
+
 		FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbol_item = item;
 		FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item = item;
 
+		uint16_t result = 0xFFFF;
+
 		if (symbol_item) {
-			return AddSymbol(symbol, symbol_item, required);
+			result = AddSymbol(symbol, symbol_item, required);
 		}
 		else if (media_item) {
-			FCM::AutoPtr<FCM::IFCMUnknown> unknownMedia;
-			media_item->GetMediaInfo(unknownMedia.m_Ptr);
-
-			FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap = unknownMedia;
-
-			if (bitmap)
-			{
-				SharedShapeWriter* shape_writer = m_writer.AddShape(symbol);
-
-				SpriteElement element(item, media_item, bitmap);
-				shape_writer->AddGraphic(element, { 1, 0, 0, 1, 0, 0 });
-
-				uint16_t identifer = m_id++;
-				bool sucess = shape_writer->Finalize(identifer, true);
-				delete shape_writer;
-
-				if (!sucess)
-				{
-					m_id--;
-					return UINT16_MAX;
-				}
-
-				m_symbolsData[symbol.name] = identifer;
-
-				return identifer;
-			}
+			result = AddMediaSymbol(symbol, media_item, required);
 		}
+		else
+		{
+			throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::UNKNOWN_LIBRARY_ITEM);
+		}
+			
+		m_libraryCache[symbol.name] = result;
 
-		throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::UNKNOWN_LIBRARY_ITEM);
+		return result;
 	}
 
 	uint16_t ResourcePublisher::AddSymbol(
@@ -123,6 +111,30 @@ namespace Animate::Publisher
 
 		return AddMovieclip(symbol, timeline, required);
 	};
+
+	uint16_t ResourcePublisher::AddMediaSymbol(
+			SymbolContext& symbol,
+			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
+			bool required
+	)
+	{
+		FCM::AutoPtr<FCM::IFCMUnknown> unknownMedia;
+		media_item->GetMediaInfo(unknownMedia.m_Ptr);
+
+		FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap = unknownMedia;
+
+		if (bitmap)
+		{
+			SharedShapeWriter* writer = m_writer.AddShape(symbol);
+
+			SpriteElement element(media_item, bitmap);
+			writer->AddGraphic(element, { 1, 0, 0, 1, 0, 0 });
+
+			return FinalizeWriter(writer, m_id++, required);
+		}
+
+		return 0xFFFF;
+	}
 
 	uint16_t ResourcePublisher::AddMovieclip(
 		SymbolContext& symbol,
@@ -142,7 +154,6 @@ namespace Animate::Publisher
 			return UINT16_MAX;
 		}
 
-		m_symbolsData[symbol.name] = identifer;
 		return identifer;
 	};
 
@@ -152,55 +163,37 @@ namespace Animate::Publisher
 		bool required
 	) {
 		SharedShapeWriter* shape = m_writer.AddShape(symbol);
-
 		graphicGenerator.Generate(symbol, *shape, timeline);
 
-		uint16_t identifer = m_id++;
-		bool sucess = shape->Finalize(identifer, required);
-		delete shape;
-
-		if (!sucess)
-		{
-			m_id--;
-			return UINT16_MAX;
-		}
-
-		m_symbolsData[symbol.name] = identifer;
-
-		return identifer;
+		return FinalizeWriter(shape, m_id++, required);
 	}
 
 	uint16_t ResourcePublisher::AddModifier(
 		MaskedLayerState type
 	) {
+		ModifierDict::const_iterator pos = m_modifierCache.find(type);
+		if (pos != m_modifierCache.end())
+		{
+			return pos->second;
+		}
+
 		uint16_t identifer = m_id++;
 
 		m_writer.AddModifier(identifer, type);
-		m_modifierDict[type] = identifer;
+		m_modifierCache[type] = identifer;
 
 		return identifer;
 	}
 
 	uint16_t ResourcePublisher::AddTextField(
 		SymbolContext& symbol,
-		TextElement& field
+		FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData,
+		std::optional<FCM::FCMListPtr> filters
 	) {
-		uint16_t identifer = m_id++;
+		SharedTextFieldWriter* writer = m_writer.AddTextField(symbol);
+		TextFieldGenerator::Generate(writer, textfieldData);
 
-		m_writer.AddTextField(identifer, symbol, field);
-		m_textfieldDict.push_back({ field ,identifer });
-
-		return identifer;
-	}
-
-	uint16_t ResourcePublisher::GetIdentifer(const std::u16string& name) const {
-		auto it = m_symbolsData.find(name);
-		if (it != m_symbolsData.end()) {
-			return it->second;
-		}
-		else {
-			return UINT16_MAX;
-		}
+		return FinalizeWriter(writer, m_id++, false, filters);
 	}
 
 	uint16_t ResourcePublisher::AddFilledElement(
@@ -209,24 +202,53 @@ namespace Animate::Publisher
 		bool required
 	) {
 		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
-		SharedShapeWriter* shape = m_writer.AddShape(shape_symbol);
-
-		uint16_t identifer = m_id++;
+		SharedShapeWriter* writer = m_writer.AddShape(shape_symbol);
 
 		if (symbol.slicing.IsEnabled())
 		{
-			shape->AddSlicedElements(elements, symbol.slicing.Guides());
+			writer->AddSlicedElements(elements, symbol.slicing.Guides());
 		}
 		else
 		{
 			for (const FilledElement& element : elements)
 			{
-				shape->AddFilledElement(element);
+				writer->AddFilledElement(element);
 			}
 		}
 
-		bool sucess = shape->Finalize(identifer, required);
-		delete shape;
+		return FinalizeWriter(writer, m_id++, required);
+	}
+
+	uint16_t ResourcePublisher::FinalizeWriter(
+		IDisplayObjectWriter* writer, 
+		uint16_t identifier, 
+		bool required,
+		std::optional<FCM::FCMListPtr> filters
+	)
+	{
+		if (filters.has_value())
+		{
+			uint32_t filterCount = 0;
+			filters.value()->Count(filterCount);
+
+			for (uint32_t i = 0; filterCount > i; i++)
+			{
+				FCM::AutoPtr<DOM::GraphicFilter::IGlowFilter> glowFilter = filters.value()[i];
+
+				if (glowFilter) {
+					GlowFilter filter;
+					glowFilter->GetBlurX(filter.blurX);
+					glowFilter->GetBlurY(filter.blurY);
+					glowFilter->GetShadowColor(filter.color);
+					glowFilter->GetStrength(filter.strength);
+
+					writer->SetGlowFilter(filter);
+				}
+			}
+		}
+
+		bool sucess = writer->Finalize(identifier, required);
+		delete writer;
 
 		if (!sucess)
 		{
@@ -234,42 +256,7 @@ namespace Animate::Publisher
 			return UINT16_MAX;
 		}
 
-		m_filledShapeDict.push_back({ elements, identifer });
-
-		return identifer;
-	}
-
-	uint16_t ResourcePublisher::GetIdentifer(const MaskedLayerState& type) const {
-		ModifierDict::const_iterator pos = m_modifierDict.find(type);
-		if (pos != m_modifierDict.end())
-		{
-			return pos->second;
-		}
-
-		return UINT16_MAX;
-	}
-
-	uint16_t ResourcePublisher::GetIdentifer(const TextElement& field) const {
-		for (const TextsDictValue& data : m_textfieldDict)
-		{
-			if (data.first == field)
-			{
-				return data.second;
-			}
-		}
-
-		return UINT16_MAX;
-	}
-
-	uint16_t ResourcePublisher::GetIdentifer(const std::vector<FilledElement>& shape) const
-	{
-		for (const FilledDictValue& shapePair : m_filledShapeDict) {
-			if (shapePair.first == shape) {
-				return shapePair.second;
-			}
-		}
-
-		return UINT16_MAX;
+		return identifier;
 	}
 
 	void ResourcePublisher::Finalize()

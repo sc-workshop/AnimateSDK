@@ -58,15 +58,9 @@ namespace Animate::Publisher
 			{
 				symbol.slicing = slice_scaling;
 			}
-			else
-			{
-				//context.Trace(
-				//	context.locale.GetString("TID_9SLICE_FRAME_RESTRICTION", symbol.name.c_str())
-				//);
-			}
 		}
 
-		writer.InitializeTimeline(m_resources.m_current_fps, duration);
+		writer.InitializeTimeline(m_resources.m_document_fps, duration);
 
 		FCM::FCMListPtr layersList;
 		timeline->GetLayers(layersList.m_Ptr);

@@ -13,11 +13,7 @@ namespace Animate::Publisher
 		SharedMovieclipWriter& writer,
 		MaskedLayerState type
 	) {
-		uint16_t identifer = m_resources.GetIdentifer(type);
-
-		if (identifer == UINT16_MAX) {
-			identifer = m_resources.AddModifier(type);
-		}
+		uint16_t identifer = m_resources.AddModifier(type);
 
 		writer.AddFrameElement(
 			identifer,
@@ -67,7 +63,7 @@ namespace Animate::Publisher
 		frameBuilder(m_symbol, writer);
 	}
 
-	bool LayerBuilder::shouldReleaseFilledElements(const LayerBuilder& next_layer)
+	bool LayerBuilder::ShouldReleaseFilledElements(const LayerBuilder& next_layer)
 	{
 		if (frameBuilder.Duration() != next_layer.frameBuilder.Duration()) return true;
 
@@ -91,7 +87,7 @@ namespace Animate::Publisher
 	{
 		LayerBuilder& layer = layers[layer_index];
 		if (layer) {
-			if (layer.maskLayer() && layer.canReleaseFilledElements())
+			if (layer.IsMaskLayer() && layer.CanReleaseFilledElements())
 			{
 				layer.ReleaseFilledElements();
 
@@ -106,9 +102,9 @@ namespace Animate::Publisher
 
 				if (!last_layer.frameBuilder.FilledElements().empty())
 				{
-					layer.inheritFilledElements(last_layer);
+					layer.InheritFilledElements(last_layer);
 
-					if (last_layer.shouldReleaseFilledElements(layer)) {
+					if (last_layer.ShouldReleaseFilledElements(layer)) {
 						layer.ReleaseFilledElements();
 					}
 					else
@@ -121,7 +117,7 @@ namespace Animate::Publisher
 				}
 			}
 
-			if (is_end && layer.canReleaseFilledElements())
+			if (is_end && layer.CanReleaseFilledElements())
 			{
 				layer.ReleaseFilledElements();
 			}
@@ -143,7 +139,7 @@ namespace Animate::Publisher
 			LayerBuilder& current_layer = layers[current_layer_index];
 			if (current_layer)
 			{
-				bool is_masked_frame = current_layer.maskLayer() && current_layer.frameBuilder.FlushMask();
+				bool is_masked_frame = current_layer.IsMaskLayer() && current_layer.frameBuilder.FlushMask();
 				if (is_masked_frame) {
 					current_layer.AddModifier(writer, MaskedLayerState::MASK_LAYER);
 				}

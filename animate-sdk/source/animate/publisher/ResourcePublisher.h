@@ -42,13 +42,12 @@ namespace Animate::Publisher
 
 		MovieClipGeneator movieClipGenerator;
 		GraphicGenerator graphicGenerator;
-		SymbolDict m_symbolsData;
-		ModifierDict m_modifierDict;
-		TextsDict m_textfieldDict;
-		FilledDict m_filledShapeDict;
+
+		SymbolDict m_libraryCache;
+		ModifierDict m_modifierCache;
 
 		uint16_t m_id = 0;
-		uint32_t m_current_fps = 30;
+		uint32_t m_document_fps = 30;
 
 	public:
 		ResourcePublisher(SharedWriter& writer) :
@@ -62,19 +61,14 @@ namespace Animate::Publisher
 			bool required = false
 		);
 
-		uint16_t AddSymbol(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
-			bool required = false
-		);
-
 		uint16_t AddModifier(
 			MaskedLayerState type
 		);
 
 		uint16_t AddTextField(
 			SymbolContext& symbol,
-			TextElement& field
+			FCM::AutoPtr<DOM::FrameElement::IClassicText> field,
+			std::optional<FCM::FCMListPtr> filters = std::nullopt
 		);
 
 		uint16_t AddFilledElement(
@@ -83,25 +77,21 @@ namespace Animate::Publisher
 			bool required = false
 		);
 
-		uint16_t GetIdentifer(
-			const std::u16string& name
-		) const;
-
-		uint16_t GetIdentifer(
-			const MaskedLayerState& type
-		) const;
-
-		uint16_t GetIdentifer(
-			const TextElement& field
-		) const;
-
-		uint16_t GetIdentifer(
-			const std::vector<FilledElement>& shape
-		) const;
-
 		void Finalize();
 
 	private:
+		uint16_t AddSymbol(
+			SymbolContext& symbol,
+			FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
+			bool required = false
+		);
+
+		uint16_t AddMediaSymbol(
+			SymbolContext& symbol,
+			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
+			bool required
+		);
+
 		uint16_t AddMovieclip(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::ITimeline1> timeline,
@@ -112,6 +102,13 @@ namespace Animate::Publisher
 			SymbolContext& symbol,
 			FCM::AutoPtr <DOM::ITimeline1> timeline,
 			bool required = false
+		);
+
+		uint16_t FinalizeWriter(
+			IDisplayObjectWriter* writer, 
+			uint16_t identifier, 
+			bool required,
+			std::optional<FCM::FCMListPtr> filters = std::nullopt
 		);
 	};
 }
