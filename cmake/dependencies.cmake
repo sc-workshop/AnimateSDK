@@ -1,5 +1,6 @@
 
 set(WK_SERIALIZATION_JSON ON)
+set(WK_HASHING_XXHASH ON)
 
 FetchContent_Declare(
     WorkshopCore

@@ -130,7 +130,7 @@ namespace Animate::Publisher
 			SpriteElement element(media_item, bitmap);
 			writer->AddGraphic(element, { 1, 0, 0, 1, 0, 0 });
 
-			return FinalizeWriter(writer, m_id++, required);
+			return FinalizeWriter(writer, m_id++, required, m_graphics);
 		}
 
 		return 0xFFFF;
@@ -144,17 +144,7 @@ namespace Animate::Publisher
 		SharedMovieclipWriter* movieclip = m_writer.AddMovieclip(symbol);
 		movieClipGenerator.Generate(*movieclip, symbol, timeline);
 
-		uint16_t identifer = m_id++;
-		bool sucess = movieclip->Finalize(identifer, required);
-		delete movieclip;
-
-		if (!sucess)
-		{
-			m_id--;
-			return UINT16_MAX;
-		}
-
-		return identifer;
+		return FinalizeWriter(movieclip, m_id++, required, m_movieClips);
 	};
 
 	uint16_t ResourcePublisher::AddShape(
@@ -165,7 +155,7 @@ namespace Animate::Publisher
 		SharedShapeWriter* shape = m_writer.AddShape(symbol);
 		graphicGenerator.Generate(symbol, *shape, timeline);
 
-		return FinalizeWriter(shape, m_id++, required);
+		return FinalizeWriter(shape, m_id++, required, m_graphics);
 	}
 
 	uint16_t ResourcePublisher::AddModifier(
@@ -193,7 +183,7 @@ namespace Animate::Publisher
 		SharedTextFieldWriter* writer = m_writer.AddTextField(symbol);
 		TextFieldGenerator::Generate(writer, textfieldData);
 
-		return FinalizeWriter(writer, m_id++, false, filters);
+		return FinalizeWriter(writer, m_id++, false, m_textFields, filters);
 	}
 
 	uint16_t ResourcePublisher::AddFilledElement(
@@ -216,13 +206,14 @@ namespace Animate::Publisher
 			}
 		}
 
-		return FinalizeWriter(writer, m_id++, required);
+		return FinalizeWriter(writer, m_id++, required, m_filledElements);
 	}
 
 	uint16_t ResourcePublisher::FinalizeWriter(
 		IDisplayObjectWriter* writer, 
 		uint16_t identifier, 
 		bool required,
+		WriterLibrary& library,
 		std::optional<FCM::FCMListPtr> filters
 	)
 	{
@@ -247,16 +238,32 @@ namespace Animate::Publisher
 			}
 		}
 
-		bool sucess = writer->Finalize(identifier, required);
-		delete writer;
-
-		if (!sucess)
+		bool new_item = false;
+		bool writer_success = true;
+		std::size_t hash = writer->HashCode();
+		auto it = library.find(hash);
+		if (it != library.end())
 		{
-			m_id--;
-			return UINT16_MAX;
+			identifier = it->second;
+		}
+		else
+		{
+			writer_success = writer->Finalize(identifier, required);
+			new_item = writer_success;
 		}
 
-		return identifier;
+		if (!new_item)
+		{
+			m_id--;
+		}
+
+		if (writer_success)
+		{
+			library[hash] = identifier;
+		}
+
+		delete writer;
+		return writer_success ? identifier : 0xFFFF;
 	}
 
 	void ResourcePublisher::Finalize()

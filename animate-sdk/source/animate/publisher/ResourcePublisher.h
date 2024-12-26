@@ -37,6 +37,8 @@ namespace Animate::Publisher
 		using TextsDictValue = std::pair<TextElement, uint16_t>;
 		using TextsDict = std::vector<TextsDictValue>;
 
+		using Library = std::unordered_map<std::size_t, uint16_t, DisplayObjectWriterHasher>;
+
 	public:
 		SharedWriter& m_writer;
 
@@ -45,6 +47,11 @@ namespace Animate::Publisher
 
 		SymbolDict m_libraryCache;
 		ModifierDict m_modifierCache;
+
+		Library m_textFields;
+		Library m_filledElements;
+		Library m_graphics;
+		Library m_movieClips;
 
 		uint16_t m_id = 0;
 		uint32_t m_document_fps = 30;
@@ -108,6 +115,7 @@ namespace Animate::Publisher
 			IDisplayObjectWriter* writer, 
 			uint16_t identifier, 
 			bool required,
+			Library& library,
 			std::optional<FCM::FCMListPtr> filters = std::nullopt
 		);
 	};

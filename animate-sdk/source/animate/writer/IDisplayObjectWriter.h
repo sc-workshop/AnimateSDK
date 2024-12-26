@@ -3,6 +3,8 @@
 #include "AnimateCore.h"
 #include "AnimateDOM.h"
 
+#include <functional>
+
 namespace Animate::Publisher
 {
 	struct GlowFilter
@@ -23,6 +25,20 @@ namespace Animate::Publisher
 		virtual void SetGlowFilter(const GlowFilter&) { };
 
 	public:
+		std::size_t HashCode() const
+		{
+			if (!m_hash_code)
+			{
+				m_hash_code = GenerateHash();
+			}
+
+			return m_hash_code;
+		}
+
+	protected:
+		virtual std::size_t GenerateHash() const = 0;
+
+	public:
 		/// <summary>
 		/// Writer must finalize object and add it to its own resource palette here
 		/// </summary>
@@ -33,5 +49,12 @@ namespace Animate::Publisher
 
 	protected:
 		SymbolContext& m_symbol;
+		mutable std::size_t m_hash_code = 0;
+	};
+
+	struct DisplayObjectWriterHasher {
+		size_t operator()(const std::size_t& key) const {
+			return key;
+		}
 	};
 }
