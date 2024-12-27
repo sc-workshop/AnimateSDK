@@ -213,7 +213,7 @@ namespace Animate::Publisher
 		IDisplayObjectWriter* writer, 
 		uint16_t identifier, 
 		bool required,
-		WriterLibrary& library,
+		Library& library,
 		std::optional<FCM::FCMListPtr> filters
 	)
 	{
@@ -242,7 +242,7 @@ namespace Animate::Publisher
 		bool writer_success = true;
 		std::size_t hash = writer->HashCode();
 		auto it = library.find(hash);
-		if (it != library.end())
+		if (it != library.end() && !required)
 		{
 			identifier = it->second;
 		}

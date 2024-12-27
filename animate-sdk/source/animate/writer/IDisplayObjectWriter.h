@@ -15,6 +15,13 @@ namespace Animate::Publisher
 		DOM::Utils::COLOR color;
 	};
 
+	struct DisplayObjectWriterHasher {
+		static inline std::size_t counter = 0;
+		size_t operator()(const std::size_t& key) const {
+			return key;
+		}
+	};
+
 	class IDisplayObjectWriter
 	{
 	public:
@@ -30,6 +37,7 @@ namespace Animate::Publisher
 			if (!m_hash_code)
 			{
 				m_hash_code = GenerateHash();
+				if (!m_hash_code) m_hash_code = ++DisplayObjectWriterHasher::counter;
 			}
 
 			return m_hash_code;
@@ -50,11 +58,5 @@ namespace Animate::Publisher
 	protected:
 		SymbolContext& m_symbol;
 		mutable std::size_t m_hash_code = 0;
-	};
-
-	struct DisplayObjectWriterHasher {
-		size_t operator()(const std::size_t& key) const {
-			return key;
-		}
 	};
 }
