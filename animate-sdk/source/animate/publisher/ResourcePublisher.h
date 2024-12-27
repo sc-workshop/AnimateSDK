@@ -49,7 +49,6 @@ namespace Animate::Publisher
 		ModifierDict m_modifierCache;
 
 		Library m_textFields;
-		Library m_filledElements;
 		Library m_graphics;
 		Library m_movieClips;
 

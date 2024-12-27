@@ -206,7 +206,7 @@ namespace Animate::Publisher
 			}
 		}
 
-		return FinalizeWriter(writer, m_id++, required, m_filledElements);
+		return FinalizeWriter(writer, m_id++, required, m_graphics);
 	}
 
 	uint16_t ResourcePublisher::FinalizeWriter(
@@ -238,21 +238,21 @@ namespace Animate::Publisher
 			}
 		}
 
-		bool new_item = false;
-		bool writer_success = true;
 		std::size_t hash = writer->HashCode();
-		auto it = library.find(hash);
-		if (it != library.end() && !required)
+		auto library_pair = library.find(hash);
+		bool in_library = library_pair != library.end();
+		if (in_library)
 		{
-			identifier = it->second;
-		}
-		else
-		{
-			writer_success = writer->Finalize(identifier, required);
-			new_item = writer_success;
+			identifier = library_pair->second;
 		}
 
-		if (!new_item)
+		bool writer_success = false;
+		if (required || !in_library)
+		{
+			writer_success = writer->Finalize(identifier, in_library ? false : required);
+		}
+
+		if (!writer_success || in_library)
 		{
 			m_id--;
 		}
@@ -263,7 +263,7 @@ namespace Animate::Publisher
 		}
 
 		delete writer;
-		return writer_success ? identifier : 0xFFFF;
+		return writer_success || in_library ? identifier : 0xFFFF;
 	}
 
 	void ResourcePublisher::Finalize()
