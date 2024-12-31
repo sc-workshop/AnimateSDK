@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AnimateDOM.h"
+#include "animate/generator/TimelineBuilder/FrameElements/StaticElementsGroup.h"
 #include "FilledElement.h"
 
 namespace Animate::Publisher
@@ -12,7 +13,7 @@ namespace Animate::Publisher
 	public:
 		Slice9Element(
 			SymbolContext& symbol,
-			const std::vector<FilledElement>& shape,
+			const StaticElementsGroup& group,
 			DOM::Utils::MATRIX2D& matrix,
 			const Animate::DOM::Utils::RECT guides
 		);
@@ -27,15 +28,13 @@ namespace Animate::Publisher
 			return m_guides;
 		}
 
-		const std::vector<FilledElement>& Elements() const
+		const StaticElementsGroup& Elements() const
 		{
 			return m_elements;
 		}
 
 	private:
 		const Animate::DOM::Utils::RECT m_guides;
-
-		// TODO: make it in smart pointer
-		const std::vector<FilledElement> m_elements;
+		const StaticElementsGroup m_elements;
 	};
 }

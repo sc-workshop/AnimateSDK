@@ -54,10 +54,7 @@ namespace Animate::Publisher
 		SlicingContext slice_scaling = SlicingContext(timeline);
 		if (slice_scaling.IsEnabled())
 		{
-			if (duration == 1)
-			{
-				symbol.slicing = slice_scaling;
-			}
+			symbol.slicing = slice_scaling;
 		}
 
 		writer.InitializeTimeline(m_resources.m_document_fps, duration);

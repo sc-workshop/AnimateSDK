@@ -194,21 +194,25 @@ namespace Animate::Publisher
 		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
 		SharedShapeWriter* writer = m_writer.AddShape(shape_symbol);
 
-		for (size_t i = 0; elements.Size() > i; i++)
+		if (symbol.slicing.IsEnabled())
 		{
-			const StaticElement& element = elements[i];
+			Slice9Element slice9(symbol, elements, DOM::Utils::MATRIX2D(), symbol.slicing.Guides());
+			writer->AddSlicedElements(slice9);
+		}
+		else
+		{
+			for (size_t i = 0; elements.Size() > i; i++)
+			{
+				const StaticElement& element = elements[i];
 
-			if (element.IsSprite())
-			{
-				writer->AddGraphic((const BitmapElement&)element);
-			}
-			else if (element.IsFilledArea())
-			{
-				writer->AddFilledElement((const FilledElement&)element);
-			}
-			else if (element.Is9Sliced())
-			{
-				writer->AddSlicedElements((const Slice9Element&)element);
+				if (element.IsSprite())
+				{
+					writer->AddGraphic((const BitmapElement&)element);
+				}
+				else if (element.IsFilledArea())
+				{
+					writer->AddFilledElement((const FilledElement&)element);
+				}
 			}
 		}
 

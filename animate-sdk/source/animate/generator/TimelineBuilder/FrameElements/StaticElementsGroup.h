@@ -5,9 +5,6 @@
 #include <vector>
 
 #include "StaticElement.h"
-#include "FilledElement.h"
-#include "BitmapElement.h"
-#include "Slice9Element.h"
 
 namespace Animate::Publisher
 {
@@ -15,15 +12,18 @@ namespace Animate::Publisher
 
 	class StaticElementsGroup
 	{
+	private:
+		using Elements = std::vector<wk::Ref<StaticElement>>;
+
 	public:
-		StaticElementsGroup() = default;
+		StaticElementsGroup();
 
 	public:
 		template<typename T, typename ... Args>
 		T& AddElement(Args&& ... args)
 		{
 			wk::Ref<T> item = wk::CreateRef<T>(std::forward<Args>(args)...);
-			m_items.push_back(item);
+			m_items->push_back(item);
 			return *item;
 		}
 
@@ -41,7 +41,7 @@ namespace Animate::Publisher
 		void Clear();
 
 	private:
-		std::vector<wk::Ref<StaticElement>> m_items;
+		wk::Ref<Elements> m_items;
 	};
 
 }
