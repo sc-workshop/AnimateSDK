@@ -127,8 +127,8 @@ namespace Animate::Publisher
 		{
 			SharedShapeWriter* writer = m_writer.AddShape(symbol);
 
-			SpriteElement element(media_item, bitmap);
-			writer->AddGraphic(element, { 1, 0, 0, 1, 0, 0 });
+			BitmapElement element(symbol, media_item, DOM::Utils::MATRIX2D());
+			writer->AddGraphic(element);
 
 			return FinalizeWriter(writer, m_id++, required, m_graphics);
 		}
@@ -186,23 +186,29 @@ namespace Animate::Publisher
 		return FinalizeWriter(writer, m_id++, false, m_textFields, filters);
 	}
 
-	uint16_t ResourcePublisher::AddFilledElement(
+	uint16_t ResourcePublisher::AddStaticGroup(
 		SymbolContext& symbol,
-		const std::vector<FilledElement>& elements,
+		const StaticElementsGroup& elements,
 		bool required
 	) {
 		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
 		SharedShapeWriter* writer = m_writer.AddShape(shape_symbol);
 
-		if (symbol.slicing.IsEnabled())
+		for (size_t i = 0; elements.Size() > i; i++)
 		{
-			writer->AddSlicedElements(elements, symbol.slicing.Guides());
-		}
-		else
-		{
-			for (const FilledElement& element : elements)
+			const StaticElement& element = elements[i];
+
+			if (element.IsSprite())
 			{
-				writer->AddFilledElement(element);
+				writer->AddGraphic((const BitmapElement&)element);
+			}
+			else if (element.IsFilledArea())
+			{
+				writer->AddFilledElement((const FilledElement&)element);
+			}
+			else if (element.Is9Sliced())
+			{
+				writer->AddSlicedElements((const Slice9Element&)element);
 			}
 		}
 

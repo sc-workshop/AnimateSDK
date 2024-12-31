@@ -5,6 +5,7 @@
 #include "AnimateService.h"
 
 #include "FrameElements/FilledElement.h"
+#include "FrameElements/StaticElementsGroup.h"
 
 namespace Animate::Publisher
 {
@@ -28,13 +29,11 @@ namespace Animate::Publisher
 
 	class FrameBuilder {
 	public:
-		enum class LastElementType
+		enum class StaticElementsState
 		{
 			None = 0,
-			Symbol,
-			TextField,
-			FilledElement,
-			SpriteElement
+			Invalid,
+			Valid,
 		};
 
 	public:
@@ -61,8 +60,8 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::Service::Tween::IShapeTweener> m_shape_tweener = nullptr;
 
 		// Filled elements "Static Batching" things
-		LastElementType m_last_element = LastElementType::None;
-		std::vector<FilledElement> m_filled_elements;
+		StaticElementsState m_static_state = StaticElementsState::None;
+		StaticElementsGroup m_static_elements;
 
 	public:
 		FrameBuilder(ResourcePublisher& resources) : m_resources(resources) { };
@@ -75,7 +74,7 @@ namespace Animate::Publisher
 
 		bool FlushMask() const
 		{
-			return !m_elements.empty() || !m_filled_elements.empty();
+			return !m_elements.empty() || !m_static_elements.Empty();
 		}
 
 		void Next()
@@ -93,9 +92,9 @@ namespace Animate::Publisher
 			return m_position;
 		}
 
-		LastElementType LastElementType() const
+		StaticElementsState StaticElementsState() const
 		{
-			return m_last_element;
+			return m_static_state;
 		}
 
 		operator bool() const
@@ -103,9 +102,9 @@ namespace Animate::Publisher
 			return m_duration > m_position;
 		}
 
-		const std::vector<FilledElement>& FilledElements() const
+		const StaticElementsGroup& StaticElements() const
 		{
-			return m_filled_elements;
+			return m_static_elements;
 		}
 
 		void ApplyName(SharedMovieclipWriter& writer) const
@@ -115,8 +114,8 @@ namespace Animate::Publisher
 			}
 		}
 
-		void ReleaseFilledElements(SymbolContext& symbol, const std::u16string& name);
-		void InheritFilledElements(const FrameBuilder& frame);
+		void ReleaseStatic(SymbolContext& symbol, const std::u16string& name);
+		void InheritStatic(const FrameBuilder& frame);
 
 		void Reset();
 

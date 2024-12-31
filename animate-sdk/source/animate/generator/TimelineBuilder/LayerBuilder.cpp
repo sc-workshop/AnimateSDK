@@ -63,66 +63,49 @@ namespace Animate::Publisher
 		frameBuilder(m_symbol, writer);
 	}
 
-	bool LayerBuilder::ShouldReleaseFilledElements(const LayerBuilder& next_layer)
+	bool LayerBuilder::ShouldReleaseStatic(const LayerBuilder& next_layer) const
 	{
+		if (next_layer.IsMaskLayer()) return true;
+
 		if (frameBuilder.Duration() != next_layer.frameBuilder.Duration()) return true;
 
 		if (frameBuilder.Position() != next_layer.frameBuilder.Position()) return true;
 
-		if (next_layer.frameBuilder.LastElementType() != FrameBuilder::LastElementType::FilledElement) return true;
+		if (next_layer.frameBuilder.StaticElementsState() != FrameBuilder::StaticElementsState::Valid) return true;
 
 		return false;
 	}
 
-	void LayerBuilder::ReleaseFilledElements()
+	void LayerBuilder::ReleaseStatic()
 	{
-		frameBuilder.ReleaseFilledElements(m_symbol, std::u16string(u""));
+		frameBuilder.ReleaseStatic(m_symbol, std::u16string(u""));
 	}
 
 	void LayerBuilder::ProcessLayerFrame(
 		std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer,
-		size_t layer_index, size_t last_layer_index,
+		size_t layer_index, size_t next_layer_index,
 		bool is_begin, bool is_end
 	)
 	{
 		LayerBuilder& layer = layers[layer_index];
 		if (layer) {
-			if (layer.IsMaskLayer() && layer.CanReleaseFilledElements())
+			if (!is_end)
 			{
-				layer.ReleaseFilledElements();
-
-				// Just skip all of checks. There is no need for them just for mask layer.
-				goto FINALIZE_LAYER;
-			}
-
-			// No need to do something in first layer
-			if (!is_begin)
-			{
-				LayerBuilder& last_layer = layers[last_layer_index];
-
-				if (!last_layer.frameBuilder.FilledElements().empty())
+				LayerBuilder& next_layer = layers[next_layer_index];
+				if (layer.ShouldReleaseStatic(next_layer)) {
+					layer.ReleaseStatic();
+				}
+				else
 				{
-					layer.InheritFilledElements(last_layer);
-
-					if (last_layer.ShouldReleaseFilledElements(layer)) {
-						layer.ReleaseFilledElements();
-					}
-					else
-					{
-						if (!is_end)
-						{
-							return;
-						}
-					}
+					next_layer.InheritStatic(layer);
 				}
 			}
 
-			if (is_end && layer.CanReleaseFilledElements())
+			if ((is_end || layer.IsMaskLayer()) && layer.IsHoldStatic())
 			{
-				layer.ReleaseFilledElements();
+				layer.ReleaseStatic();
 			}
 
-		FINALIZE_LAYER:
 			layer.frameBuilder.ApplyName(writer);
 			layer(writer);
 		}
@@ -133,8 +116,8 @@ namespace Animate::Publisher
 		// First iteration to preprocess filled elements
 		size_t layer_index = layers.size();
 		for (size_t i = 0; layers.size() > i; i++) {
-			size_t last_layer_index = layer_index;
 			size_t current_layer_index = --layer_index;
+			size_t next_layer_index = layer_index - 1;
 
 			LayerBuilder& current_layer = layers[current_layer_index];
 			if (current_layer)
@@ -146,7 +129,7 @@ namespace Animate::Publisher
 
 				LayerBuilder::ProcessLayerFrame(
 					layers, writer,
-					current_layer_index, last_layer_index,
+					current_layer_index, next_layer_index,
 					i == 0, current_layer_index == 0
 				);
 

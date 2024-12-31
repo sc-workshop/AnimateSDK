@@ -2,22 +2,24 @@
 
 namespace Animate::Publisher
 {
-	SpriteElement::SpriteElement(
+	BitmapElement::BitmapElement(
+			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
-			FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap
-	) : m_media_item(media_item), m_info(bitmap)
+			const DOM::Utils::MATRIX2D& matrix
+	) : StaticElement(symbol), m_media_item(media_item)
 	{
 		FCM::PluginModule& context = FCM::PluginModule::Instance();
 
+		m_matrix = matrix;
 		FCM::AutoPtr<DOM::ILibraryItem> library_item = media_item;
 
-		FCM::StringRep16 namePtr;
-		library_item->GetName(namePtr);
-		m_name = std::u16string((const char16_t*)namePtr);
-		context.falloc->Free(namePtr);
+		m_name = context.falloc->GetString16(
+			library_item.m_Ptr,
+			&DOM::ILibraryItem::GetName
+		);
 	}
 
-	void SpriteElement::ExportImage(std::filesystem::path path) const
+	void BitmapElement::ExportImage(std::filesystem::path path) const
 	{
 		FCM::PluginModule& context = FCM::PluginModule::Instance();
 
@@ -35,7 +37,7 @@ namespace Animate::Publisher
 		}
 	}
 
-	const std::u16string& SpriteElement::Name() const
+	const std::u16string& BitmapElement::Name() const
 	{
 		return m_name;
 	}

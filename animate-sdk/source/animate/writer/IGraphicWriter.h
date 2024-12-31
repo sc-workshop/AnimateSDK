@@ -9,6 +9,7 @@
 #include "IDisplayObjectWriter.h"
 #include "animate/generator/TimelineBuilder/FrameElements/SpriteElement.h"
 #include "animate/generator/TimelineBuilder/FrameElements/FilledElement.h"
+#include "animate/generator/TimelineBuilder/FrameElements/SliceElement.h"
 
 namespace Animate::Publisher
 {
@@ -18,10 +19,10 @@ namespace Animate::Publisher
 		virtual ~SharedShapeWriter() = default;
 
 	public:
-		virtual void AddGraphic(const SpriteElement& item, const DOM::Utils::MATRIX2D& matrix) = 0;
+		virtual void AddGraphic(const BitmapElement& item) = 0;
 
 		virtual void AddFilledElement(const FilledElement& shape) = 0;
 
-		virtual void AddSlicedElements(const std::vector<FilledElement>& elements, const DOM::Utils::RECT& guides) = 0;
+		virtual void AddSlicedElements(const Slice9Element& sliced) = 0;
 	};
 }

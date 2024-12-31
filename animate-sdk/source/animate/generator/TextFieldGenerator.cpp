@@ -10,12 +10,10 @@ namespace Animate::Publisher
 			TextElement element;
 			((FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement>)textfieldData)->GetObjectSpaceBounds(element.bound);
 
-			{
-				FCM::StringRep16 text;
-				textfieldData->GetText(&text);
-				element.text = std::u16string((const char16_t*)text);
-				context.falloc->Free(text);
-			}
+			element.text = context.falloc->GetString16(
+					textfieldData.m_Ptr,
+					&DOM::FrameElement::IClassicText::GetText
+			);
 
 			element.renderingMode.structSize = sizeof(element.renderingMode);
 			textfieldData->GetAntiAliasModeProp(element.renderingMode);
@@ -61,13 +59,13 @@ namespace Animate::Publisher
 				textStyle->GetFontSize(textRun.fontSize);
 				textStyle->IsAutoKernEnabled(textRun.autoKern);
 
-				FCM::StringRep16 fontNamePtr;
-				textStyle->GetFontName(&fontNamePtr);
-				textRun.fontName = std::u16string((const char16_t*)fontNamePtr);
-				context.falloc->Free(fontNamePtr);
+				textRun.fontName = context.falloc->GetString16(
+					textStyle.m_Ptr,
+					&DOM::FrameElement::ITextStyle::GetFontName
+				);
 
 				FCM::StringRep8 fontStylePtr;
-				textStyle->GetFontStyle(&fontStylePtr);
+				textStyle->GetFontStyle(fontStylePtr);
 				textRun.fontStyle = std::string((const char*)fontStylePtr);
 				context.falloc->Free(fontStylePtr);
 			}

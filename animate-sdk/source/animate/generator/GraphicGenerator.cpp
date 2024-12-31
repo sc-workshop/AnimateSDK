@@ -36,10 +36,10 @@ namespace Animate::Publisher
 				FCM::AutoPtr<DOM::ILibraryItem> item;
 				instance->GetLibraryItem(item.m_Ptr);
 
-				FCM::StringRep16 itemNamePtr;
-				item->GetName(itemNamePtr);
-				std::u16string itemName = (const char16_t*)itemNamePtr;
-				context.falloc->Free(itemNamePtr);
+				std::u16string itemName = context.falloc->GetString16(
+					item.m_Ptr, 
+					&DOM::ILibraryItem::GetName
+				);
 
 				FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media = item;
 
@@ -51,9 +51,9 @@ namespace Animate::Publisher
 					FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap = unknownMedia;
 
 					if (bitmap) {
-						SpriteElement element(media, bitmap);
+						BitmapElement element(symbol, media, transformation);
 
-						writer.AddGraphic(element, transformation);
+						writer.AddGraphic(element);
 					}
 				}
 			}

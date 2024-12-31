@@ -49,16 +49,16 @@ namespace Animate::Publisher
 	public:
 		void Next();
 
-		bool CanReleaseFilledElements() const { return !frameBuilder.FilledElements().empty(); };
+		bool IsHoldStatic() const { return !frameBuilder.StaticElements().Empty(); };
 
-		bool ShouldReleaseFilledElements(const LayerBuilder& next_layer);
+		bool ShouldReleaseStatic(const LayerBuilder& next_layer) const;
 
-		void InheritFilledElements(const LayerBuilder& last_layer)
+		void InheritStatic(const LayerBuilder& last_layer)
 		{
-			frameBuilder.InheritFilledElements(last_layer.frameBuilder);
+			frameBuilder.InheritStatic(last_layer.frameBuilder);
 		}
 
-		void ReleaseFilledElements();
+		void ReleaseStatic();
 
 		bool IsMaskLayer() const {
 			return m_mask_layer;

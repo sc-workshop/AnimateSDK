@@ -5,24 +5,31 @@
 #include "AnimateDOM.h"
 #include "AnimateService.h"
 
+#include "FrameElement.h"
+
 namespace Animate::Publisher
 {
-	class SpriteElement
+	class BitmapElement : public StaticElement
 	{
 	public:
-		SpriteElement(
+		BitmapElement(
+			SymbolContext& context,
 			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
-			FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap
+			const DOM::Utils::MATRIX2D& matrix
 		);
-		~SpriteElement() = default;
+		~BitmapElement() = default;
 
 	public:
 		const std::u16string& Name() const;
 		void ExportImage(std::filesystem::path path) const;
 
+		virtual bool IsSprite() const
+		{
+			return true;
+		}
+
 	private:
 		std::u16string m_name;
 		FCM::AutoPtr<DOM::LibraryItem::IMediaItem> m_media_item;
-		FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> m_info;
 	};
 }

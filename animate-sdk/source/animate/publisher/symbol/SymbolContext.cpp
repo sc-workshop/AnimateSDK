@@ -16,12 +16,10 @@ namespace Animate
 		{
 			FCM::PluginModule& context = FCM::PluginModule::Instance();
 
-			FCM::StringRep16 itemNamePtr;
-			symbol->GetName(itemNamePtr);
-			std::u16string itemName = (const char16_t*)itemNamePtr;
-			context.falloc->Free(itemNamePtr);
-
-			return itemName;
+			return context.falloc->GetString16(
+				symbol.m_Ptr,
+				&DOM::ILibraryItem::GetName
+			);
 		}
 
 		SymbolContext::SymbolType SymbolContext::GetType(FCM::AutoPtr<DOM::ILibraryItem> symbol)

@@ -163,14 +163,10 @@ namespace FCM
 	}
 
 	std::string PluginModule::LanguageCode() const {
-		FCM::StringRep8 languageCodePtr;
-		appService->GetLanguageCode(&languageCodePtr);
-
-		std::string LanguageCode((const char*)languageCodePtr);
-
-		falloc->Free(languageCodePtr);
-
-		return LanguageCode;
+		return falloc->GetString8(
+			appService.m_Ptr,
+			&Animate::Application::Service::IApplicationService::GetLanguageCode
+		);
 	}
 
 #ifdef _WINDOWS

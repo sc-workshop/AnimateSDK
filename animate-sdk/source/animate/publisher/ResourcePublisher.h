@@ -77,9 +77,9 @@ namespace Animate::Publisher
 			std::optional<FCM::FCMListPtr> filters = std::nullopt
 		);
 
-		uint16_t AddFilledElement(
+		uint16_t AddStaticGroup(
 			SymbolContext& symbol,
-			const std::vector<FilledElement>& shape,
+			const StaticElementsGroup& elements,
 			bool required = false
 		);
 

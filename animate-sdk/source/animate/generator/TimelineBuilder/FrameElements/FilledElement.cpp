@@ -4,14 +4,17 @@
 
 namespace Animate::Publisher
 {
-	FilledElement::FilledElement(SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape, const DOM::Utils::MATRIX2D& matrix)
-		: FilledElement(symbol, shape)
+	FilledElement::FilledElement(
+		SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape,
+			const std::optional<DOM::Utils::MATRIX2D> matrix
+	) : StaticElement(symbol)
 	{
-		transformation = matrix;
-	}
-
-	FilledElement::FilledElement(SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape) {
 		FCM::PluginModule& context = FCM::PluginModule::Instance();
+
+		if (matrix.has_value())
+		{
+			m_matrix = matrix.value();
+		}
 
 		auto stroke_generator =
 			context.GetService<DOM::Service::Shape::IShapeService>(DOM::FLA_SHAPE_SERVICE);

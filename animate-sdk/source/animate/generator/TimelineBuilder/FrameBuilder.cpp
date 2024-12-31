@@ -15,9 +15,9 @@ namespace Animate::Publisher
 		{
 			m_duration = 0;
 			m_position = 0;
-			m_label = u"";
+			m_label.clear();
 			m_elements.clear();
-			m_filled_elements.clear();
+			m_static_elements.Clear();
 
 			m_base_tween = nullptr;
 			m_matrix_tweener = nullptr;
@@ -34,10 +34,10 @@ namespace Animate::Publisher
 				DOM::KeyFrameLabelType labelType = DOM::KeyFrameLabelType::KEY_FRAME_LABEL_NONE;
 				frame->GetLabelType(labelType);
 				if (labelType == DOM::KeyFrameLabelType::KEY_FRAME_LABEL_NAME) {
-					FCM::StringRep16 frameNamePtr;
-					frame->GetLabel(&frameNamePtr);
-					m_label = (const char16_t*)frameNamePtr;
-					context.falloc->Free(frameNamePtr);
+					m_label = context.falloc->GetString16(
+						frame.m_Ptr,
+						&DOM::IFrame::GetLabel
+					);
 				}
 			}
 
@@ -136,8 +136,8 @@ namespace Animate::Publisher
 				m_shape_tweener->GetShape(m_base_tween, m_position, filledShape.m_Ptr);
 
 				// TODO: this place may have many bugs and issues
-				m_last_element = FrameBuilder::LastElementType::FilledElement;
-				m_filled_elements.emplace_back(symbol, filledShape);
+				m_static_state = FrameBuilder::StaticElementsState::Valid;
+				m_static_elements.AddFilledElement(symbol, filledShape);
 
 				return;
 			}
@@ -179,9 +179,6 @@ namespace Animate::Publisher
 			}
 		}
 
-		// TODO: Implement FrameBuilderElement as basic class for FrameElements
-		// And after that refactor GetIdentifer function to be called just in Release time
-		// To avoid unused elements in resource palette
 		void FrameBuilder::DeclareFrameElement(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
@@ -224,12 +221,22 @@ namespace Animate::Publisher
 				return !element.name.empty();
 			};
 
+			auto release_static = [&](const std::u16string& name)
+				{
+					if (m_static_state == FrameBuilder::StaticElementsState::Invalid)
+					{
+						ReleaseStatic(symbol, name);
+						return true;
+					}
+
+					return false;
+				};
+
 			// Symbol
 			if (libraryElement) {
-				m_last_element = FrameBuilder::LastElementType::Symbol;
-
 				FCM::AutoPtr<DOM::ILibraryItem> libraryItem;
 				libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+				FCM::AutoPtr<DOM::LibraryItem::IMediaItem> mediaItem = libraryItem;
 
 				SymbolContext librarySymbol(libraryItem);
 
@@ -241,20 +248,36 @@ namespace Animate::Publisher
 
 				if (movieClipElement) {
 					// Instance name
-					FCM::StringRep16 instanceNamePtr;
-					movieClipElement->GetName(&instanceNamePtr);
-					element.name = (const char16_t*)instanceNamePtr;
-					context.falloc->Free(instanceNamePtr);
+					element.name = context.falloc->GetString16(
+						movieClipElement.m_Ptr,
+						&DOM::FrameElement::IMovieClip::GetName
+					);
 
 					movieClipElement->GetBlendMode(element.blend_mode);
 				}
 
+				if (mediaItem)
+				{
+					FCM::AutoPtr<FCM::IFCMUnknown> mediaInfo;
+					mediaItem->GetMediaInfo(mediaInfo.m_Ptr);
+
+					FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmapMedia = mediaInfo;
+					m_static_elements.AddElement<BitmapElement>(symbol, mediaItem, matrix);
+					if (!release_static(element.name))
+					{
+						m_static_state = StaticElementsState::Valid;
+					}
+					
+					return;
+				}
+
+				m_static_state = FrameBuilder::StaticElementsState::Invalid;
 				element.id = m_resources.AddLibraryItem(librarySymbol, libraryItem, is_required());
 			}
 
 			// Textfield
 			else if (textfieldElement) {
-				m_last_element = FrameBuilder::LastElementType::TextField;
+				m_static_state = FrameBuilder::StaticElementsState::Invalid;
 
 				element.id = m_resources.AddTextField(symbol, textfieldElement);
 
@@ -265,27 +288,22 @@ namespace Animate::Publisher
 
 					FCM::AutoPtr<DOM::FrameElement::IModifiableTextBehaviour> modifiableTextfieldBehaviour = textfieldElementBehaviour;
 					if (modifiableTextfieldBehaviour) {
-						FCM::StringRep16 instanceName;
-						modifiableTextfieldBehaviour->GetInstanceName(&instanceName);
-						element.name = (const char16_t*)instanceName;
-						context.falloc->Free(instanceName);
+						element.name = context.falloc->GetString16(
+							modifiableTextfieldBehaviour.m_Ptr,
+							&DOM::FrameElement::IModifiableTextBehaviour::GetInstanceName
+						);
 					}
 				}
 			}
 
 			// Fills / Stroke
 			else if (filledShapeItem) {
-				m_filled_elements.emplace_back(symbol, filledShapeItem, matrix);
+				m_static_elements.AddFilledElement(symbol, filledShapeItem, matrix);
 
-				if (m_last_element != FrameBuilder::LastElementType::None)
+				if (!release_static(element.name))
 				{
-					if (m_last_element != FrameBuilder::LastElementType::FilledElement)
-					{
-						ReleaseFilledElements(symbol, element.name);
-					}
+					m_static_state = StaticElementsState::Valid;
 				}
-
-				m_last_element = FrameBuilder::LastElementType::FilledElement;
 				return;
 			}
 
@@ -304,14 +322,8 @@ namespace Animate::Publisher
 				return;
 			}
 
-			if (m_last_element != LastElementType::None)
-			{
-				// Just in case if keyframe has both element types
-				if (m_last_element != LastElementType::FilledElement)
-				{
-					ReleaseFilledElements(symbol, std::u16string(u""));
-				}
-			}
+			// Just in case if keyframe has both element types
+			release_static(u"");
 
 			if (element.id == UINT16_MAX) {
 				return;
@@ -322,30 +334,28 @@ namespace Animate::Publisher
 			m_elements.push_back(element);
 		}
 
-		void FrameBuilder::ReleaseFilledElements(SymbolContext& symbol, const std::u16string& name)
+		void FrameBuilder::ReleaseStatic(SymbolContext& symbol, const std::u16string& name)
 		{
-			if (m_filled_elements.empty()) return;
+			if (m_static_elements.Empty()) return;
 
-			uint16_t element_id = m_resources.AddFilledElement(symbol, m_filled_elements);
+			uint16_t element_id = m_resources.AddStaticGroup(symbol, m_static_elements);
 
 			if (element_id == UINT16_MAX)
 			{
 				return;
 			}
 
+			size_t element_index = m_elements.size();
 			FrameBuilderElement& element = m_elements.emplace_back();
 			element.id = element_id;
 			element.name = name;
 
-			m_filled_elements.clear();
-			m_last_element = LastElementType::SpriteElement;
+			m_static_elements.Clear();
+			m_static_state = StaticElementsState::None;
 		}
 
-		void FrameBuilder::InheritFilledElements(const FrameBuilder& frame)
+		void FrameBuilder::InheritStatic(const FrameBuilder& frame)
 		{
-			m_filled_elements.insert(
-				m_filled_elements.begin(),
-				frame.FilledElements().begin(), frame.FilledElements().end()
-			);
+			m_static_elements += frame.StaticElements();
 		}
 }

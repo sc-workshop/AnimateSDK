@@ -4,9 +4,14 @@
 
 namespace Animate::Publisher
 {
-	SliceElement::SliceElement(SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape, DOM::Utils::MATRIX2D& matrix) :
-		transform(matrix), fill(symbol, shape)
+	Slice9Element::Slice9Element(
+			SymbolContext& symbol,
+			const std::vector<FilledElement>& elements,
+			DOM::Utils::MATRIX2D& matrix,
+			const Animate::DOM::Utils::RECT guides
+	) : StaticElement(symbol), m_elements(elements), m_guides(guides)
 	{
+		m_matrix = matrix;
 	}
 
 }
