@@ -102,7 +102,7 @@ namespace Animate
                  * @note   The memory allocated for 'ppName' in this function must be freed
                  *         by the caller using IFCMCalloc::Free().
                  */
-                virtual FCM::Result _FCMCALL GetName(FCM::StringRep16* ppName) = 0;
+                virtual FCM::Result _FCMCALL GetName(FCM::StringRep16& ppName) = 0;
 
             };
         }

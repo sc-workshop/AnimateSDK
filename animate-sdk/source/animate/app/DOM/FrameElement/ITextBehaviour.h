@@ -215,7 +215,7 @@ namespace Animate
 					* @note   The memory allocated for 'ppName' in this function must be freed
 					*         by the caller using IFCMCalloc::Free().
 					*/
-				virtual FCM::Result _FCMCALL GetInstanceName(FCM::StringRep16* ppName) = 0;
+				virtual FCM::Result _FCMCALL GetInstanceName(FCM::StringRep16& ppName) = 0;
 
 				/**
 				 * @brief  This function returns the paragraph behavior mode of the text element.

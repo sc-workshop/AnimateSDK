@@ -195,7 +195,7 @@ namespace Animate
              * @note   The memory allocated for 'ppLabel' in this function must be freed
              *         by the caller using IFCMCalloc::Free().
              */
-            virtual FCM::Result _FCMCALL GetLabel(FCM::StringRep16* ppLabel) = 0;
+            virtual FCM::Result _FCMCALL GetLabel(FCM::StringRep16& ppLabel) = 0;
 
 
             /**
@@ -221,7 +221,7 @@ namespace Animate
              * @note   The memory allocated for 'ppScript' in this function must be freed
              *         by the caller using IFCMCalloc::Free().
              */
-            virtual FCM::Result _FCMCALL GetScript(FCM::StringRep16* ppScript) = 0;
+            virtual FCM::Result _FCMCALL GetScript(FCM::StringRep16& ppScript) = 0;
 
 
             /**

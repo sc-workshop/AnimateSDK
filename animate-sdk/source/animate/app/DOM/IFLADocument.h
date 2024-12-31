@@ -189,7 +189,7 @@ namespace Animate
              * @note   Memory allocated for ppPath must be released by the caller using
              *         FCM::IFCMCalloc.
              */
-            virtual FCM::Result _FCMCALL GetPath(FCM::StringRep16* ppPath) const = 0;
+            virtual FCM::Result _FCMCALL GetPath(FCM::StringRep16& ppPath) const = 0;
 
         };
     }

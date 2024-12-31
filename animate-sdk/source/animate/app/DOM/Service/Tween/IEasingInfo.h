@@ -68,7 +68,7 @@ namespace Animate
                 {
                 public:
                     // Returns name of the easing.
-                    virtual FCM::Result _FCMCALL GetName(FCM::StringRep16* ppEasingName) = 0;
+                    virtual FCM::Result _FCMCALL GetName(FCM::StringRep16& ppEasingName) = 0;
 
                     // Returns the parameters that control the easing curve. Currently, 
                     // only parameter "strength" will be part of the dictionary.

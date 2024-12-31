@@ -73,7 +73,7 @@ namespace Animate
                  * @note   The memory allocated for 'ppFontName' in this function must be freed
                  *         by the caller using IFCMCalloc::Free().
                  */
-                virtual FCM::Result _FCMCALL GetFontName(FCM::StringRep16* ppFontName) = 0;
+                virtual FCM::Result _FCMCALL GetFontName(FCM::StringRep16& ppFontName) = 0;
 
 
                 /**
@@ -87,7 +87,7 @@ namespace Animate
                  * @note   The memory allocated for 'ppFontStyle' in this function must be freed
                  *         by the caller using IFCMCalloc::Free().
                  */
-                virtual FCM::Result _FCMCALL GetFontStyle(FCM::StringRep8* ppFontStyle) = 0;
+                virtual FCM::Result _FCMCALL GetFontStyle(FCM::StringRep8& ppFontStyle) = 0;
 
 
                 /**
@@ -113,7 +113,7 @@ namespace Animate
                  *         be freed by the caller using IFCMCalloc::Free().
                  */
                 virtual FCM::Result _FCMCALL GetEmbeddedCharacters(
-                    FCM::StringRep16* ppEmbeddedCharacters) = 0;
+                    FCM::StringRep16& ppEmbeddedCharacters) = 0;
 
 
                 /**
@@ -129,7 +129,7 @@ namespace Animate
                  * @note   The memory allocated for 'ppEmbeddedRanges' in this function must
                  *         be freed by the caller using IFCMCalloc::Free().
                  */
-                virtual FCM::Result _FCMCALL GetEmbeddedRanges(FCM::StringRep16* ppEmbeddedRanges) = 0;
+                virtual FCM::Result _FCMCALL GetEmbeddedRanges(FCM::StringRep16& ppEmbeddedRanges) = 0;
             };
         }
     }

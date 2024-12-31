@@ -28,6 +28,7 @@
 #pragma once
 #include "animate/core/common/FCMTypes.h"
 #include "animate/core/common/FCMDeclarations.h"
+#include <string>
 
 #include "animate/core/common/FCMPreConfig.h"
 
@@ -84,6 +85,30 @@ namespace FCM
          *         Pointer to memory to be deallocated.
          */
          virtual void _FCMCALL Free(PVoid pv) = 0;
+
+         template <typename Result, typename Base, typename T, typename F>
+         Result GetString(T* obj, F function) {
+             Base ptr = nullptr;
+             (obj->*function)(ptr);
+             if (ptr)
+             {
+                 Result str((Result::const_pointer)ptr);
+                 this->Free((FCM::PVoid)ptr);
+                 return str;
+             }
+
+             return Result();
+         }
+
+         template <typename T, typename F>
+         std::u16string GetString16(T* obj, F function) {
+             return GetString<std::u16string, FCM::StringRep16>(obj, function);
+         }
+
+         template <typename T, typename F>
+         std::string GetString8(T* obj, F function) {
+             return GetString<std::string, FCM::StringRep8>(obj, function);
+         }
 
      };
 

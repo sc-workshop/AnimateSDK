@@ -92,7 +92,7 @@ namespace Animate
                      *         by the caller using IFCMCalloc::Free().
                      */
                     virtual FCM::Result _FCMCALL GetCopyrightInfo(
-                        FCM::StringRep16* ppCopyrightInfo) = 0;
+                        FCM::StringRep16& ppCopyrightInfo) = 0;
 
 
                     /**

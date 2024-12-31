@@ -167,7 +167,7 @@ namespace Animate
                  * @note   The memory allocated for 'ppText' in this function must be freed
                  *         by the caller using IFCMCalloc::Free().
                  */
-                virtual FCM::Result _FCMCALL GetText(FCM::StringRep16* ppText) = 0;
+                virtual FCM::Result _FCMCALL GetText(FCM::StringRep16& ppText) = 0;
 
 
                 /**

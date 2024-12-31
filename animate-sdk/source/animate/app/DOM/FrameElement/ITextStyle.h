@@ -126,7 +126,7 @@ namespace Animate
                 * @note   The memory allocated for 'ppFontStyle' in this function must be freed
                 *         by the caller using IFCMCalloc::Free().
                 */
-                virtual FCM::Result _FCMCALL GetFontStyle(FCM::StringRep8* ppFontStyle) = 0;
+                virtual FCM::Result _FCMCALL GetFontStyle(FCM::StringRep8& ppFontStyle) = 0;
 
 
                 /**
@@ -163,7 +163,7 @@ namespace Animate
                  * @note   The memory allocated for 'ppFontName' in this function must be freed
                  *         by the caller using IFCMCalloc::Free().
                  */
-                virtual FCM::Result _FCMCALL GetFontName(FCM::StringRep16* ppFontName) = 0;
+                virtual FCM::Result _FCMCALL GetFontName(FCM::StringRep16& ppFontName) = 0;
 
 
                 /**
@@ -226,7 +226,7 @@ namespace Animate
                  *
                  * @return On success, FCM_SUCCESS is returned, else an error code is returned.
                  */
-                virtual FCM::Result _FCMCALL GetLinkTarget(FCM::StringRep16* ppLinkTarget) = 0;
+                virtual FCM::Result _FCMCALL GetLinkTarget(FCM::StringRep16& ppLinkTarget) = 0;
 
 
                 /**
@@ -238,7 +238,7 @@ namespace Animate
                  *
                  * @return On success, FCM_SUCCESS is returned, else an error code is returned.
                  */
-                virtual FCM::Result _FCMCALL GetLink(FCM::StringRep16* ppLink) = 0;
+                virtual FCM::Result _FCMCALL GetLink(FCM::StringRep16& ppLink) = 0;
             };
         }
     }
