@@ -6,7 +6,7 @@
 #include "AnimateDOM.h"
 #include "AnimateService.h"
 
-#include "FrameElement.h"
+#include "StaticElement.h"
 #include "FilledElement/Region.h"
 
 // ----------------------------------------------

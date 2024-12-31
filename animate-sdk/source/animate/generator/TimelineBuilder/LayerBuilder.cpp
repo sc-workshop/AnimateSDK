@@ -84,7 +84,7 @@ namespace Animate::Publisher
 	void LayerBuilder::ProcessLayerFrame(
 		std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer,
 		size_t layer_index, size_t next_layer_index,
-		bool is_begin, bool is_end
+		bool /*is_begin*/, bool is_end
 	)
 	{
 		LayerBuilder& layer = layers[layer_index];

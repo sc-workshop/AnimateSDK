@@ -1,4 +1,4 @@
-#include "SliceElement.h"
+#include "Slice9Element.h"
 
 #include "animate/publisher/symbol/SymbolContext.h"
 

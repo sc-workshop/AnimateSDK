@@ -5,7 +5,7 @@
 #include "AnimateDOM.h"
 #include "AnimateService.h"
 
-#include "FrameElement.h"
+#include "StaticElement.h"
 
 namespace Animate::Publisher
 {

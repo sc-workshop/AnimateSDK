@@ -1,4 +1,4 @@
-#include "MovieClipGenerator.h"
+#include "SymbolGenerator.h"
 
 #include "animate/publisher/ResourcePublisher.h"
 

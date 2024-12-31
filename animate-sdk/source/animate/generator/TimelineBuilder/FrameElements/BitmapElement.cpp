@@ -1,4 +1,4 @@
-#include "SpriteElement.h"
+#include "BitmapElement.h"
 
 namespace Animate::Publisher
 {

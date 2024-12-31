@@ -7,9 +7,9 @@
 #include "AnimateDOM.h"
 
 #include "IDisplayObjectWriter.h"
-#include "animate/generator/TimelineBuilder/FrameElements/SpriteElement.h"
+#include "animate/generator/TimelineBuilder/FrameElements/BitmapElement.h"
 #include "animate/generator/TimelineBuilder/FrameElements/FilledElement.h"
-#include "animate/generator/TimelineBuilder/FrameElements/SliceElement.h"
+#include "animate/generator/TimelineBuilder/FrameElements/Slice9Element.h"
 
 namespace Animate::Publisher
 {

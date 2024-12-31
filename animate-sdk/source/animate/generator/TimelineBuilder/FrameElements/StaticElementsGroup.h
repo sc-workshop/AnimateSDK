@@ -4,10 +4,10 @@
 #include "core/memory/ref.h"
 #include <vector>
 
-#include "FrameElement.h"
+#include "StaticElement.h"
 #include "FilledElement.h"
-#include "SpriteElement.h"
-#include "SliceElement.h"
+#include "BitmapElement.h"
+#include "Slice9Element.h"
 
 namespace Animate::Publisher
 {

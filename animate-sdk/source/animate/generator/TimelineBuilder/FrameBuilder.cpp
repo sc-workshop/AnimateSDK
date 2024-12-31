@@ -345,7 +345,6 @@ namespace Animate::Publisher
 				return;
 			}
 
-			size_t element_index = m_elements.size();
 			FrameBuilderElement& element = m_elements.emplace_back();
 			element.id = element_id;
 			element.name = name;
