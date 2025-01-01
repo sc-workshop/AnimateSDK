@@ -170,7 +170,7 @@ namespace Animate::Publisher
 		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
 		SharedShapeWriter* writer = m_writer.AddShape(shape_symbol);
 
-		writer->AddGroup(shape_symbol, elements);
+		writer->AddGroup(symbol, elements);
 
 		return FinalizeWriter(writer, m_id++, required, m_graphics);
 	}
