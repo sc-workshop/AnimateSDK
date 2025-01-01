@@ -213,7 +213,7 @@ namespace Animate::Publisher
 		}
 
 		bool writer_success = false;
-		if (required || !in_library)
+		if (!in_library)
 		{
 			writer_success = writer->Finalize(identifier, in_library ? false : required);
 		}
