@@ -42,7 +42,7 @@ namespace Animate::Publisher
 			maskLayer->GetChildren(layers.m_Ptr);
 
 			m_mask_layer = true;
-			MovieClipGeneator::GetLayerBuilder(layers, m_resources, m_symbol, maskedLayers);
+			SymbolGenerator::GetLayerBuilder(layers, m_resources, m_symbol, maskedLayers);
 		}
 	}
 
@@ -84,7 +84,7 @@ namespace Animate::Publisher
 	void LayerBuilder::ProcessLayerFrame(
 		std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer,
 		size_t layer_index, size_t next_layer_index,
-		bool /*is_begin*/, bool is_end
+		bool is_end
 	)
 	{
 		LayerBuilder& layer = layers[layer_index];
@@ -130,7 +130,7 @@ namespace Animate::Publisher
 				LayerBuilder::ProcessLayerFrame(
 					layers, writer,
 					current_layer_index, next_layer_index,
-					i == 0, current_layer_index == 0
+					current_layer_index == 0
 				);
 
 				if (is_masked_frame)
@@ -169,5 +169,36 @@ namespace Animate::Publisher
 			LayerBuilder::ProcessLayers(symbol, layers, writer);
 			writer.Next();
 		}
+	}
+
+	const std::optional<StaticElementsGroup> LayerBuilder::ProcessStaticLayers(std::vector<LayerBuilder>& layers)
+	{
+		size_t layer_index = layers.size();
+		for (size_t i = 0; layers.size() > i; i++) {
+			size_t current_layer_index = --layer_index;
+			size_t next_layer_index = layer_index - 1;
+			bool lastLayer = current_layer_index == 0;
+
+			LayerBuilder& current_layer = layers[current_layer_index];
+			if (!lastLayer)
+			{
+				LayerBuilder& next_layer = layers[next_layer_index];
+				next_layer.InheritStatic(current_layer);
+			}
+			else
+			{
+				return current_layer.frameBuilder.StaticElements();
+			}
+		}
+
+		return std::nullopt;
+	}
+
+	bool LayerBuilder::IsStatic() const
+	{
+		if (m_keyframeCount > 1) return false;
+		if (m_mask_layer) return false;
+
+		return frameBuilder.IsStatic();
 	}
 }

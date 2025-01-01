@@ -12,14 +12,14 @@ namespace Animate::Publisher
 {
 	class ResourcePublisher;
 
-	class MovieClipGeneator {
+	class SymbolGenerator {
 		ResourcePublisher& m_resources;
 
 	public:
 		static void GetLayerBuilder(FCM::FCMListPtr& layers, ResourcePublisher& resources, SymbolContext& symbol, std::vector<LayerBuilder>& result);
 
-		MovieClipGeneator(ResourcePublisher& resources) : m_resources(resources) {}
+		SymbolGenerator(ResourcePublisher& resources) : m_resources(resources) {}
 
-		void Generate(SharedMovieclipWriter& writer, SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline);
+		IDisplayObjectWriter* Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required);
 	};
 }

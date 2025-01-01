@@ -61,6 +61,7 @@ namespace Animate::Publisher
 
 		// Filled elements "Static Batching" things
 		StaticElementsState m_static_state = StaticElementsState::None;
+		StaticElementsState m_keyframe_static_state = StaticElementsState::Valid;
 		StaticElementsGroup m_static_elements;
 
 	public:
@@ -116,6 +117,8 @@ namespace Animate::Publisher
 
 		void ReleaseStatic(SymbolContext& symbol, const std::u16string& name);
 		void InheritStatic(const FrameBuilder& frame);
+
+		bool IsStatic() const;
 
 		void Reset();
 

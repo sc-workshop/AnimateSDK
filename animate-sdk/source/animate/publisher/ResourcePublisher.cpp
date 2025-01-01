@@ -6,7 +6,7 @@ namespace Animate::Publisher
 		{
 			FCM::Double framerate;
 			document->GetFrameRate(framerate);
-			m_document_fps = (uint32_t)std::ceil(framerate);
+			document_fps = (uint32_t)std::ceil(framerate);
 		}
 
 		FCM::FCMListPtr libraryItems;
@@ -105,11 +105,9 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::ITimeline> timeline;
 		item->GetTimeLine(timeline.m_Ptr);
 
-		if (symbol.type != SymbolContext::SymbolType::MovieClip && GraphicGenerator::Validate(timeline)) {
-			return AddShape(symbol, timeline, required);
-		}
+		IDisplayObjectWriter* writer = symbolGenerator.Generate(symbol, timeline, required);
 
-		return AddMovieclip(symbol, timeline, required);
+		return FinalizeWriter(writer, m_id++, required, m_movieClips);
 	};
 
 	uint16_t ResourcePublisher::AddMediaSymbol(
@@ -134,28 +132,6 @@ namespace Animate::Publisher
 		}
 
 		return 0xFFFF;
-	}
-
-	uint16_t ResourcePublisher::AddMovieclip(
-		SymbolContext& symbol,
-		FCM::AutoPtr<DOM::ITimeline1> timeline,
-		bool required
-	) {
-		SharedMovieclipWriter* movieclip = m_writer.AddMovieclip(symbol);
-		movieClipGenerator.Generate(*movieclip, symbol, timeline);
-
-		return FinalizeWriter(movieclip, m_id++, required, m_movieClips);
-	};
-
-	uint16_t ResourcePublisher::AddShape(
-		SymbolContext& symbol,
-		FCM::AutoPtr <DOM::ITimeline1> timeline,
-		bool required
-	) {
-		SharedShapeWriter* shape = m_writer.AddShape(symbol);
-		graphicGenerator.Generate(symbol, *shape, timeline);
-
-		return FinalizeWriter(shape, m_id++, required, m_graphics);
 	}
 
 	uint16_t ResourcePublisher::AddModifier(
@@ -186,7 +162,7 @@ namespace Animate::Publisher
 		return FinalizeWriter(writer, m_id++, false, m_textFields, filters);
 	}
 
-	uint16_t ResourcePublisher::AddStaticGroup(
+	uint16_t ResourcePublisher::AddGroup(
 		SymbolContext& symbol,
 		const StaticElementsGroup& elements,
 		bool required
@@ -194,27 +170,7 @@ namespace Animate::Publisher
 		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
 		SharedShapeWriter* writer = m_writer.AddShape(shape_symbol);
 
-		if (symbol.slicing.IsEnabled())
-		{
-			Slice9Element slice9(symbol, elements, DOM::Utils::MATRIX2D(), symbol.slicing.Guides());
-			writer->AddSlicedElements(slice9);
-		}
-		else
-		{
-			for (size_t i = 0; elements.Size() > i; i++)
-			{
-				const StaticElement& element = elements[i];
-
-				if (element.IsSprite())
-				{
-					writer->AddGraphic((const BitmapElement&)element);
-				}
-				else if (element.IsFilledArea())
-				{
-					writer->AddFilledElement((const FilledElement&)element);
-				}
-			}
-		}
+		writer->AddGroup(shape_symbol, elements);
 
 		return FinalizeWriter(writer, m_id++, required, m_graphics);
 	}

@@ -39,12 +39,7 @@ namespace Animate::Publisher
 
 		using Library = std::unordered_map<std::size_t, uint16_t, DisplayObjectWriterHasher>;
 
-	public:
-		SharedWriter& m_writer;
-
-		MovieClipGeneator movieClipGenerator;
-		GraphicGenerator graphicGenerator;
-
+	private:
 		SymbolDict m_libraryCache;
 		ModifierDict m_modifierCache;
 
@@ -53,11 +48,16 @@ namespace Animate::Publisher
 		Library m_movieClips;
 
 		uint16_t m_id = 0;
-		uint32_t m_document_fps = 30;
+
+	public:
+		SharedWriter& m_writer;
+
+		SymbolGenerator symbolGenerator;
+		uint32_t document_fps = 30;
 
 	public:
 		ResourcePublisher(SharedWriter& writer) :
-			m_writer(writer), movieClipGenerator(*this), graphicGenerator(*this)
+			m_writer(writer), symbolGenerator(*this)
 		{
 		}
 
@@ -77,7 +77,7 @@ namespace Animate::Publisher
 			std::optional<FCM::FCMListPtr> filters = std::nullopt
 		);
 
-		uint16_t AddStaticGroup(
+		uint16_t AddGroup(
 			SymbolContext& symbol,
 			const StaticElementsGroup& elements,
 			bool required = false
@@ -98,21 +98,9 @@ namespace Animate::Publisher
 			bool required
 		);
 
-		uint16_t AddMovieclip(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::ITimeline1> timeline,
-			bool required = false
-		);
-
-		uint16_t AddShape(
-			SymbolContext& symbol,
-			FCM::AutoPtr <DOM::ITimeline1> timeline,
-			bool required = false
-		);
-
 		uint16_t FinalizeWriter(
-			IDisplayObjectWriter* writer, 
-			uint16_t identifier, 
+			IDisplayObjectWriter* writer,
+			uint16_t identifier,
 			bool required,
 			Library& library,
 			std::optional<FCM::FCMListPtr> filters = std::nullopt

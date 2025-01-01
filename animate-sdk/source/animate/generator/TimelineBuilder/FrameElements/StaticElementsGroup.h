@@ -40,6 +40,8 @@ namespace Animate::Publisher
 		bool Empty() const;
 		void Clear();
 
+		operator bool() const;
+
 	private:
 		wk::Ref<Elements> m_items;
 	};

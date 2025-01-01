@@ -6,7 +6,7 @@
 
 namespace Animate::Publisher
 {
-	void MovieClipGeneator::GetLayerBuilder(FCM::FCMListPtr& layers, ResourcePublisher& resources, SymbolContext& symbol, std::vector<LayerBuilder>& result) {
+	void SymbolGenerator::GetLayerBuilder(FCM::FCMListPtr& layers, ResourcePublisher& resources, SymbolContext& symbol, std::vector<LayerBuilder>& result) {
 		uint32_t layerCount = 0;
 		layers->Count(layerCount);
 
@@ -27,14 +27,14 @@ namespace Animate::Publisher
 				FCM::FCMListPtr folderLayers;
 				folderLayer->GetChildren(folderLayers.m_Ptr);
 
-				MovieClipGeneator::GetLayerBuilder(folderLayers, resources, symbol, result);
+				SymbolGenerator::GetLayerBuilder(folderLayers, resources, symbol, result);
 				continue;
 			}
 			else if (guideLayer) {
 				FCM::FCMListPtr guideChildren;
 				guideLayer->GetChildren(guideChildren.m_Ptr);
 
-				MovieClipGeneator::GetLayerBuilder(guideChildren, resources, symbol, result);
+				SymbolGenerator::GetLayerBuilder(guideChildren, resources, symbol, result);
 				continue;
 			}
 			else if (normalLayer) {
@@ -47,7 +47,7 @@ namespace Animate::Publisher
 		}
 	};
 
-	void MovieClipGeneator::Generate(SharedMovieclipWriter& writer, SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline) {
+	IDisplayObjectWriter* SymbolGenerator::Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required) {
 		uint32_t duration = 0;
 		timeline->GetMaxFrameCount(duration);
 
@@ -57,14 +57,46 @@ namespace Animate::Publisher
 			symbol.slicing = slice_scaling;
 		}
 
-		writer.InitializeTimeline(m_resources.m_document_fps, duration);
-
 		FCM::FCMListPtr layersList;
 		timeline->GetLayers(layersList.m_Ptr);
 
 		std::vector<LayerBuilder> layers;
-		MovieClipGeneator::GetLayerBuilder(layersList, m_resources, symbol, layers);
+		SymbolGenerator::GetLayerBuilder(layersList, m_resources, symbol, layers);
 
-		LayerBuilder::ProcessLayers(symbol, layers, writer, duration);
+		bool isStatic = !required && !symbol.slicing.IsEnabled();
+		if (isStatic)
+		{
+			for (LayerBuilder& layer : layers)
+			{
+				if (!layer.IsStatic())
+				{
+					isStatic = false;
+					break;
+				}
+			}
+		}
+		
+
+		if (isStatic)
+		{
+			SharedShapeWriter* shape = m_resources.m_writer.AddShape(symbol);
+			const auto group = LayerBuilder::ProcessStaticLayers(layers);
+			if (group.has_value())
+			{
+				shape->AddGroup(symbol, group.value());
+			}
+
+			return shape;
+		}
+		else
+		{
+			SharedMovieclipWriter* movieclip = m_resources.m_writer.AddMovieclip(symbol);
+			movieclip->InitializeTimeline(m_resources.document_fps, duration);
+			LayerBuilder::ProcessLayers(symbol, layers, *movieclip, duration);
+
+			return movieclip;
+		}
+
+		
 	}
 }

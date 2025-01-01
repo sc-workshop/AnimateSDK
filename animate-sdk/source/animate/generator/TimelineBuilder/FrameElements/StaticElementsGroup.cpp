@@ -39,4 +39,9 @@ namespace Animate::Publisher
 	{
 		m_items->clear();
 	}
+
+	StaticElementsGroup::operator bool() const
+	{
+		return m_items && !Empty();
+	}
 }
