@@ -10,9 +10,9 @@ namespace Animate::Publisher
 	}
 
 	Point2D FilledElementPathQuadSegment::Rasterize(float t_step) const {
-		float mt = 1.0f - t_step;
-		float x = mt * mt * begin.x + 2 * mt * t_step * control.x + t_step * t_step * end.x;
-		float y = mt * mt * begin.y + 2 * mt * t_step * control.y + t_step * t_step * end.y;
+		float u = 1.0f - t_step;
+		float x = u * u * begin.x + 2 * u * t_step * control.x + t_step * t_step * end.x;
+		float y = u * u * begin.y + 2 * u * t_step * control.y + t_step * t_step * end.y;
 
 		return { x, y };
 	};

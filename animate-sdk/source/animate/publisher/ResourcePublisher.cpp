@@ -212,7 +212,7 @@ namespace Animate::Publisher
 			identifier = library_pair->second;
 		}
 
-		bool writer_success = false;
+		bool writer_success = true;
 		if (!in_library)
 		{
 			writer_success = writer->Finalize(identifier, in_library ? false : required);

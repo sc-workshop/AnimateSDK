@@ -10,13 +10,11 @@ namespace Animate::Publisher
 	{
 	}
 
-	Point2D FilledElementPathCubicSegment::Rasterize(float t_step) const {
-		float mt = 1.0f - t_step;
-		float mt2 = mt * mt;
-		float t2 = t_step * t_step;
+	Point2D FilledElementPathCubicSegment::Rasterize(float t) const {
+		float u = 1.0f - t;
 
-		float x = mt2 * mt * begin.x + 3 * mt2 * t_step * end.x + 3 * mt * t2 * control_l.x + t2 * t_step * control_r.x;
-		float y = mt2 * mt * begin.y + 3 * mt2 * t_step * end.y + 3 * mt * t2 * control_l.y + t2 * t_step * control_r.y;
+		float x = u * u * u * begin.x + 3 * u * u * t * control_l.x + 3 * u * t * t * control_r.x + t * t * t * end.x;
+		float y = u * u * u * begin.y + 3 * u * u * t * control_l.y + 3 * u * t * t * control_r.y + t * t * t * end.y;
 
 		return { x, y };
 	};

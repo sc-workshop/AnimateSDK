@@ -96,7 +96,5 @@ namespace Animate::Publisher
 
 			return movieclip;
 		}
-
-		
 	}
 }
