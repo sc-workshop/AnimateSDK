@@ -216,6 +216,14 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::FrameElement::IShape> filledShapeItem = frameElement;
 		FCM::AutoPtr<DOM::FrameElement::IGroup> groupedElemenets = frameElement;
 
+		std::optional<FCM::FCMListPtr> filters;
+		if (filterableElement)
+		{
+			filters = FCM::FCMListPtr();
+			filterableElement->GetGraphicFilters(filters->m_Ptr);
+		}
+		
+
 		auto is_required = [&element]()
 		{
 			return !element.name.empty();
@@ -279,7 +287,7 @@ namespace Animate::Publisher
 		else if (textfieldElement) {
 			m_static_state = FrameBuilder::StaticElementsState::Invalid;
 
-			element.id = m_resources.AddTextField(symbol, textfieldElement);
+			element.id = m_resources.AddTextField(symbol, textfieldElement, filters);
 
 			if (element.id != 0xFFFF)
 			{
