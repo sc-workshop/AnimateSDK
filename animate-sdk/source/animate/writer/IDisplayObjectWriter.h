@@ -52,8 +52,9 @@ namespace Animate::Publisher
 		/// </summary>
 		/// <param name="id"> Identifier of object </param>
 		/// <param name="required"> If True then writer must return positive status, else writer can skip object writing and return False </param>
+		/// <param name="required"> True when symbol is new in library, otherwise it is used only to notify about object id </param>
 		/// <returns> True if object was written </returns>
-		virtual bool Finalize(uint16_t id, bool required) = 0;
+		virtual bool Finalize(uint16_t id, bool required, bool new_symbol) = 0;
 
 	protected:
 		SymbolContext& m_symbol;

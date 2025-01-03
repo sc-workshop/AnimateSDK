@@ -212,13 +212,8 @@ namespace Animate::Publisher
 			identifier = library_pair->second;
 		}
 
-		bool writer_success = true;
-		if (!in_library)
-		{
-			writer_success = writer->Finalize(identifier, in_library ? false : required);
-		}
-
-		if (!writer_success || in_library)
+		bool writer_success = writer->Finalize(identifier, required, !in_library);
+		if (!writer_success && !in_library)
 		{
 			m_id--;
 		}
