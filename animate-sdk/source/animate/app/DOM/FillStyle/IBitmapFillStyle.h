@@ -63,7 +63,7 @@ namespace Animate
              */
             class IBitmapFillStyle : public FCM::VirtualClass<ID_IBITMAP_FILL_STYLE>
             {
-
+            public:
                 /**
                  * @brief  This function gets the library item corresponding to the bitmap
                  *         used in the fill.

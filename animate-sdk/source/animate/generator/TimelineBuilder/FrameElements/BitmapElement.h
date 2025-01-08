@@ -28,6 +28,11 @@ namespace Animate::Publisher
 			return true;
 		}
 
+		bool operator==(const BitmapElement& other) const
+		{
+			return m_name == other.m_name;
+		}
+
 	private:
 		std::u16string m_name;
 		FCM::AutoPtr<DOM::LibraryItem::IMediaItem> m_media_item;

@@ -4,6 +4,10 @@
 
 #include "Path.h"
 
+#include "animate/generator/TimelineBuilder/FrameElements/BitmapElement.h"
+
+#include <variant>
+
 namespace Animate::Publisher
 {
 	class SymbolContext;
@@ -13,6 +17,14 @@ namespace Animate::Publisher
 		struct SolidFill
 		{
 			DOM::Utils::COLOR color;
+		};
+
+		struct BitmapFill
+		{
+			BitmapFill(SymbolContext& context, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media, const DOM::Utils::MATRIX2D& matrix);
+
+			BitmapElement bitmap;
+			bool is_clipped;
 		};
 
 	public:
@@ -40,10 +52,7 @@ namespace Animate::Publisher
 	public:
 		ShapeType type;
 
-		union
-		{
-			SolidFill solid;
-		};
+		std::variant<SolidFill, BitmapFill> style;
 
 		FilledElementPath contour;
 		std::vector<FilledElementPath> holes;
