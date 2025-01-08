@@ -69,7 +69,8 @@ namespace Animate::Publisher
 		virtual Type SegmentType() const = 0;
 		virtual Point2D Rasterize(float t_step) const = 0;
 		virtual float IterationStep() const = 0;
-		virtual void Transform(const DOM::Utils::MATRIX2D& matrux) = 0;
+		virtual void Transform(const DOM::Utils::MATRIX2D& matrix) = 0;
+		virtual void Bound(DOM::Utils::RECT& rect) const = 0;
 
 	public:
 		Iterator begin() const { return Iterator(*this); }

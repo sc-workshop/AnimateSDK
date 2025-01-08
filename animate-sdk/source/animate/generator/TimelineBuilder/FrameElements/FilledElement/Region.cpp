@@ -79,15 +79,8 @@ namespace Animate::Publisher
 
 			for (size_t i = 0; contour.Count() > i; i++)
 			{
-				const FilledElementPathSegment& path_point = contour.GetSegment(i);
-				for (Point2D point : path_point)
-				{
-					result.bottomRight.x = std::min(result.bottomRight.x, point.x);
-					result.bottomRight.y = std::min(result.bottomRight.y, point.y);
-
-					result.topLeft.x = std::max(result.topLeft.x, point.x);
-					result.topLeft.y = std::max(result.topLeft.y, point.y);
-				}
+				const FilledElementPathSegment& segment = contour.GetSegment(i);
+				segment.Bound(result);
 			}
 
 			return result;

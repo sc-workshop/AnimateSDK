@@ -13,7 +13,7 @@ namespace Animate::Publisher
 
 	public:
 		virtual FilledElementPathSegment::Type SegmentType() const {
-			return FilledElementPathSegment::Type::Cubic;
+			return FilledElementPathSegment::Type::Quad;
 		};
 
 		virtual Point2D Rasterize(float t_step) const;
@@ -21,6 +21,7 @@ namespace Animate::Publisher
 		virtual float IterationStep() const;
 
 		virtual void Transform(const DOM::Utils::MATRIX2D& matrix);
+		virtual void Bound(DOM::Utils::RECT& rect) const;
 
 	public:
 		Point2D begin;

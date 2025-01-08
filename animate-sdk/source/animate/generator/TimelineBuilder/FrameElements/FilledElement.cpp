@@ -82,22 +82,12 @@ namespace Animate::Publisher
 
 		for (const FilledElementRegion& region : fill)
 		{
-			const DOM::Utils::RECT region_bound = region.Bound();
-
-			result.topLeft.x = std::max(region_bound.topLeft.x, result.topLeft.x);
-			result.topLeft.y = std::max(region_bound.topLeft.y, result.topLeft.y);
-			result.bottomRight.x = std::min(region_bound.bottomRight.x, result.bottomRight.x);
-			result.bottomRight.y = std::min(region_bound.bottomRight.y, result.bottomRight.y);
+			result = result + region.Bound();
 		}
 
 		for (const FilledElementRegion& region : stroke)
 		{
-			const DOM::Utils::RECT region_bound = region.Bound();
-
-			result.topLeft.x = std::max(region_bound.topLeft.x, result.topLeft.x);
-			result.topLeft.y = std::max(region_bound.topLeft.y, result.topLeft.y);
-			result.bottomRight.x = std::min(region_bound.bottomRight.x, result.bottomRight.x);
-			result.bottomRight.y = std::min(region_bound.bottomRight.y, result.bottomRight.y);
+			result = result + region.Bound();
 		}
 
 		return result;

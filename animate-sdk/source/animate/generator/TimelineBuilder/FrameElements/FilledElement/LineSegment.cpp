@@ -28,4 +28,10 @@ namespace Animate::Publisher
 	float FilledElementPathLineSegment::IterationStep() const {
 		return 1.0f;
 	};
+
+	void FilledElementPathLineSegment::Bound(DOM::Utils::RECT& rect) const
+	{
+		begin.Bound(rect);
+		end.Bound(rect);
+	}
 }

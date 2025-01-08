@@ -20,6 +20,9 @@ namespace Animate::Publisher
 		void Transform(const DOM::Utils::MATRIX2D& matrix);
 
 	public:
+		void Bound(DOM::Utils::RECT& rect) const;
+
+	public:
 		float x = 0;
 		float y = 0;
 	};

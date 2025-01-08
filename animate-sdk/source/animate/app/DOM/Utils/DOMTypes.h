@@ -338,6 +338,19 @@ namespace Animate
 
 				/** Bottom-right point **/
 				POINT2D bottomRight;
+
+				RECT operator+(const RECT& other) const
+				{
+					RECT result{};
+
+					result.bottomRight.x = std::min(bottomRight.x, other.bottomRight.x);
+					result.bottomRight.y = std::min(bottomRight.y, other.bottomRight.y);
+
+					result.topLeft.x = std::max(topLeft.x, other.topLeft.x);
+					result.topLeft.y = std::max(topLeft.y, other.topLeft.y);
+
+					return result;
+				}
 			};
 
 			/**

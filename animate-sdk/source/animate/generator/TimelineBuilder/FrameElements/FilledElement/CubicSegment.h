@@ -20,6 +20,7 @@ namespace Animate::Publisher
 		virtual float IterationStep() const;
 
 		virtual void Transform(const DOM::Utils::MATRIX2D& matrix);
+		virtual void Bound(DOM::Utils::RECT& rect) const;
 
 	public:
 		Point2D begin;

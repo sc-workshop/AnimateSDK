@@ -34,4 +34,17 @@ namespace Animate::Publisher
 		control.Transform(matrix);
 		end.Transform(matrix);
 	}
+
+	void FilledElementPathQuadSegment::Bound(DOM::Utils::RECT& rect) const
+	{
+		begin.Bound(rect);
+
+		const float step = IterationStep() * 1.5f;
+		for (float t = 0.f; 1.0f > t; t+= step)
+		{
+			Rasterize(t).Bound(rect);
+		}
+
+		end.Bound(rect);
+	}
 }
