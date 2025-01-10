@@ -100,7 +100,6 @@ namespace Animate::Publisher
 
 		uint16_t FinalizeWriter(
 			IDisplayObjectWriter* writer,
-			uint16_t identifier,
 			bool required,
 			Library& library,
 			std::optional<FCM::FCMListPtr> filters = std::nullopt

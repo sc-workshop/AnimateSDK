@@ -63,7 +63,7 @@ namespace Animate::Publisher
 		std::vector<LayerBuilder> layers;
 		SymbolGenerator::GetLayerBuilder(layersList, m_resources, symbol, layers);
 
-		bool isStatic = !required && !symbol.slicing.IsEnabled();
+		bool isStatic = (!required && symbol.linkage_name.empty()) && !symbol.slicing.IsEnabled();
 		if (isStatic)
 		{
 			for (LayerBuilder& layer : layers)

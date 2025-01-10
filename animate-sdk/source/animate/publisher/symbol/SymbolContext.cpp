@@ -4,8 +4,9 @@ namespace Animate
 {
 	namespace Publisher
 	{
-		SymbolContext::SymbolContext(FCM::AutoPtr<DOM::ILibraryItem> item, const std::string& linkage) : name(GetName(item)), type(GetType(item)), linkage_name(linkage)
+		SymbolContext::SymbolContext(FCM::AutoPtr<DOM::ILibraryItem> item) : name(GetName(item)), type(GetType(item)), linkage_name(GetLinkage(item))
 		{
+			
 		}
 
 		SymbolContext::SymbolContext(const std::u16string& name, SymbolType type) : name(name), type(type)
@@ -55,6 +56,20 @@ namespace Animate
 			free((void*)symbolType);
 
 			return type;
+		}
+
+		std::string SymbolContext::GetLinkage(FCM::AutoPtr<DOM::ILibraryItem> symbol)
+		{
+			FCM::AutoPtr<FCM::IFCMDictionary> dict;
+			FCM::Result status = symbol->GetProperties(dict.m_Ptr);
+
+			std::string result;
+			if (!FCM_FAILURE_CODE(status) && dict != nullptr)
+			{
+				dict->Get(kLibProp_LinkageClass_DictKey, result);
+			}
+
+			return result;
 		}
 	}
 }

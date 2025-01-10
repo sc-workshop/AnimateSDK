@@ -19,17 +19,9 @@ namespace Animate::Publisher
 		{
 			FCM::AutoPtr<DOM::ILibraryItem>& item = items[i];
 
-			FCM::AutoPtr<FCM::IFCMDictionary> dict;
-			FCM::Result status = item->GetProperties(dict.m_Ptr);
+			SymbolContext symbol(item);
+			if (symbol.linkage_name.empty()) continue;
 
-			if (FCM_FAILURE_CODE(status) || dict == nullptr) continue;
-
-			std::string linkage;
-			dict->Get(kLibProp_LinkageClass_DictKey, linkage);
-
-			if (linkage.empty()) continue;
-
-			SymbolContext symbol(item, linkage);
 			uint16_t id = AddLibraryItem(symbol, item, true);
 
 			if (id == UINT16_MAX)
@@ -107,7 +99,7 @@ namespace Animate::Publisher
 
 		IDisplayObjectWriter* writer = symbolGenerator.Generate(symbol, timeline, required);
 
-		return FinalizeWriter(writer, m_id++, required, m_movieClips);
+		return FinalizeWriter(writer, required, m_movieClips);
 	};
 
 	uint16_t ResourcePublisher::AddMediaSymbol(
@@ -128,7 +120,7 @@ namespace Animate::Publisher
 			BitmapElement element(symbol, media_item, DOM::Utils::MATRIX2D());
 			writer->AddGraphic(element);
 
-			return FinalizeWriter(writer, m_id++, required, m_graphics);
+			return FinalizeWriter(writer, required, m_graphics);
 		}
 
 		return 0xFFFF;
@@ -159,7 +151,7 @@ namespace Animate::Publisher
 		SharedTextFieldWriter* writer = m_writer.AddTextField(symbol);
 		TextFieldGenerator::Generate(writer, textfieldData);
 
-		return FinalizeWriter(writer, m_id++, false, m_textFields, filters);
+		return FinalizeWriter(writer, false, m_textFields, filters);
 	}
 
 	uint16_t ResourcePublisher::AddGroup(
@@ -172,12 +164,11 @@ namespace Animate::Publisher
 
 		writer->AddGroup(symbol, elements);
 
-		return FinalizeWriter(writer, m_id++, required, m_graphics);
+		return FinalizeWriter(writer, required, m_graphics);
 	}
 
 	uint16_t ResourcePublisher::FinalizeWriter(
 		IDisplayObjectWriter* writer, 
-		uint16_t identifier, 
 		bool required,
 		Library& library,
 		std::optional<FCM::FCMListPtr> filters
@@ -204,6 +195,7 @@ namespace Animate::Publisher
 			}
 		}
 
+		uint16_t identifier = m_id++;
 		std::size_t hash = writer->HashCode();
 		auto library_pair = library.find(hash);
 		bool in_library = library_pair != library.end();
