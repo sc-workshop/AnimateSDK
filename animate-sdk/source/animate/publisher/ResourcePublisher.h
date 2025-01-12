@@ -61,6 +61,8 @@ namespace Animate::Publisher
 		{
 		}
 
+		void SetIdOffset(uint16_t);
+
 		uint16_t AddLibraryItem(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::ILibraryItem> item,
