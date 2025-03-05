@@ -24,6 +24,12 @@ namespace FCM
 		{
 		case Reason::UNKNOWN_LIBRARY_ITEM:
 			return "Unknown library item type in library";
+		case Reason::UNKNOWN_FILL_STYLE:
+			return "Unknown fill style in symbol";
+		case Reason::SERVICE_FAIL:
+			return "Failed to get FCM serivce";
+		case Reason::SYMBOL_EXPORT_FAIL:
+			return "Failed to export symbol";
 		default:
 			return "";
 		}

@@ -238,6 +238,23 @@ namespace Animate
 
 					return *this;
 				}
+
+				MATRIX2D& operator +(const MATRIX2D& matrix)
+				{
+					a *= matrix.a;
+					b += matrix.b;
+					c += matrix.c;
+					d *= matrix.d;
+					tx += matrix.tx;
+					ty += matrix.ty;
+
+					return *this;
+				}
+
+				MATRIX2D& operator +=(const MATRIX2D& matrix)
+				{
+					return *this + matrix;
+				}
 			};
 
 			/**

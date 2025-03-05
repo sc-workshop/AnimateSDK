@@ -14,7 +14,7 @@ namespace Animate::Publisher
 	void FrameBuilder::Reset()
 	{
 		m_duration = 0;
-		m_position = 0;
+		m_frame_position = 0;
 		m_label.clear();
 		m_elements.clear();
 		m_static_elements.Clear();
@@ -104,36 +104,51 @@ namespace Animate::Publisher
 
 			DeclareFrameElements(symbol, frameElements, std::nullopt, true);
 		}
+
+		m_rigging_frame = frame;
 	}
 
 	void FrameBuilder::ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, size_t index)
 	{
 		FrameBuilderElement& element = m_elements[index];
 
+		FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
 		std::optional<Matrix_t> matrix = element.matrix;
 		std::optional<Color_t> color = element.color;
 
 		if (matrix.has_value()) {
 			if (m_matrix_tweener) {
 				DOM::Utils::MATRIX2D transform_matrix;
-				m_matrix_tweener->GetGeometricTransform(m_base_tween, m_position, transform_matrix);
+				m_matrix_tweener->GetGeometricTransform(m_base_tween, m_frame_position, transform_matrix);
 
 				*matrix = *matrix * transform_matrix;
 			}
 		}
 		else if (m_matrix_tweener) {
 			matrix = DOM::Utils::MATRIX2D();
-			m_matrix_tweener->GetGeometricTransform(m_base_tween, m_position, *matrix);
+			m_matrix_tweener->GetGeometricTransform(m_base_tween, m_frame_position, *matrix);
+		}
+
+		if (m_rigging_frame)
+		{
+			m_rigging_frame->GetRigParent(m_frame_position, rigging_layer.m_Ptr);
+		}
+
+		if (rigging_layer)
+		{
+			DOM::Utils::RIG_PROPERTIES props;
+			m_rigging_frame->GetRigProperties(m_timeline_position, props);
+			matrix = *matrix * props.matrix;
 		}
 
 		if (m_color_tweener) {
 			color = DOM::Utils::COLOR_MATRIX();
-			m_color_tweener->GetColorMatrix(m_base_tween, m_position, *color);
+			m_color_tweener->GetColorMatrix(m_base_tween, m_frame_position, *color);
 		}
 
 		if (m_shape_tweener) {
 			FCM::AutoPtr<DOM::FrameElement::IShape> filledShape = nullptr;
-			m_shape_tweener->GetShape(m_base_tween, m_position, filledShape.m_Ptr);
+			m_shape_tweener->GetShape(m_base_tween, m_frame_position, filledShape.m_Ptr);
 
 			// TODO: this place may have many bugs and issues
 			m_static_state = FrameBuilder::StaticElementsState::Valid;
@@ -196,12 +211,7 @@ namespace Animate::Publisher
 
 		if (base_transform)
 		{
-			matrix.a *= base_transform->a;
-			matrix.b += base_transform->b;
-			matrix.c += base_transform->c;
-			matrix.d *= base_transform->d;
-			matrix.tx += base_transform->tx;
-			matrix.ty += base_transform->ty;
+			matrix += *base_transform;
 		}
 
 		std::optional<Color_t> color = std::nullopt;

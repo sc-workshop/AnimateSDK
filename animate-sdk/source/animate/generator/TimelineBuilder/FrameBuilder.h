@@ -46,7 +46,8 @@ namespace Animate::Publisher
 
 		// Basic frame data
 		uint32_t m_duration = 0;
-		uint32_t m_position = 0;
+		uint32_t m_frame_position = 0;
+		uint32_t m_timeline_position = 0;
 		std::u16string m_label;
 
 		// Frame elements
@@ -58,6 +59,9 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::Service::Tween::IGeometricTweener> m_matrix_tweener = nullptr;
 		FCM::AutoPtr<DOM::Service::Tween::IColorTweener> m_color_tweener = nullptr;
 		FCM::AutoPtr<DOM::Service::Tween::IShapeTweener> m_shape_tweener = nullptr;
+
+		// Rigging
+		FCM::AutoPtr<DOM::IFrame1> m_rigging_frame = nullptr;
 
 		// Filled elements "Static Batching" things
 		StaticElementsState m_static_state = StaticElementsState::None;
@@ -80,7 +84,8 @@ namespace Animate::Publisher
 
 		void Next()
 		{
-			m_position++;
+			m_frame_position++;
+			m_timeline_position++;
 		}
 
 		uint32_t Duration() const
@@ -90,7 +95,7 @@ namespace Animate::Publisher
 
 		uint32_t Position() const
 		{
-			return m_position;
+			return m_frame_position;
 		}
 
 		StaticElementsState StaticElementsState() const
@@ -100,7 +105,7 @@ namespace Animate::Publisher
 
 		operator bool() const
 		{
-			return m_duration > m_position;
+			return m_duration > m_frame_position;
 		}
 
 		const StaticElementsGroup& StaticElements() const
