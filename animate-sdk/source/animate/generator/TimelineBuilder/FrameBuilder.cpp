@@ -102,7 +102,7 @@ namespace Animate::Publisher
 			FCM::FCMListPtr frameElements;
 			frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frameElements.m_Ptr);
 
-			DeclareFrameElements(symbol, frameElements, std::nullopt, true);
+			DeclareFrameElements(symbol, frameElements, std::nullopt, false);
 		}
 
 		m_rigging_frame = frame;
