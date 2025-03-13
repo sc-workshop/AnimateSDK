@@ -108,9 +108,9 @@ namespace Animate::Publisher
 		m_rigging_frame = frame;
 	}
 
-	void FrameBuilder::ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, size_t index)
+	void FrameBuilder::ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, FrameBuilderElement& element)
 	{
-		FrameBuilderElement& element = m_elements[index];
+		if (m_frame_position > element.duration) return;
 
 		FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
 		std::optional<Matrix_t> matrix = element.matrix;
@@ -171,13 +171,14 @@ namespace Animate::Publisher
 		for (uint32_t elementIndex = 0; m_elements.size() > elementIndex; elementIndex++) {
 			i--;
 
-			ReleaseFrameElement(symbol, writer, i);
+			ReleaseFrameElement(symbol, writer, m_elements[i]);
 		}
 	}
 
 	void FrameBuilder::DeclareFrameElements(SymbolContext& symbol, FCM::FCMListPtr frameElements, std::optional<Matrix_t> base_transform, bool reverse) {
 		uint32_t frameElementsCount = 0;
 		frameElements->Count(frameElementsCount);
+		m_elements.reserve(frameElementsCount);
 
 		if (reverse)
 		{
@@ -200,7 +201,10 @@ namespace Animate::Publisher
 		std::optional<Matrix_t> base_transform
 	)
 	{
-		FCM::PluginModule& context = FCM::PluginModule::Instance();
+		using namespace Animate::DOM::FrameElement;
+		using namespace FCM;
+
+		PluginModule& context = PluginModule::Instance();
 
 		// Symbol info
 		FrameBuilderElement element;
@@ -217,22 +221,22 @@ namespace Animate::Publisher
 		std::optional<Color_t> color = std::nullopt;
 
 		// Game "guess who i am"
-		FCM::AutoPtr<DOM::FrameElement::IInstance> libraryElement = frameElement;
-		FCM::AutoPtr<DOM::IFilterable> filterableElement = frameElement;
-		FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldElement = frameElement;
+		AutoPtr<IInstance> libraryElement = frameElement;
+		AutoPtr<DOM::IFilterable> filterableElement = frameElement;
+		AutoPtr<IClassicText> textfieldElement = frameElement;
 
-		FCM::AutoPtr<DOM::FrameElement::IMovieClip> movieClipElement = frameElement;
-		FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> symbolItem = frameElement;
-		FCM::AutoPtr<DOM::FrameElement::IShape> filledShapeItem = frameElement;
-		FCM::AutoPtr<DOM::FrameElement::IGroup> groupedElemenets = frameElement;
+		AutoPtr<IMovieClip> movieClipElement = frameElement;
+		AutoPtr<ISymbolInstance> symbolItem = frameElement;
+		AutoPtr<IShape> filledShapeItem = frameElement;
+		AutoPtr<IGraphic> graphicItem = frameElement;
+		AutoPtr<IGroup> groupedElemenets = frameElement;
 
-		std::optional<FCM::FCMListPtr> filters;
+		std::optional<FCMListPtr> filters;
 		if (filterableElement)
 		{
-			filters = FCM::FCMListPtr();
+			filters = FCMListPtr();
 			filterableElement->GetGraphicFilters(filters->m_Ptr);
 		}
-		
 
 		auto is_required = [&element]()
 		{
@@ -252,9 +256,9 @@ namespace Animate::Publisher
 
 		// Symbol
 		if (libraryElement) {
-			FCM::AutoPtr<DOM::ILibraryItem> libraryItem;
+			AutoPtr<DOM::ILibraryItem> libraryItem;
 			libraryElement->GetLibraryItem(libraryItem.m_Ptr);
-			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> mediaItem = libraryItem;
+			AutoPtr<DOM::LibraryItem::IMediaItem> mediaItem = libraryItem;
 
 			SymbolContext librarySymbol(libraryItem);
 
@@ -276,10 +280,10 @@ namespace Animate::Publisher
 
 			if (mediaItem)
 			{
-				FCM::AutoPtr<FCM::IFCMUnknown> mediaInfo;
+				AutoPtr<IFCMUnknown> mediaInfo;
 				mediaItem->GetMediaInfo(mediaInfo.m_Ptr);
 
-				FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmapMedia = mediaInfo;
+				AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmapMedia = mediaInfo;
 				m_static_elements.AddElement<BitmapElement>(symbol, mediaItem, matrix);
 				if (!release_static(element.name))
 				{
@@ -301,14 +305,14 @@ namespace Animate::Publisher
 
 			if (element.id != 0xFFFF)
 			{
-				FCM::AutoPtr<DOM::FrameElement::ITextBehaviour> textfieldElementBehaviour;
+				AutoPtr<ITextBehaviour> textfieldElementBehaviour;
 				textfieldElement->GetTextBehaviour(textfieldElementBehaviour.m_Ptr);
 
-				FCM::AutoPtr<DOM::FrameElement::IModifiableTextBehaviour> modifiableTextfieldBehaviour = textfieldElementBehaviour;
+				AutoPtr<IModifiableTextBehaviour> modifiableTextfieldBehaviour = textfieldElementBehaviour;
 				if (modifiableTextfieldBehaviour) {
 					element.name = context.falloc->GetString16(
 						modifiableTextfieldBehaviour.m_Ptr,
-						&DOM::FrameElement::IModifiableTextBehaviour::GetInstanceName
+						&IModifiableTextBehaviour::GetInstanceName
 					);
 				}
 			}
@@ -327,7 +331,7 @@ namespace Animate::Publisher
 
 		// Groups
 		else if (groupedElemenets) {
-			FCM::FCMListPtr groupElements;
+			FCMListPtr groupElements;
 			groupedElemenets->GetMembers(groupElements.m_Ptr);
 
 			DeclareFrameElements(symbol, groupElements, matrix);
@@ -349,6 +353,37 @@ namespace Animate::Publisher
 
 		element.matrix = matrix;
 		element.color = color;
+
+		// Looping params
+		if (graphicItem)
+		{
+			AnimationLoopMode mode;
+			graphicItem->GetLoopMode(mode);
+
+			switch (mode)
+			{
+			case AnimationLoopMode::ANIMATION_PLAY_ONCE:
+				if (libraryElement)
+				{
+					AutoPtr<DOM::ILibraryItem> libraryItem;
+					libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+					AutoPtr<DOM::LibraryItem::ISymbolItem> symbolLibraryItem = libraryItem;
+					if (symbolLibraryItem)
+					{
+						AutoPtr<DOM::ITimeline> itemTimeline;
+						symbolLibraryItem->GetTimeLine(itemTimeline.m_Ptr);
+						itemTimeline->GetMaxFrameCount(element.duration);
+					}
+				}
+				break;
+
+			case AnimationLoopMode::ANIMATION_LOOP:
+			case AnimationLoopMode::ANIMATION_SINGLE_FRAME:
+			default:
+				break;
+			}
+		}
+
 		m_elements.push_back(element);
 		m_keyframe_static_state = StaticElementsState::Invalid;
 	}

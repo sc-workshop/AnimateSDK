@@ -18,13 +18,16 @@ namespace Animate::Publisher
 	{
 	public:
 		// Elements data
-		uint16_t id = UINT16_MAX;
+		uint16_t id = std::numeric_limits<uint16_t>::max();
 		FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
 		std::u16string name;
 
 		// Optional basic transforms for each frame element
 		std::optional<Matrix_t> matrix = std::nullopt;
 		std::optional<Color_t> color = std::nullopt;
+
+		// Count of playing frames
+		uint32_t duration = std::numeric_limits<uint32_t>::max();
 	};
 
 	class FrameBuilder {
@@ -73,7 +76,7 @@ namespace Animate::Publisher
 
 		void Update(SymbolContext& symbol, FCM::AutoPtr<DOM::IFrame> frame);
 
-		void ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, size_t index);
+		void ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, FrameBuilderElement& element);
 
 		void operator()(SymbolContext& symbol, SharedMovieclipWriter& writer);
 
