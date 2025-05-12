@@ -27,33 +27,20 @@ namespace Animate
 		{
 			FCM::AutoPtr<FCM::IFCMDictionary> properties;
 			symbol->GetProperties(properties.m_Ptr);
+			if (!properties) return SymbolType::Unknown;
 
-			FCM::U_Int32 valueLen;
-			FCM::FCMDictRecTypeID propertyType;
-
-			FCM::Result status = properties->GetInfo(kLibProp_SymbolType_DictKey, propertyType, valueLen);
-			if (FCM_FAILURE_CODE(status) || propertyType != FCM::FCMDictRecTypeID::StringRep8)
-			{
-				return SymbolContext::SymbolType::Unknown;
-			}
-
-			const char* symbolType = (const char*)malloc(valueLen);
-			properties->Get(kLibProp_SymbolType_DictKey, propertyType, (FCM::PVoid)symbolType, valueLen);
+			std::string symbolTypeName = "";
+			properties->Get(kLibProp_SymbolType_DictKey, symbolTypeName);
 
 			SymbolType type = SymbolType::Unknown;
-			if (symbolType)
+			if (symbolTypeName == "MovieClip")
 			{
-				if (strcmp(symbolType, "MovieClip") == 0)
-				{
-					type = SymbolType::MovieClip;
-				}
-				else if (strcmp(symbolType, "Graphic") == 0)
-				{
-					type = SymbolType::Graphic;
-				}
+				type = SymbolType::MovieClip;
 			}
-
-			free((void*)symbolType);
+			else if (symbolTypeName == "Graphic")
+			{
+				type = SymbolType::Graphic;
+			}
 
 			return type;
 		}
