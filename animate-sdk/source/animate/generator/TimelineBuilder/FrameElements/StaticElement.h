@@ -19,6 +19,11 @@ namespace Animate::Publisher
 			return m_matrix;
 		}
 
+		virtual void Transform(const DOM::Utils::MATRIX2D& matrix)
+		{
+			m_matrix = m_matrix * matrix;
+		}
+
 	public:
 		virtual bool IsSprite() const
 		{

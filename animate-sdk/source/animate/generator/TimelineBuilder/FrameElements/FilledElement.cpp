@@ -74,8 +74,8 @@ namespace Animate::Publisher
 	DOM::Utils::RECT FilledElement::Bound() const
 	{
 		DOM::Utils::RECT result{
-			{std::numeric_limits<float>::min(),
-			std::numeric_limits<float>::min()},
+			{-std::numeric_limits<float>::max(),
+			-std::numeric_limits<float>::max()},
 			{std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()}
 		};

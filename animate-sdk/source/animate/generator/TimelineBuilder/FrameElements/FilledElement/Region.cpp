@@ -109,8 +109,8 @@ namespace Animate::Publisher
 	DOM::Utils::RECT FilledElementRegion::Bound() const
 	{
 		DOM::Utils::RECT result{
-			{std::numeric_limits<float>::min(),
-			std::numeric_limits<float>::min()},
+			{-std::numeric_limits<float>::max(),
+			-std::numeric_limits<float>::max()},
 			{std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()}
 		};
@@ -127,6 +127,24 @@ namespace Animate::Publisher
 	void FilledElementRegion::Transform(const DOM::Utils::MATRIX2D& matrix)
 	{
 		contour.Transform(matrix);
+
+		switch (type)
+		{
+		break;
+		case ShapeType::Bitmap:
+		{
+			BitmapFill& fill = std::get<BitmapFill>(style);
+			fill.bitmap.Transform(matrix);
+		}
+		break;
+		case ShapeType::GradientColor:
+		{
+			// TODO
+		}
+		break;
+		default:
+			break;
+		}
 
 		for (FilledElementPath& hole : holes)
 		{
