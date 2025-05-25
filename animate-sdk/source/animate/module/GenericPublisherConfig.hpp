@@ -12,8 +12,9 @@ namespace Animate::Publisher
 			// TODO: parse settings dict?
 		}
 
-		virtual void FromDict(const FCM::PIFCMDictionary /*dict*/)
+		virtual bool FromDict(const FCM::PIFCMDictionary /*dict*/)
 		{
+			return true;
 		};
 
 	public:

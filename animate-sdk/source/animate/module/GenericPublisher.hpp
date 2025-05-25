@@ -31,7 +31,11 @@ namespace Animate::Publisher
 		{
 			ConfigT config(document, projectConfig, publishConfig);
 			m_activeConfig = &config;
-			config.FromDict(publishConfig);
+			bool status = config.FromDict(publishConfig);
+			if (!status)
+			{
+				return FCM_INVALID_PARAM;
+			}
 
 			PublisherT publisher{};
 			publisher.Publish(config);
@@ -54,7 +58,7 @@ namespace Animate::Publisher
 
 	public:
 		static const Animate::FCMPluginID PluginID;
-		static const ConfigT& ActiveConfig() {
+		static ConfigT& ActiveConfig() {
 			return *m_activeConfig;
 		};
 
