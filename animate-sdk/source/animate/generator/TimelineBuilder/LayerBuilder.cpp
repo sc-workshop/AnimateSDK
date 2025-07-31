@@ -6,7 +6,7 @@ namespace Animate::Publisher
 {
 	void LayerBuilder::UpdateFrame(SymbolContext& symbol) {
 		FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[m_keyframeIndex];
-		frameBuilder.Update(symbol, frame);
+		frameBuilder.Update(symbol, m_layer, frame);
 	}
 
 	void LayerBuilder::AddModifier(
@@ -25,18 +25,22 @@ namespace Animate::Publisher
 	}
 
 	LayerBuilder::LayerBuilder(
-		FCM::AutoPtr<DOM::Layer::ILayerNormal> layer,
+		FCM::AutoPtr<DOM::ILayer2> layer,
 		uint32_t duration,
 		ResourcePublisher& resources,
 		SymbolContext& symbol
 	) : m_symbol(symbol), m_duration(duration), m_layer(layer), m_resources(resources), frameBuilder(resources)
 	{
-		layer->GetKeyFrames(m_keyframes.m_Ptr);
+		FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
+		layer->GetLayerType(unknownLayer.m_Ptr);
+		FCM::AutoPtr<DOM::Layer::ILayerNormal> normal_layer = unknownLayer;
+
+		normal_layer->GetKeyFrames(m_keyframes.m_Ptr);
 		m_keyframes->Count(m_keyframeCount);
 
 		UpdateFrame(m_symbol);
 
-		FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = m_layer;
+		FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = unknownLayer;
 		if (maskLayer) {
 			FCM::FCMListPtr layers;
 			maskLayer->GetChildren(layers.m_Ptr);

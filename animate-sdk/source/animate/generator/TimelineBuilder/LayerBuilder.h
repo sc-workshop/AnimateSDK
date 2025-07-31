@@ -24,7 +24,7 @@ namespace Animate::Publisher
 		uint32_t m_keyframeCount = 0;
 		uint32_t m_keyframeIndex = 0;
 
-		FCM::AutoPtr<DOM::Layer::ILayerNormal> m_layer;
+		FCM::AutoPtr<DOM::ILayer2> m_layer;
 		ResourcePublisher& m_resources;
 
 		bool m_mask_layer = false;
@@ -37,7 +37,7 @@ namespace Animate::Publisher
 		);
 
 	public:
-		LayerBuilder(FCM::AutoPtr<DOM::Layer::ILayerNormal> layer, uint32_t duration, ResourcePublisher& resources, SymbolContext& info);
+		LayerBuilder(FCM::AutoPtr<DOM::ILayer2> layer, uint32_t duration, ResourcePublisher& resources, SymbolContext& info);
 
 		void operator()(SharedMovieclipWriter& writer);
 

@@ -48,6 +48,7 @@ namespace Animate::Publisher
 		ResourcePublisher& m_resources;
 
 		// Basic frame data
+		FCM::AutoPtr<DOM::ILayer2> m_frame_layer;
 		uint32_t m_duration = 0;
 		uint32_t m_frame_position = 0;
 		uint32_t m_timeline_position = 0;
@@ -74,7 +75,7 @@ namespace Animate::Publisher
 	public:
 		FrameBuilder(ResourcePublisher& resources) : m_resources(resources) { };
 
-		void Update(SymbolContext& symbol, FCM::AutoPtr<DOM::IFrame> frame);
+		void Update(SymbolContext& symbol, FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame);
 
 		void ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, FrameBuilderElement& element);
 

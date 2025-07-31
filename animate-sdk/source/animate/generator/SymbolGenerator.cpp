@@ -42,7 +42,7 @@ namespace Animate::Publisher
 				normalLayer->GetTotalDuration(duration);
 				if (duration <= 0) continue;
 
-				result.emplace_back(normalLayer, duration, resources, symbol);
+				result.emplace_back(layer, duration, resources, symbol);
 			}
 		}
 	};

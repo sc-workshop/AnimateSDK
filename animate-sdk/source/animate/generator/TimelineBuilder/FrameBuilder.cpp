@@ -4,7 +4,7 @@
 
 namespace Animate::Publisher
 {
-	std::string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> symbol_instance)
+	std::string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> /*symbol_instance*/)
 	{
 		// TODO:
 
@@ -25,7 +25,7 @@ namespace Animate::Publisher
 		m_shape_tweener = nullptr;
 	}
 
-	void FrameBuilder::Update(SymbolContext& symbol, FCM::AutoPtr<DOM::IFrame> frame) {
+	void FrameBuilder::Update(SymbolContext& symbol, FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame) {
 		FCM::PluginModule& context = FCM::PluginModule::Instance();
 		Reset();
 
@@ -99,6 +99,7 @@ namespace Animate::Publisher
 
 		// Frame Elements
 		{
+			m_frame_layer = layer;
 			FCM::FCMListPtr frameElements;
 			frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frameElements.m_Ptr);
 
@@ -113,8 +114,14 @@ namespace Animate::Publisher
 		if (m_frame_position > element.duration) return;
 
 		FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
+		FCM::BlendMode blend = element.blend_mode;
 		std::optional<Matrix_t> matrix = element.matrix;
 		std::optional<Color_t> color = element.color;
+
+		FCM::BlendMode frame_blend;
+		Color_t frame_color;
+		m_frame_layer->GetColorTransformAtFrame(m_timeline_position, frame_color);
+		m_frame_layer->GetBlendModeAtFrame(m_timeline_position, frame_blend);
 
 		if (matrix.has_value()) {
 			if (m_matrix_tweener) {
@@ -141,9 +148,22 @@ namespace Animate::Publisher
 			matrix = *matrix * props.matrix;
 		}
 
-		if (m_color_tweener) {
-			color = DOM::Utils::COLOR_MATRIX();
-			m_color_tweener->GetColorMatrix(m_base_tween, m_frame_position, *color);
+
+		if (frame_color.Identity())
+		{
+			if (m_color_tweener) {
+				color = DOM::Utils::COLOR_MATRIX();
+				m_color_tweener->GetColorMatrix(m_base_tween, m_frame_position, *color);
+			}
+		}
+		else
+		{
+			color = frame_color;
+		}
+
+		if (frame_blend != FCM::BlendMode::NORMAL)
+		{
+			blend = frame_blend;
 		}
 
 		if (m_shape_tweener) {
@@ -156,10 +176,11 @@ namespace Animate::Publisher
 
 			return;
 		}
+		
 
 		writer.AddFrameElement(
 			element.id,
-			element.blend_mode,
+			blend,
 			element.name,
 			matrix,
 			color
@@ -218,7 +239,7 @@ namespace Animate::Publisher
 			matrix += *base_transform;
 		}
 
-		std::optional<Color_t> color = std::nullopt;
+		std::optional<Color_t> color;
 
 		// Game "guess who i am"
 		AutoPtr<IInstance> libraryElement = frameElement;
@@ -265,7 +286,6 @@ namespace Animate::Publisher
 			if (symbolItem) {
 				color = Color_t();
 				symbolItem->GetColorMatrix(*color);
-				//element.name = Localization::ToUtf16(FrameBuilder::GetInstanceName(symbolItem));
 			}
 
 			if (movieClipElement) {

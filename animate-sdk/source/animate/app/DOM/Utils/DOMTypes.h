@@ -341,6 +341,21 @@ namespace Animate
 						FCM::Float colorArray[20];
 					};
 				};
+
+				bool Identity() const
+				{ 
+					if (matrix[0][0] != 1.0f) return false;
+					if (matrix[1][1] != 1.0f) return false;
+					if (matrix[2][2] != 1.0f) return false;
+					if (matrix[3][3] != 1.0f) return false;
+
+					if (matrix[0][4] != 0.0f) return false;
+					if (matrix[1][4] != 0.0f) return false;
+					if (matrix[2][4] != 0.0f) return false;
+					if (matrix[3][4] != 0.0f) return false;
+
+					return true;
+				}
 			};
 
 			/**
