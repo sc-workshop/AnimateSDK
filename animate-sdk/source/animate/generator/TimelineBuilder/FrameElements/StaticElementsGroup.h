@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "StaticElement.h"
+#include "FilledElement.h"
 
 namespace Animate::Publisher
 {

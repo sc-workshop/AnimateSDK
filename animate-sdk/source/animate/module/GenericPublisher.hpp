@@ -153,7 +153,7 @@ namespace Animate::Publisher
 			result = pDocs->Add(
 				((std::string)document_id).c_str(),
 				FCMDictRecTypeID::StringRep8,
-				"",
+				(void*)"",
 				1
 			);
 		}

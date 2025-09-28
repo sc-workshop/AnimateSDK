@@ -92,7 +92,7 @@ namespace FCM
              (obj->*function)(ptr);
              if (ptr)
              {
-                 Result str((Result::const_pointer)ptr);
+                 Result str(reinterpret_cast<Result::const_pointer>(ptr));
                  this->Free((FCM::PVoid)ptr);
                  return str;
              }

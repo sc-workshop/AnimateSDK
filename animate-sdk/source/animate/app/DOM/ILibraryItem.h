@@ -41,7 +41,7 @@ namespace Animate
 	*
 	* @brief Dictionary key for linkage class name.
 	*/
-    constexpr FCM::StringRep8 kLibProp_LinkageClass_DictKey = "LinkageClass";
+    FCM::String8Key kLibProp_LinkageClass_DictKey = "LinkageClass";
 
 
     /**
@@ -56,7 +56,7 @@ namespace Animate
     *
     * @brief Dictionary key for linkage class base name.
     */
-    constexpr FCM::StringRep8 kLibProp_LinkageBaseClass_DictKey = "LinkageBaseClass";
+    FCM::String8Key kLibProp_LinkageBaseClass_DictKey = "LinkageBaseClass";
 
 
     /**
@@ -71,7 +71,7 @@ namespace Animate
 	*
 	* @brief Dictionary key for linkage identifier.
 	*/
-    constexpr FCM::StringRep8 kLibProp_LinkageIdentifier_DictKey = "LinkageIdentifier";
+    FCM::String8Key kLibProp_LinkageIdentifier_DictKey = "LinkageIdentifier";
 
 
     /**
@@ -86,7 +86,7 @@ namespace Animate
     *
     * @brief Dictionary key for linkage URL.
     */
-    constexpr FCM::StringRep8 kLibProp_LinkageURL_DictKey = "LinkageURL";
+    FCM::String8Key kLibProp_LinkageURL_DictKey = "LinkageURL";
 
 
     /**
@@ -102,7 +102,7 @@ namespace Animate
 	*
 	* @brief Dictionary key for 'Linkage Export For Runtime Sharing'.
 	*/
-    constexpr FCM::StringRep8 kLibProp_LinkageExportForRS_DictKey = "LinkageExportForRS";
+    FCM::String8Key kLibProp_LinkageExportForRS_DictKey = "LinkageExportForRS";
 
 
     /**
@@ -118,7 +118,7 @@ namespace Animate
     *
     * @brief Dictionary key for 'Import For Runtime Sharing'.
     */
-    constexpr FCM::StringRep8 kLibProp_LinkageImportForRS_DictKey = "LinkageImportForRS";
+    FCM::String8Key kLibProp_LinkageImportForRS_DictKey = "LinkageImportForRS";
 
 
     /**
@@ -134,7 +134,7 @@ namespace Animate
 	*
 	* @brief Dictionary key for 'Export In First Frame'.
 	*/
-    constexpr FCM::StringRep8 kLibProp_LinkageExportInFirstFrame_DictKey = "LinkageExportInFirstFrame";
+    FCM::String8Key kLibProp_LinkageExportInFirstFrame_DictKey = "LinkageExportInFirstFrame";
 
 
     /**
@@ -150,7 +150,7 @@ namespace Animate
     *
     * @brief Dictionary key for 'Export For Actionscript'.
     */
-    constexpr FCM::StringRep8 kLibProp_LinkageExportForAS_DictKey = "LinkageExportForAS";
+    FCM::String8Key kLibProp_LinkageExportForAS_DictKey = "LinkageExportForAS";
 
 
     /**
@@ -165,7 +165,7 @@ namespace Animate
     *
     * @brief Dictionary key for the property "type" of the Symbol.
     */
-    constexpr FCM::StringRep8 kLibProp_SymbolType_DictKey = "SymbolType";
+    FCM::String8Key kLibProp_SymbolType_DictKey = "SymbolType";
 
 
     /**
@@ -180,21 +180,21 @@ namespace Animate
     *
     * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Button
     */
-    constexpr FCM::StringRep8 kLibProp_SymbolType_Button = "Button";
+    FCM::String8Key kLibProp_SymbolType_Button = "Button";
 
     /**
     * @def   kLibProp_SymbolType_MovieClip
     *
     * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Movie Clip
     */
-    constexpr FCM::StringRep8 kLibProp_SymbolType_MovieClip = "MovieClip";
+    FCM::String8Key kLibProp_SymbolType_MovieClip = "MovieClip";
 
     /**
     * @def   kLibProp_SymbolType_Graphic
     *
     * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Graphic
     */
-    constexpr FCM::StringRep8 kLibProp_SymbolType_Graphic = "Graphic";
+    FCM::String8Key kLibProp_SymbolType_Graphic = "Graphic";
 
 
     namespace DOM

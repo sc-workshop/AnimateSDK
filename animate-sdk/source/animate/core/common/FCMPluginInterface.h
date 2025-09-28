@@ -27,12 +27,14 @@
 #include "FCMTypes.h"
 #include "FCMErrors.h"
 #include "FCMMacros.h"
-
 #include "FCMPublicIDs.h"
 
 #include "animate/core/IFCMUnknown.h"
 #include "animate/core/IFCMNoAggregationUnknown.h"
 #include "animate/core/IFCMClassFactory.h"
+#include "animate/core/IFCMCallback.h"
+#include "animate/core/IFCMDictionary.h"
+#include "animate/core/IFCMCalloc.h"
 
 #include "animate/app/Application/Service/IApplicationService.h"
 #include "animate/app/Application/Service/IOutputConsoleService.h"
@@ -43,6 +45,7 @@
 #include <string>
 #include <exception>
 #include <filesystem>
+#include <functional>
 
 #include "animate/core/common/FCMPreConfig.h"
 
@@ -58,6 +61,12 @@ namespace Animate::DocType
 
 namespace FCM
 {
+	namespace Locale
+	{
+		std::u16string ToUtf16(const std::string& string);
+		std::string ToUtf8(const std::u16string& string);
+	}
+
 	/** @cond HIDE_PRIVATE */
 	typedef struct {
 		FCMCLSID        classID;
@@ -434,6 +443,18 @@ namespace FCM
 
 	/** @cond HIDE_PRIVATE */
 
+	template<typename IntfImpl>
+	class FCMObject;
+
+	template<typename T>
+	class FCMClassFactory;
+
+	template<class T>
+	class IntfImpl_Traits;
+
+	template <typename T>
+	using FCMFactoryObj = FCMObject<FCMClassFactory<T>>;
+
 	class PluginModule
 	{
 	private:
@@ -555,10 +576,48 @@ namespace FCM
 			return Animate::Publisher::RegisterPublisher(plugins, Publisher::PluginID.DocumentTypeID, Publisher::PluginID.PublisherID, m_module);
 		}
 
-		template<typename T = FCM::FCMObjectBase>
+		template<typename T>
 		void AddClassEntry(FCMCLSID clsid)
 		{
-			AddClassEntry(clsid, &FCM::FCMClassFactory<T>::GetFactory, &T::GetInterfaceMap, m_module.version);
+			using Factory = FCMFactoryObj<T>;
+			if (!falloc)
+				return;
+
+			ClassNode* newnode = static_cast<ClassNode*>(falloc->Alloc(sizeof(ClassNode)));
+			if (!newnode)
+				return;
+
+			newnode->next = 0;
+			newnode->m_ClassMap.clsid = clsid;
+			newnode->m_ClassMap.pFactoryCreator = [](PluginModule* pModule) -> IFCMClassFactory* {
+				Factory* pFact = nullptr;
+
+				Result res = IntfImpl_Traits<Factory>::CreateInstance(pModule, nullptr, nullptr, pFact);
+				if (FCM_FAILURE_CODE(res))
+					return nullptr;
+
+				FCM_ADDREF(pFact);
+				return pFact;
+			};
+
+			newnode->m_ClassMap.pGetInterfaceTable = &T::GetInterfaceMap;
+			newnode->m_ClassMap.classVersion = m_module.version;
+
+			if (!m_firstNode)
+			{
+				m_firstNode = newnode;
+			}
+			else
+			{
+				ClassNode* current = m_firstNode;
+				ClassNode* prev = 0;
+				while (current)
+				{
+					prev = current;
+					current = current->next;
+				}
+				prev->next = newnode;
+			}
 		}
 
 	public:
@@ -577,17 +636,11 @@ namespace FCM
 		std::string LanguageCode() const;
 
 	protected:
-		void AddClassEntry(FCMCLSID clsid, FactorCreatorProc pFactoryCreator, InterfaceMapGetProc pGetInterfaceTable, FCM::U_Int32 classVersion);
+		//void AddClassEntry(FCMCLSID clsid, FactorCreatorProc pFactoryCreator, InterfaceMapGetProc pGetInterfaceTable, FCM::U_Int32 classVersion);
 
 	protected:
 		static PluginModule* m_instance;
 	};
-
-	namespace Locale
-	{
-		std::u16string ToUtf16(const std::string& string);
-		std::string ToUtf8(const std::u16string& string);
-	}
 
 	/** @endcond */
 
@@ -754,7 +807,7 @@ namespace FCM
 		}
 	};
 
-	template<class T>
+	template<typename T>
 	class FCMClassFactory : public IFCMClassFactory, public FCMObjectBase
 	{
 	public:
@@ -785,15 +838,6 @@ namespace FCM
 				delete pNewObject;
 
 			return res;
-		}
-		static PIFCMClassFactory GetFactory(PluginModule* pModule)
-		{
-			FCMObject<FCMClassFactory<T> >* pFact = 0;
-			Result res = IntfImpl_Traits<FCMObject<FCMClassFactory<T> > >::CreateInstance(pModule, 0, 0, pFact);
-			if (FCM_FAILURE_CODE(res))
-				return 0;
-			FCM_ADDREF(pFact);
-			return pFact;
 		}
 
 		virtual PluginModule* GetPluginModule() = 0;

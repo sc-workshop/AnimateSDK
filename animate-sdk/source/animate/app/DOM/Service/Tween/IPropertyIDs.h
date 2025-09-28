@@ -42,7 +42,7 @@ namespace Animate
                 /**
                  * @brief Defines the property for "shape."
                  */
-                constexpr FCM::StringRep8 kDOMShapeProperty = "com.adobe.shape";
+                FCM::String8Key kDOMShapeProperty = "com.adobe.shape";
 
 
                  /**
@@ -57,7 +57,7 @@ namespace Animate
                 /**
                  * @brief Defines the property for "geometry."
                  */
-                constexpr FCM::StringRep8 kDOMGeometricProperty = "com.adobe.geometry";
+                FCM::String8Key kDOMGeometricProperty = "com.adobe.geometry";
 
 
                  /**
@@ -72,7 +72,7 @@ namespace Animate
                 /**
                  * @brief Defines the property for "color."
                  */
-                constexpr FCM::StringRep8 kDOMColorProperty = "com.adobe.color";
+                FCM::String8Key kDOMColorProperty = "com.adobe.color";
 
 
                  /**
@@ -87,7 +87,7 @@ namespace Animate
                 /**
                  * @brief Defines the property for "filter."
                  */
-                constexpr FCM::StringRep8 kDOMFilterProperty = "com.adobe.filter";
+                FCM::String8Key kDOMFilterProperty = "com.adobe.filter";
 
 
                  /**

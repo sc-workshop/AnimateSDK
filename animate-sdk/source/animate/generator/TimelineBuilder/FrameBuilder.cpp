@@ -55,7 +55,7 @@ namespace Animate::Publisher
 				FCM::FCMGUID colorGuid;
 				FCM::FCMGUID shapeGuid;
 
-				auto checkTweener = [&tweenerDict](FCM::StringRep8 key, FCM::FCMGUID& result)
+				auto checkTweener = [&tweenerDict](FCM::String8Key key, FCM::FCMGUID& result)
 				{
 					FCM::U_Int32 valueLen;
 					FCM::FCMDictRecTypeID type;

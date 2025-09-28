@@ -511,7 +511,7 @@ namespace FCM
 
 	/** @cond HIDE_PRIVATE */
 
-	
+	using String8Key = const char* const;
 
 	/** @endcond */
 }; //namespace FCM

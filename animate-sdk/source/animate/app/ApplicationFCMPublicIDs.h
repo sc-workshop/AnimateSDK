@@ -251,7 +251,7 @@ namespace Animate {
 			 *        Valid range is: "true" and "false". If this key is not set or an invalid value
 			 *        is set, the default value of "true" is used.
 			 */
-			constexpr FCM::StringRep8 kPublishSettingsKey_IncludeInvisibleLayer = "PublishSettings.IncludeInvisibleLayer";
+			FCM::String8Key kPublishSettingsKey_IncludeInvisibleLayer = "PublishSettings.IncludeInvisibleLayer";
 
 			/**
 			 * @def   kPublishSettingsKey_PreviewNeeded
@@ -261,7 +261,7 @@ namespace Animate {
 			 *        publish workflows where preview needs to be shown such as "TestMovie" and set
 			 *        to "false" in workflow such as "Publish". Note that plug-in cannot set this value.
 			 */
-			constexpr FCM::StringRep8 kPublishSettingsKey_PreviewNeeded = "PublishSettings.PreviewNeeded";
+			FCM::String8Key kPublishSettingsKey_PreviewNeeded = "PublishSettings.PreviewNeeded";
 		}
 	}
 

@@ -52,7 +52,7 @@ namespace FCM
      * @brief By convention, all keys beginning with these characters will never be written to
      *        persistent storage; they are runtime-only keys.
      */
-    constexpr char* FCMDICT_RUNTIME_KEY_PREFIX = "_rt_";
+    String8Key FCMDICT_RUNTIME_KEY_PREFIX = "_rt_";
 }
 
 

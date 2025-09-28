@@ -43,7 +43,7 @@ namespace FCM
      * @brief Service Dictionary Key. The value for this key should be a dictionary
      *        that defines services the plug-in provides.
      */
-constexpr char* kFCMDictKey_ServiceDict = "FCM.Service.Dictionary";
+    String8Key kFCMDictKey_ServiceDict = "FCM.Service.Dictionary";
 
 
     /**
@@ -60,7 +60,7 @@ constexpr char* kFCMDictKey_ServiceDict = "FCM.Service.Dictionary";
      * @brief FCM component key. The value for this key should be a dictionary
      *        that defines the components in the plug-in.
      */
-constexpr char* kFCMComponent = "FCM.Component";
+    String8Key kFCMComponent = "FCM.Component";
 
 
     /**

@@ -131,37 +131,6 @@ namespace FCM
 		falloc.Reset();
 	}
 
-	void PluginModule::AddClassEntry(FCMCLSID clsid, FactorCreatorProc pFactoryCreator, InterfaceMapGetProc pGetInterfaceTable, FCM::U_Int32 classVersion)
-	{
-		if (!falloc)
-			return;
-
-		ClassNode* newnode = (ClassNode*)falloc->Alloc(sizeof(ClassNode));
-		if (!newnode)
-			return;
-		newnode->next = 0;
-		newnode->m_ClassMap.clsid = clsid;
-		newnode->m_ClassMap.pFactoryCreator = pFactoryCreator;
-		newnode->m_ClassMap.pGetInterfaceTable = pGetInterfaceTable;
-		newnode->m_ClassMap.classVersion = classVersion;
-
-		if (!m_firstNode)
-		{
-			m_firstNode = newnode;
-		}
-		else
-		{
-			ClassNode* current = m_firstNode;
-			ClassNode* prev = 0;
-			while (current)
-			{
-				prev = current;
-				current = current->next;
-			}
-			prev->next = newnode;
-		}
-	}
-
 	std::string PluginModule::LanguageCode() const {
 		return falloc->GetString8(
 			appService.m_Ptr,
