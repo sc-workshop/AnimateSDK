@@ -47,7 +47,7 @@ namespace Animate::Publisher
 		}
 	};
 
-	IDisplayObjectWriter* SymbolGenerator::Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required) {
+	wk::Ref<IDisplayObjectWriter> SymbolGenerator::Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required) {
 		uint32_t duration = 0;
 		timeline->GetMaxFrameCount(duration);
 
@@ -79,7 +79,7 @@ namespace Animate::Publisher
 
 		if (isStatic)
 		{
-			SharedShapeWriter* shape = m_resources.m_writer.AddShape(symbol);
+			wk::Ref<SharedShapeWriter> shape = m_resources.m_writer.AddShape(symbol);
 			const auto group = LayerBuilder::ProcessStaticLayers(layers);
 			if (group.has_value())
 			{
@@ -90,7 +90,7 @@ namespace Animate::Publisher
 		}
 		else
 		{
-			SharedMovieclipWriter* movieclip = m_resources.m_writer.AddMovieclip(symbol);
+			wk::Ref<SharedMovieclipWriter> movieclip = m_resources.m_writer.AddMovieclip(symbol);
 			movieclip->InitializeTimeline(m_resources.document_fps, duration);
 			LayerBuilder::ProcessLayers(symbol, layers, *movieclip, duration);
 

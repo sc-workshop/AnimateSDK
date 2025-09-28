@@ -102,8 +102,7 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::ITimeline> timeline;
 		item->GetTimeLine(timeline.m_Ptr);
 
-		IDisplayObjectWriter* writer = symbolGenerator.Generate(symbol, timeline, required);
-
+		auto writer = symbolGenerator.Generate(symbol, timeline, required);
 		return FinalizeWriter(writer, required, m_movieClips);
 	};
 
@@ -120,7 +119,7 @@ namespace Animate::Publisher
 
 		if (bitmap)
 		{
-			SharedShapeWriter* writer = m_writer.AddShape(symbol);
+			auto writer = m_writer.AddShape(symbol);
 
 			BitmapElement element(symbol, media_item, DOM::Utils::MATRIX2D());
 			writer->AddGraphic(element);
@@ -153,7 +152,7 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData,
 		std::optional<FCM::FCMListPtr> filters
 	) {
-		SharedTextFieldWriter* writer = m_writer.AddTextField(symbol);
+		auto writer = m_writer.AddTextField(symbol);
 		TextFieldGenerator::Generate(writer, textfieldData);
 
 		return FinalizeWriter(writer, false, m_textFields, filters);
@@ -165,7 +164,7 @@ namespace Animate::Publisher
 		bool required
 	) {
 		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
-		SharedShapeWriter* writer = m_writer.AddShape(shape_symbol);
+		auto writer = m_writer.AddShape(shape_symbol);
 
 		writer->AddGroup(symbol, elements);
 
@@ -173,7 +172,7 @@ namespace Animate::Publisher
 	}
 
 	uint16_t ResourcePublisher::FinalizeWriter(
-		IDisplayObjectWriter* writer, 
+		wk::Ref<IDisplayObjectWriter> writer,
 		bool required,
 		Library& library,
 		std::optional<FCM::FCMListPtr> filters
@@ -220,7 +219,6 @@ namespace Animate::Publisher
 			library[hash] = identifier;
 		}
 
-		delete writer;
 		return writer_success || in_library ? identifier : 0xFFFF;
 	}
 

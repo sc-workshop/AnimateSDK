@@ -4,6 +4,8 @@
 #include "IMovieclipWriter.h"
 #include "ITextFieldWriter.h"
 
+#include "core/memory/ref.h"
+
 namespace Animate::Publisher
 {
 	class SymbolContext;
@@ -20,9 +22,9 @@ namespace Animate::Publisher
 		virtual ~SharedWriter() = default;
 
 	public:
-		virtual SharedMovieclipWriter* AddMovieclip(SymbolContext& symbol) = 0;
-		virtual SharedShapeWriter* AddShape(SymbolContext& symbol) = 0;
-		virtual SharedTextFieldWriter* AddTextField(SymbolContext& symbol) = 0;
+		virtual wk::Ref<SharedMovieclipWriter> AddMovieclip(SymbolContext& symbol) = 0;
+		virtual wk::Ref<SharedShapeWriter> AddShape(SymbolContext& symbol) = 0;
+		virtual wk::Ref<SharedTextFieldWriter> AddTextField(SymbolContext& symbol) = 0;
 
 		virtual void AddModifier(uint16_t id, MaskedLayerState type) = 0;
 

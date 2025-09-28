@@ -20,6 +20,6 @@ namespace Animate::Publisher
 
 		SymbolGenerator(ResourcePublisher& resources) : m_resources(resources) {}
 
-		IDisplayObjectWriter* Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required);
+		wk::Ref<IDisplayObjectWriter> Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required);
 	};
 }

@@ -2,7 +2,7 @@
 
 namespace Animate::Publisher
 {
-	void TextFieldGenerator::Generate(SharedTextFieldWriter* writer, FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData)
+	void TextFieldGenerator::Generate(wk::Ref<SharedTextFieldWriter> writer, FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData)
 	{
 		FCM::PluginModule& context = FCM::PluginModule::Instance();
 
