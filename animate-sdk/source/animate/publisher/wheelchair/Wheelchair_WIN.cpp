@@ -18,6 +18,8 @@ namespace Animate
 		{
 			CPicPage_Is9SliceEnabled = 1624;
 			CPicPage_9SliceGuides = 1628;
+			CPicObj_IsButton = 544;
+			CPicSprite_GetName = 864;
 		}
 
 		else

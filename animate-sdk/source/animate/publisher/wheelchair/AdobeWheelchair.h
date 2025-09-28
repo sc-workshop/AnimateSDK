@@ -35,6 +35,10 @@ namespace Animate
 		size_t CPicPage_Is9SliceEnabled = 0;
 		size_t CPicPage_9SliceGuides = 0;
 
+		// And instance name for Graphic instances....
+		size_t CPicObj_IsButton = 0;
+		size_t CPicSprite_GetName = 0;
+
 	private:
 		bool m_initialized = true;
 	};

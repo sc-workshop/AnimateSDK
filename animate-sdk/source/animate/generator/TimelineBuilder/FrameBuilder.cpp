@@ -1,14 +1,59 @@
 #include "FrameBuilder.h"
 
 #include "animate/publisher/ResourcePublisher.h"
+#include "animate/publisher/wheelchair/AdobeWheelchair.h"
 
 namespace Animate::Publisher
 {
-	std::string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> /*symbol_instance*/)
+	std::u16string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> item)
 	{
-		// TODO:
+		AdobeWheelchair& wheelchair = AdobeWheelchair::Instance();
+		if (!wheelchair.CPicObj_IsButton || !wheelchair.CPicSprite_GetName) return u"";
+		uint16_t* instanceName = 0;
 
-		return std::string("");
+		std::uintptr_t page;
+		{
+			std::uintptr_t wrapper = (std::uintptr_t)item.m_Ptr;
+			std::uintptr_t nativeWrapper = wrapper + 24;
+			using GetObjectFN = void(__fastcall*)(std::uintptr_t, std::uintptr_t&);
+			GetObjectFN getObject = *(GetObjectFN*)(*(std::uintptr_t*)(nativeWrapper)+32);
+			getObject(nativeWrapper, page);
+		}
+
+		bool isButton;
+		{
+			using CPicObjIsButtonFN = bool(__fastcall*)(std::uintptr_t);
+			CPicObjIsButtonFN CPicObj_IsButton = *(CPicObjIsButtonFN*)(*(std::uintptr_t*)(page)+wheelchair.CPicObj_IsButton);
+			isButton = CPicObj_IsButton(page);
+		}
+
+		if (isButton) {
+			throw FCM::FCMPluginException(FCM::FCMPluginException::Reason::SERVICE_FAIL);
+		}
+		else {
+			// CPicSprite::GetName
+
+			std::uintptr_t propertyInstance = page + wheelchair.CPicSprite_GetName;
+
+			// CPropertyInstance::GetName
+
+			std::uintptr_t instanceNameString = propertyInstance + 24;
+
+			// Checking for SBO in CString aka std::basic_string<wchar_t,std::char_traits<wchar_t>,dvacore::allocator::STLAllocator<wchar_t>>
+			size_t instanceNameLength = *(size_t*)(instanceNameString + 16);
+
+			// Is local allocated
+			if (instanceNameLength < 8) {
+				instanceName = (uint16_t*)instanceNameString;
+			}
+
+			// Else take from heap
+			else {
+				instanceName = *(uint16_t**)instanceNameString;
+			}
+		}
+
+		return std::u16string((const char16_t*)instanceName);
 	}
 
 	void FrameBuilder::Reset()
@@ -286,6 +331,9 @@ namespace Animate::Publisher
 			if (symbolItem) {
 				color = Color_t();
 				symbolItem->GetColorMatrix(*color);
+
+				if (!movieClipElement)
+					element.name = GetInstanceName(symbolItem);
 			}
 
 			if (movieClipElement) {
