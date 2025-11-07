@@ -17,9 +17,9 @@ namespace Animate::Publisher
 		void PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document);
 
 	private:
-		static void GetItems(
+		static void GetExportSymbols(
 			FCM::FCMListPtr libraryItems,
-			std::vector<FCM::AutoPtr<DOM::ILibraryItem>>& paths
+			std::vector<SymbolContext>& paths
 		);
 
 	private:

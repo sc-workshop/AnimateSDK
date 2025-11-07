@@ -29,9 +29,11 @@ namespace Animate {
 			const std::string linkage_name;
 			const SymbolType type = SymbolType::Unknown;
 			uint32_t current_frame_index = 0;
+			FCM::AutoPtr<DOM::ILibraryItem> library_item;
 
 			SlicingContext slicing;
-		private:
+
+		public:
 			static std::u16string GetName(FCM::AutoPtr<DOM::ILibraryItem> symbol);
 			static std::string GetLinkage(FCM::AutoPtr<DOM::ILibraryItem> symbol);
 			static SymbolType GetType(FCM::AutoPtr<DOM::ILibraryItem> symbol);

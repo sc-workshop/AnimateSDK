@@ -4,7 +4,8 @@ namespace Animate
 {
 	namespace Publisher
 	{
-		SymbolContext::SymbolContext(FCM::AutoPtr<DOM::ILibraryItem> item) : name(GetName(item)), type(GetType(item)), linkage_name(GetLinkage(item))
+		SymbolContext::SymbolContext(FCM::AutoPtr<DOM::ILibraryItem> item) : 
+			name(GetName(item)), type(GetType(item)), linkage_name(GetLinkage(item)), library_item(item)
 		{
 			
 		}

@@ -22,6 +22,9 @@ namespace Animate::Publisher
 		virtual ~SharedWriter() = default;
 
 	public:
+		virtual void SetExportedSymbols(const std::vector<SymbolContext>& /*symbols*/) {};
+
+	public:
 		virtual wk::Ref<SharedMovieclipWriter> AddMovieclip(SymbolContext& symbol) = 0;
 		virtual wk::Ref<SharedShapeWriter> AddShape(SymbolContext& symbol) = 0;
 		virtual wk::Ref<SharedTextFieldWriter> AddTextField(SymbolContext& symbol) = 0;

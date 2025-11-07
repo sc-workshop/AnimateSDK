@@ -12,26 +12,20 @@ namespace Animate::Publisher
 		FCM::FCMListPtr libraryItems;
 		document->GetLibraryItems(libraryItems.m_Ptr);
 
-		std::vector<FCM::AutoPtr<DOM::ILibraryItem>> items;
-		GetItems(libraryItems, items);
+		std::vector<SymbolContext> symbols;
+		GetExportSymbols(libraryItems, symbols);
+		m_writer.SetExportedSymbols(symbols);
 
-		for (size_t i = 0; items.size() > i; i++)
-		{
-			FCM::AutoPtr<DOM::ILibraryItem>& item = items[i];
-
-			SymbolContext symbol(item);
-			if (symbol.linkage_name.empty()) continue;
-
-			uint16_t id = AddLibraryItem(symbol, item, true);
-
+		for (auto& symbol : symbols) {
+			uint16_t id = AddLibraryItem(symbol, symbol.library_item, true);
 			if (id == UINT16_MAX)
 			{
-				throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
+				throw FCM::FCMPluginException(symbol.library_item, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
 			}
 		}
 	}
 
-	void ResourcePublisher::GetItems(FCM::FCMListPtr libraryItems, std::vector<FCM::AutoPtr<DOM::ILibraryItem>>& result) {
+	void ResourcePublisher::GetExportSymbols(FCM::FCMListPtr libraryItems, std::vector<SymbolContext>& result) {
 		uint32_t itemCount = 0;
 		libraryItems->Count(itemCount);
 
@@ -46,14 +40,26 @@ namespace Animate::Publisher
 				FCM::FCMListPtr childrens;
 				folderItem->GetChildren(childrens.m_Ptr);
 
-				GetItems(childrens, result);
+				GetExportSymbols(childrens, result);
 			}
 			else
 			{
 				FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbolItem = item;
 				if (!symbolItem) continue;
 
-				result.push_back(item);
+				FCM::AutoPtr<FCM::IFCMDictionary> dict;
+
+				FCM::Result status = item->GetProperties(dict.m_Ptr);
+				if (FCM_FAILURE_CODE(status) || dict == nullptr)
+					continue;
+
+				FCM::U_Int32 valueLen = 0;
+				FCM::FCMDictRecTypeID type;
+				status = dict->GetInfo(kLibProp_LinkageClass_DictKey, type, valueLen);
+				if (FCM_FAILURE_CODE(status) || type != FCM::FCMDictRecTypeID::StringRep8 || valueLen == 0)
+					continue;
+
+				result.emplace_back(item);
 			}
 		}
 	}
