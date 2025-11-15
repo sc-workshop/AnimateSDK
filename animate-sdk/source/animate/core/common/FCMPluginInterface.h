@@ -46,6 +46,7 @@
 #include <exception>
 #include <filesystem>
 #include <functional>
+#include <mutex>
 
 #include "animate/core/common/FCMPreConfig.h"
 
@@ -128,6 +129,9 @@ namespace FCM
 	template<typename T>
 	class AutoPtr
 	{
+	protected:
+		inline static std::mutex guard;
+
 	public:
 
 		/** Raw pointer */
@@ -150,6 +154,7 @@ namespace FCM
 		{
 			this->m_Ptr = p;
 
+			std::lock_guard lock(guard);
 			FCM_ADDREF(this->m_Ptr);
 		}
 
@@ -165,6 +170,7 @@ namespace FCM
 		{
 			this->m_Ptr = pObj.m_Ptr;
 
+			std::lock_guard lock(guard);
 			FCM_ADDREF(this->m_Ptr);
 		}
 
@@ -189,8 +195,9 @@ namespace FCM
 		{
 			this->m_Ptr = 0;
 
-			if (!IsSameUnknown(p))
+			if (!IsSameUnknown(p)) {
 				AssignPtrWithQIOwnership(this->m_Ptr, p);
+			}
 		}
 
 		/**
@@ -213,8 +220,10 @@ namespace FCM
 		{
 			this->m_Ptr = 0;
 
-			if (!IsSameUnknown(pObj.m_Ptr))
+			if (!IsSameUnknown(pObj.m_Ptr)) {
 				AssignPtrWithQIOwnership(this->m_Ptr, pObj.m_Ptr);
+			}
+				
 		}
 
 		~AutoPtr()
@@ -353,6 +362,7 @@ namespace FCM
 		 */
 		void Reset()
 		{
+			std::lock_guard lock(guard);
 			FCM_RELEASE(this->m_Ptr);
 		}
 
@@ -404,17 +414,18 @@ namespace FCM
 
 		void AssignPtrWithOwnership(T*& pDest, T* pSource)
 		{
-			Reset();
+			std::lock_guard lock(guard);
 
+			FCM_RELEASE(this->m_Ptr);
 			FCM_ADDREF(pSource);
-
 			pDest = pSource;
 		}
 
 		void AssignPtrWithQIOwnership(T*& pDest, PIFCMUnknown pSource)
 		{
-			Reset();
+			std::lock_guard lock(guard);
 
+			FCM_RELEASE(this->m_Ptr);
 			if (pSource)
 				pSource->QueryInterface(T::GetIID(), (PPVoid)&pDest);
 		}
