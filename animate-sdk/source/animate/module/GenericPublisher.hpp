@@ -29,8 +29,9 @@ namespace Animate::Publisher
 	public:
 		FCM::Result _FCMCALL Publish(DOM::PIFLADocument document, const FCM::PIFCMDictionary publishConfig, const FCM::PIFCMDictionary projectConfig)
 		{
-			ConfigT config(document, projectConfig, publishConfig);
-			m_activeConfig = &config;
+			ConfigT& config = ActiveConfig();
+			config.SetDocument(document, publishConfig, projectConfig);
+
 			bool status = config.FromDict(publishConfig);
 			if (!status)
 			{
@@ -40,7 +41,7 @@ namespace Animate::Publisher
 			PublisherT publisher{};
 			publisher.Publish(config);
 
-			m_activeConfig = nullptr;
+			config.Reset();
 			return FCM_SUCCESS;
 		}
 
@@ -58,12 +59,7 @@ namespace Animate::Publisher
 
 	public:
 		static const Animate::FCMPluginID PluginID;
-		static ConfigT& ActiveConfig() {
-			return *m_activeConfig;
-		};
-
-	private:
-		static inline ConfigT* m_activeConfig = nullptr;
+		static ConfigT& ActiveConfig();
 	};
 
 	inline FCM::Result RegisterPublisher(
