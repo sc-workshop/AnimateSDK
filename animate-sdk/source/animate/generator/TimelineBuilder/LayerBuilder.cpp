@@ -13,10 +13,10 @@ namespace Animate::Publisher
 		SharedMovieclipWriter& writer,
 		MaskedLayerState type
 	) {
-		uint16_t identifer = m_resources.AddModifier(type);
+		ResourceReference reference = m_resources.AddModifier(type);
 
 		writer.AddFrameElement(
-			identifer,
+			reference,
 			FCM::BlendMode::NORMAL,
 			u"",
 			std::nullopt,

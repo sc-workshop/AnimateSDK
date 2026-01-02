@@ -7,6 +7,7 @@
 #include "AnimateCore.h"
 #include "AnimateDOM.h"
 #include "AnimateGenerator.h"
+#include "ResourceReference.h"
 
 #include "animate/publisher/symbol/SymbolContext.h"
 
@@ -24,17 +25,17 @@ namespace Animate::Publisher
 
 	private:
 		// Shape / Id
-		using FilledDictValue = std::pair<std::vector<FilledElement>, uint16_t>;
+		using FilledDictValue = std::pair<std::vector<FilledElement>, ResourceReference>;
 		using FilledDict = std::vector<FilledDictValue>;
 
 		// Name  /  Id
-		using SymbolDict = std::unordered_map<std::u16string, uint16_t>;
+		using SymbolDict = std::unordered_map<std::u16string, ResourceReference>;
 
 		// Type / Id
-		using ModifierDict = std::unordered_map<MaskedLayerState, uint16_t>;
+		using ModifierDict = std::unordered_map<MaskedLayerState, ResourceReference>;
 
 		// Info / Id
-		using TextsDictValue = std::pair<TextElement, uint16_t>;
+		using TextsDictValue = std::pair<TextElement, ResourceReference>;
 		using TextsDict = std::vector<TextsDictValue>;
 
 		using Library = std::unordered_map<std::size_t, uint16_t, DisplayObjectWriterHasher>;
@@ -63,23 +64,23 @@ namespace Animate::Publisher
 
 		void SetIdOffset(uint16_t);
 
-		uint16_t AddLibraryItem(
+		ResourceReference AddLibraryItem(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::ILibraryItem> item,
 			bool required = false
 		);
 
-		uint16_t AddModifier(
+		ResourceReference AddModifier(
 			MaskedLayerState type
 		);
 
-		uint16_t AddTextField(
+		ResourceReference AddTextField(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::FrameElement::IClassicText> field,
 			std::optional<FCM::FCMListPtr> filters = std::nullopt
 		);
 
-		uint16_t AddGroup(
+		ResourceReference AddGroup(
 			SymbolContext& symbol,
 			const StaticElementsGroup& elements,
 			bool required = false
@@ -88,19 +89,19 @@ namespace Animate::Publisher
 		void Finalize();
 
 	private:
-		uint16_t AddSymbol(
+		ResourceReference AddSymbol(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
 			bool required = false
 		);
 
-		uint16_t AddMediaSymbol(
+		ResourceReference AddMediaSymbol(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
 			bool required
 		);
 
-		uint16_t FinalizeWriter(
+		ResourceReference FinalizeWriter(
 			wk::Ref<IDisplayObjectWriter> writer,
 			bool required,
 			Library& library,

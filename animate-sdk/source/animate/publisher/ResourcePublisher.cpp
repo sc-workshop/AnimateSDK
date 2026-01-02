@@ -17,8 +17,8 @@ namespace Animate::Publisher
 		m_writer.SetExportedSymbols(symbols);
 
 		for (auto& symbol : symbols) {
-			uint16_t id = AddLibraryItem(symbol, symbol.library_item, true);
-			if (id == UINT16_MAX)
+			ResourceReference ref = AddLibraryItem(symbol, symbol.library_item, true);
+			if (!ref)
 			{
 				throw FCM::FCMPluginException(symbol.library_item, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
 			}
@@ -69,7 +69,7 @@ namespace Animate::Publisher
 		m_id += offset;
 	}
 
-	uint16_t ResourcePublisher::AddLibraryItem(
+	ResourceReference ResourcePublisher::AddLibraryItem(
 		SymbolContext& symbol,
 		FCM::AutoPtr<DOM::ILibraryItem> item,
 		bool required
@@ -82,8 +82,7 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbol_item = item;
 		FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item = item;
 
-		uint16_t result = 0xFFFF;
-
+		ResourceReference result;
 		if (symbol_item) {
 			result = AddSymbol(symbol, symbol_item, required);
 		}
@@ -96,11 +95,10 @@ namespace Animate::Publisher
 		}
 			
 		m_libraryCache[symbol.name] = result;
-
 		return result;
 	}
 
-	uint16_t ResourcePublisher::AddSymbol(
+	ResourceReference ResourcePublisher::AddSymbol(
 		SymbolContext& symbol,
 		FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
 		bool required
@@ -112,7 +110,7 @@ namespace Animate::Publisher
 		return FinalizeWriter(writer, required, m_movieClips);
 	};
 
-	uint16_t ResourcePublisher::AddMediaSymbol(
+	ResourceReference ResourcePublisher::AddMediaSymbol(
 			SymbolContext& symbol,
 			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
 			bool required
@@ -133,10 +131,10 @@ namespace Animate::Publisher
 			return FinalizeWriter(writer, required, m_graphics);
 		}
 
-		return 0xFFFF;
+		return {};
 	}
 
-	uint16_t ResourcePublisher::AddModifier(
+	ResourceReference ResourcePublisher::AddModifier(
 		MaskedLayerState type
 	) {
 		ModifierDict::const_iterator pos = m_modifierCache.find(type);
@@ -153,7 +151,7 @@ namespace Animate::Publisher
 		return identifer;
 	}
 
-	uint16_t ResourcePublisher::AddTextField(
+	ResourceReference ResourcePublisher::AddTextField(
 		SymbolContext& symbol,
 		FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData,
 		std::optional<FCM::FCMListPtr> filters
@@ -164,7 +162,7 @@ namespace Animate::Publisher
 		return FinalizeWriter(writer, false, m_textFields, filters);
 	}
 
-	uint16_t ResourcePublisher::AddGroup(
+	ResourceReference ResourcePublisher::AddGroup(
 		SymbolContext& symbol,
 		const StaticElementsGroup& elements,
 		bool required
@@ -177,7 +175,7 @@ namespace Animate::Publisher
 		return FinalizeWriter(writer, required, m_graphics);
 	}
 
-	uint16_t ResourcePublisher::FinalizeWriter(
+	ResourceReference ResourcePublisher::FinalizeWriter(
 		wk::Ref<IDisplayObjectWriter> writer,
 		bool required,
 		Library& library,

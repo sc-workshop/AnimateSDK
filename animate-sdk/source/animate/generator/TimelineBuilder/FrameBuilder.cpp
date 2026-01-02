@@ -224,7 +224,7 @@ namespace Animate::Publisher
 		
 
 		writer.AddFrameElement(
-			element.id,
+			element.reference,
 			blend,
 			element.name,
 			matrix,
@@ -362,16 +362,15 @@ namespace Animate::Publisher
 			}
 
 			m_static_state = FrameBuilder::StaticElementsState::Invalid;
-			element.id = m_resources.AddLibraryItem(librarySymbol, libraryItem, is_required());
+			element.reference = m_resources.AddLibraryItem(librarySymbol, libraryItem, is_required());
 		}
 
 		// Textfield
 		else if (textfieldElement) {
 			m_static_state = FrameBuilder::StaticElementsState::Invalid;
 
-			element.id = m_resources.AddTextField(symbol, textfieldElement, filters);
-
-			if (element.id != 0xFFFF)
+			element.reference = m_resources.AddTextField(symbol, textfieldElement, filters);
+			if (element.reference)
 			{
 				AutoPtr<ITextBehaviour> textfieldElementBehaviour;
 				textfieldElement->GetTextBehaviour(textfieldElementBehaviour.m_Ptr);
@@ -415,7 +414,7 @@ namespace Animate::Publisher
 		// Just in case if keyframe has both element types
 		release_static(u"");
 
-		if (element.id == UINT16_MAX) {
+		if (!element.reference) {
 			return;
 		}
 
@@ -460,14 +459,12 @@ namespace Animate::Publisher
 	{
 		if (m_static_elements.Empty()) return;
 
-		uint16_t element_id = m_resources.AddGroup(symbol, m_static_elements);
-		if (element_id == UINT16_MAX)
-		{
+		ResourceReference reference = m_resources.AddGroup(symbol, m_static_elements);
+		if (!reference)
 			return;
-		}
 
 		FrameBuilderElement& element = m_elements.emplace_back();
-		element.id = element_id;
+		element.reference = reference;
 		element.name = name;
 
 		m_static_elements.Clear();

@@ -18,7 +18,7 @@ namespace Animate::Publisher
 	{
 	public:
 		// Elements data
-		uint16_t id = std::numeric_limits<uint16_t>::max();
+		ResourceReference reference;
 		FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
 		std::u16string name;
 

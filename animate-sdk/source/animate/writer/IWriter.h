@@ -4,6 +4,7 @@
 #include "IMovieclipWriter.h"
 #include "ITextFieldWriter.h"
 
+#include "animate/publisher/ResourceReference.h"
 #include "core/memory/ref.h"
 
 namespace Animate::Publisher
@@ -29,7 +30,7 @@ namespace Animate::Publisher
 		virtual wk::Ref<SharedShapeWriter> AddShape(SymbolContext& symbol) = 0;
 		virtual wk::Ref<SharedTextFieldWriter> AddTextField(SymbolContext& symbol) = 0;
 
-		virtual void AddModifier(uint16_t id, MaskedLayerState type) = 0;
+		virtual void AddModifier(ResourceReference ref, MaskedLayerState type) = 0;
 
 		virtual void Finalize() = 0;
 	};

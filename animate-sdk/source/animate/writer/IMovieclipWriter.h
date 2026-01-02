@@ -8,6 +8,7 @@
 #include "AnimateCore.h"
 #include "AnimateDOM.h"
 
+#include "animate/publisher/ResourceReference.h"
 #include "IDisplayObjectWriter.h"
 
 namespace Animate::Publisher
@@ -31,7 +32,7 @@ namespace Animate::Publisher
 		virtual void SetLabel(const std::u16string& label) = 0;
 
 		virtual void AddFrameElement(
-			uint16_t id,
+			ResourceReference ref,
 			FCM::BlendMode blending,
 			const std::u16string& name,
 			std::optional<DOM::Utils::MATRIX2D> matrix,
