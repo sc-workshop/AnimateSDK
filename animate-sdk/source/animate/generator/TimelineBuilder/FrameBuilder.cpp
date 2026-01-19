@@ -479,7 +479,16 @@ namespace Animate::Publisher
 	bool FrameBuilder::IsStatic() const
 	{
 		if (m_keyframe_static_state != StaticElementsState::Valid) return false;
+		if (IsAnimated()) return false;
 
 		return true;
+	}
+
+	bool FrameBuilder::IsAnimated() const
+	{
+		if (m_base_tween)
+			return true;
+
+		return false;
 	}
 }

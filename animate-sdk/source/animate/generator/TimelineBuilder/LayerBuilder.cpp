@@ -69,14 +69,22 @@ namespace Animate::Publisher
 
 	bool LayerBuilder::ShouldReleaseStatic(const LayerBuilder& next_layer) const
 	{
+		// Cant batch with masked layers
 		if (next_layer.IsMaskLayer()) return true;
 
+		// Cant batch when layer is animated and may have different keyframes
+		if (next_layer.frameBuilder.IsAnimated()) return true;
+
+		// Cant batch when duration is different
 		if (frameBuilder.Duration() != next_layer.frameBuilder.Duration()) return true;
 
+		// Cant batch when frame builders positions is different
 		if (frameBuilder.Position() != next_layer.frameBuilder.Position()) return true;
 
+		// Cant batch when there is no static elements or layer`s frame builder cant afford elements inherit
 		if (next_layer.frameBuilder.StaticElementsState() != FrameBuilder::StaticElementsState::Valid) return true;
 
+		// Success
 		return false;
 	}
 

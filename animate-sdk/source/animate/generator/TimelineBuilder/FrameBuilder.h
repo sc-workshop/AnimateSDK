@@ -127,6 +127,7 @@ namespace Animate::Publisher
 		void InheritStatic(const FrameBuilder& frame);
 
 		bool IsStatic() const;
+		bool IsAnimated() const;
 
 		void Reset();
 
