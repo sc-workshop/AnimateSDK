@@ -193,7 +193,6 @@ namespace Animate::Publisher
 			matrix = *matrix * props.matrix;
 		}
 
-
 		if (frame_color.Identity())
 		{
 			if (m_color_tweener) {
@@ -222,7 +221,6 @@ namespace Animate::Publisher
 			return;
 		}
 		
-
 		writer.AddFrameElement(
 			element.reference,
 			blend,
@@ -455,6 +453,32 @@ namespace Animate::Publisher
 		m_keyframe_static_state = StaticElementsState::Invalid;
 	}
 
+	bool FrameBuilder::operator==(const FrameBuilder& builder) const
+	{
+		Color_t color_a;
+		m_frame_layer->GetColorTransformAtFrame(m_timeline_position, color_a);
+		
+		Color_t color_b;
+		builder.m_frame_layer->GetColorTransformAtFrame(m_timeline_position, color_b);
+
+		// Comparing color transforms of frames
+		for (size_t i = 0; sizeof(color_a.colorArray) > i; i++) {
+			if (color_a.colorArray[i] != color_b.colorArray[i])
+				return false;
+		}
+
+		// Comparing frame blend modes
+		FCM::BlendMode blend_a;
+		m_frame_layer->GetBlendModeAtFrame(m_timeline_position, blend_a);
+
+		FCM::BlendMode blend_b;
+		builder.m_frame_layer->GetBlendModeAtFrame(m_timeline_position, blend_b);
+		if (blend_a != blend_b)
+			return false;
+
+		return true;
+	}
+
 	void FrameBuilder::ReleaseStatic(SymbolContext& symbol, const std::u16string& name)
 	{
 		if (m_static_elements.Empty()) return;
@@ -486,6 +510,7 @@ namespace Animate::Publisher
 
 	bool FrameBuilder::IsAnimated() const
 	{
+		// Checking for any animation tween
 		if (m_base_tween)
 			return true;
 

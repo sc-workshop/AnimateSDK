@@ -111,6 +111,8 @@ namespace Animate::Publisher
 			return m_duration > m_frame_position;
 		}
 
+		bool operator==(const FrameBuilder& builder) const;
+
 		const StaticElementsGroup& StaticElements() const
 		{
 			return m_static_elements;

@@ -81,6 +81,9 @@ namespace Animate::Publisher
 		// Cant batch when frame builders positions is different
 		if (frameBuilder.Position() != next_layer.frameBuilder.Position()) return true;
 
+		// Cant batch when layers frames has different properties
+		if (frameBuilder != next_layer.frameBuilder) return true;
+
 		// Cant batch when there is no static elements or layer`s frame builder cant afford elements inherit
 		if (next_layer.frameBuilder.StaticElementsState() != FrameBuilder::StaticElementsState::Valid) return true;
 
