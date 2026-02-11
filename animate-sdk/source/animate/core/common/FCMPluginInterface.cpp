@@ -2,8 +2,11 @@
 #include "AnimateService.h"
 
 #include "animate/publisher/wheelchair/AdobeWheelchair.h"
+#include "core/string/string_converter.h"
 
 #include <codecvt>
+#include <limits.h>
+#include <vector>
 
 namespace FCM
 {
@@ -145,18 +148,32 @@ namespace FCM
 	EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #endif
 
+#ifdef __APPLE__
+    #include "CoreFoundation/CoreFoundation.h"
+    #include <dlfcn.h>
+    #include <sys/utsname.h>
+    #include <sys/sysctl.h>
+#endif
+
 	std::filesystem::path PluginModule::CurrentPath(PluginModule::PathType type)
 	{
 		std::filesystem::path modulePath;
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 		char16_t* pathPtr = new char16_t[MAX_PATH];
 		GetModuleFileName((HINSTANCE)&__ImageBase, (LPWSTR)pathPtr, MAX_PATH - 1);
 
 		modulePath = std::filesystem::path(std::u16string((const char16_t*)pathPtr)).parent_path();
 		delete[] pathPtr;
+#elif defined(__APPLE__)
+        Dl_info info;
+        if (dladdr((void*)(CurrentPath), &info)) {
+            modulePath = std::filesystem::path(info.dli_fname) / "../../../";
+        } else {
+            wk::Exception("Failed to get module path");
+        }
 #else
-#error Not implemented
+#error not implemented
 #endif
 		std::filesystem::path extensionPath(modulePath / "../");
 		std::filesystem::path assetsPath(extensionPath / "resources");
@@ -178,7 +195,7 @@ namespace FCM
 
 	std::string PluginModule::SystemInfo()
 	{
-#if WK_MSVC
+#if defined(_WINDOWS)
 		std::stringstream result;
 
 		HMODULE module = LoadLibrary(TEXT("ntdll.dll"));
@@ -207,6 +224,24 @@ namespace FCM
 		FreeLibrary(module);
 
 		return result.str();
+#elif defined(__APPLE__)
+        std::stringstream result;
+
+        int mib[2] = {CTL_KERN, KERN_OSRELEASE};
+        char osrelease[256] = {0};
+        size_t size = sizeof(osrelease);
+        if (sysctl(mib, 2, osrelease, &size, nullptr, 0) != 0) {
+            return "Unknown";
+        }
+
+        struct utsname unameInfo;
+        if (uname(&unameInfo) != 0) {
+            return "Unknown";
+        }
+
+        result << "macOS " << unameInfo.release << " (" << unameInfo.sysname << ")";
+
+        return result.str();
 #else
 #error not implemented
 #endif
@@ -215,13 +250,11 @@ namespace FCM
 	namespace Locale
 	{
 		std::u16string ToUtf16(const std::string& string) {
-			static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-			return convert.from_bytes(string);
+            return wk::StringConverter::ToUTF16(string);
 		}
 
 		std::string ToUtf8(const std::u16string& string) {
-			std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-			return convert.to_bytes(string);
+            return wk::StringConverter::ToUTF8(string);
 		}
 	}
 }

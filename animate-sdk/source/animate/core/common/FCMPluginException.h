@@ -29,7 +29,7 @@ namespace FCM
 
 	public:
 		const Animate::Publisher::SymbolContext& Symbol() const;
-		const Reason ExceptionReason() const;
+        Reason ExceptionReason() const;
 
 		const char* what() const noexcept override;
 

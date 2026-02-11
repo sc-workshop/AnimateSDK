@@ -20,6 +20,7 @@ target_include_directories(${TARGET} PUBLIC source)
 wk_project_setup(${TARGET})
 wk_set_global(ANIMATE_SDK_USE_FEATURE_MATRIX "${WK_RELEASE}")
 wk_include_json()
+wk_include_locale()
 
 file(GLOB_RECURSE PUBLIC_HEADERS include/*.h)
 target_sources(${TARGET} PRIVATE ${PUBLIC_HEADERS})
@@ -29,10 +30,16 @@ target_include_directories(${TARGET} PUBLIC
 
 if (WK_MSVC)
     add_definitions(
-        -DUNICODE -D_UNICODE -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+        -DUNICODE -D_UNICODE
     )
 endif()
 
 target_link_libraries(${TARGET} PUBLIC 
     wk::core
 )
+
+if (WK_XCODE OR WK_CLANG)
+    target_compile_options(AnimateSDK PUBLIC
+        -Wno-error=pragma-pack -Wno-pragma-pack
+    )
+endif()

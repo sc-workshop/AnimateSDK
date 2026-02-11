@@ -17,7 +17,6 @@
 **************************************************************************/
 
 #ifdef FCM_ALIGNMENT
-    
     #if defined(__GNUC__)
         #pragma pack(pop, FCMAlign)
     #else

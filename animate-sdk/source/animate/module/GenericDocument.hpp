@@ -6,6 +6,7 @@
 
 #include "animate/app/DocType/IDocType.h"
 #include "animate/app/DocType/IFeatureMatrix.h"
+#include "animate/module/GenericFeatureMatrix.h"
 #include "Types.hpp"
 
 namespace Animate::DocType
@@ -29,7 +30,7 @@ namespace Animate::DocType
 			{
 				res = GetCallback()->CreateInstance(
 					NULL,
-					*((ConstFCMCLSID*)&PublisherT::PluginID.FeatureMatrixID),
+					*((ConstFCMCLSID*)&PublisherT::PluginID().FeatureMatrixID),
 					ID_IFeatureMatrix,
 					(FCM::PPVoid)&m_features.m_Ptr
 				);

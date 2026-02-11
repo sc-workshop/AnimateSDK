@@ -49,6 +49,7 @@
 #include <mutex>
 
 #include "animate/core/common/FCMPreConfig.h"
+#include "core/exception/exception.h"
 
 namespace Animate::Publisher
 {
@@ -527,7 +528,7 @@ namespace FCM
 
 			FCM::Result res = m_callback->GetService(id, service.m_Ptr);
 			if (FCM_FAILURE_CODE(res)) {
-				throw std::exception("Failed to initialize FCM Service");
+				throw wk::Exception("Failed to initialize FCM Service");
 			}
 
 			return (FCM::AutoPtr<T>)service;
@@ -535,24 +536,35 @@ namespace FCM
 
 		template <class ... Args>
 		void Trace(const char* message, Args ... args) {
-			char buffer[TraceBufferLength];
-			std::snprintf(buffer, TraceBufferLength, message, args...);
-
-			std::string result(buffer);
+            std::string result = std::vformat(message, std::make_format_args(args...));
+            
 			console->Trace((FCM::CStringRep16)Locale::ToUtf16(result + "\n").c_str());
 		}
 
 		template <class ... Args>
 		void Trace(const char16_t* message, Args ... args)
 		{
-			wchar_t buffer[TraceWideBufferLength];
-			std::swprintf(buffer, TraceWideBufferLength, (const wchar_t*)message, args...);
+#if defined(_WINDOWS)
+            wchar_t buffer[TraceWideBufferLength];
+            std::swprintf(buffer, TraceWideBufferLength, (const wchar_t*)message, args...);
 
-			std::wstring result(buffer);
-			result += L"\n";
+            std::wstring result(buffer);
+            result += L"\n";
 
-			console->Trace((FCM::CStringRep16)result.c_str());
+            console->Trace((FCM::CStringRep16)result.c_str());
+#elif defined(__APPLE__)
+            // Kinda sus
+            // But tbh i dont want to mess with locales in sdk project
+            // So converting like utf8-format-utf16 should be enough, i hope
+            Trace(Locale::ToUtf8(std::u16string(message)), args...);
+#endif
 		}
+        
+        template <class ... Args>
+        void Trace(const std::string& message, Args ... args)
+        {
+            Trace(message.c_str(), args...);
+        }
 
 		template <class ... Args>
 		void Trace(const std::u16string& message, Args ... args)
@@ -563,28 +575,30 @@ namespace FCM
 		template<typename Publisher, typename DocumentType, typename FeatureMatrix>
 		void ConstructPlugin()
 		{
-			AddClassEntry<DocumentType>(Publisher::PluginID.DocumentTypeID);
-			AddClassEntry<FeatureMatrix>(Publisher::PluginID.FeatureMatrixID);
-			AddClassEntry<Publisher>(Publisher::PluginID.PublisherID);
+            const auto& Plugin = Publisher::PluginID();
+			AddClassEntry<DocumentType>(Plugin.DocumentTypeID);
+			AddClassEntry<FeatureMatrix>(Plugin.FeatureMatrixID);
+			AddClassEntry<Publisher>(Plugin.PublisherID);
 		}
 
 		template<typename Publisher, typename DocumentType>
 		FCM::Result RegisterPlugin(FCM::PIFCMPluginDictionary pluginDict)
 		{
 			FCM::Result res = FCM_SUCCESS;
+            const auto& Plugin = Publisher::PluginID();
 
 			FCM::AutoPtr<FCM::IFCMDictionary> dict = pluginDict;
 
 			FCM::AutoPtr<FCM::IFCMDictionary> plugins;
 			dict->AddLevel((const FCM::StringRep8)kFCMComponent, plugins.m_Ptr);
 
-			res = Animate::DocType::RegisterDocument(plugins, Publisher::PluginID.DocumentTypeID, m_module);
+			res = Animate::DocType::RegisterDocument(plugins, Plugin.DocumentTypeID, m_module);
 			if (FCM_FAILURE_CODE(res))
 			{
 				return res;
 			}
 
-			return Animate::Publisher::RegisterPublisher(plugins, Publisher::PluginID.DocumentTypeID, Publisher::PluginID.PublisherID, m_module);
+			return Animate::Publisher::RegisterPublisher(plugins, Plugin.DocumentTypeID, Plugin.PublisherID, m_module);
 		}
 
 		template<typename T>

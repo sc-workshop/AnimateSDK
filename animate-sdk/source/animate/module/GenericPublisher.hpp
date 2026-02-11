@@ -58,7 +58,7 @@ namespace Animate::Publisher
 		FCM::Result _FCMCALL ClearCache() { return FCM_SERVICE_NOT_FOUND; };
 
 	public:
-		static const Animate::FCMPluginID PluginID;
+		static const Animate::FCMPluginID& PluginID();
 		static ConfigT& ActiveConfig();
 	};
 

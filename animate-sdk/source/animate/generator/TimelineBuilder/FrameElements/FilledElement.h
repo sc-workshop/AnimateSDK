@@ -34,7 +34,6 @@ namespace Animate::Publisher
 			FCM::AutoPtr<DOM::FrameElement::IShape> shape, 
 			const std::optional<DOM::Utils::MATRIX2D> matrix = std::nullopt
 		);
-		FilledElement& operator=(const FilledElement&) = default;
 
 	public:
 		bool operator==(const FilledElement& other) const;

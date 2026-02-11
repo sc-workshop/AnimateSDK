@@ -7,6 +7,7 @@ project(animate-sdk)
 include(FetchContent)
 include(cmake/dependencies.cmake)
 include(WkJson)
+include(WkLocale)
 
 # projects
 add_subdirectory(animate-sdk)

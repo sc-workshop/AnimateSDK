@@ -33,14 +33,16 @@
 	#define FCM_OS_64
 #elif defined(__ppc64__)
 	#define FCM_OS_64
+#elif defined(__arm64__) || defined(__aarch64__)
+    #define FCM_OS_64
 #else
 	#error "Unsupported FCM architecture"
 #endif
 
 #if defined(_WIN64)
-#define FCM_OS_WIN
+    #define FCM_OS_WIN
 #elif defined(__MWERKS__) || defined(__APPLE__)
-#define FCM_OS_MAC
+    #define FCM_OS_MAC
 #else
 #error "Unsupported platform"
 #endif
@@ -69,9 +71,7 @@
 	#include "win/FCMPreAlign_WIN.h"
 
 #elif defined(FCM_OS_MAC)
-
 	#include "mac/FCMPreAlign_MAC.h"
-
 #else
 	#error "Unsupported platform"
 #endif

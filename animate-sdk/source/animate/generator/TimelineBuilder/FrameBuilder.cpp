@@ -15,14 +15,14 @@ namespace Animate::Publisher
 		{
 			std::uintptr_t wrapper = (std::uintptr_t)item.m_Ptr;
 			std::uintptr_t nativeWrapper = wrapper + 24;
-			using GetObjectFN = void(__fastcall*)(std::uintptr_t, std::uintptr_t&);
+			using GetObjectFN = void(*)(std::uintptr_t, std::uintptr_t&);
 			GetObjectFN getObject = *(GetObjectFN*)(*(std::uintptr_t*)(nativeWrapper)+32);
 			getObject(nativeWrapper, page);
 		}
 
 		bool isButton;
 		{
-			using CPicObjIsButtonFN = bool(__fastcall*)(std::uintptr_t);
+			using CPicObjIsButtonFN = bool(*)(std::uintptr_t);
 			CPicObjIsButtonFN CPicObj_IsButton = *(CPicObjIsButtonFN*)(*(std::uintptr_t*)(page)+wheelchair.CPicObj_IsButton);
 			isButton = CPicObj_IsButton(page);
 		}

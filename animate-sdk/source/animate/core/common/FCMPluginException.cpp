@@ -17,7 +17,7 @@ namespace FCM
 	}
 
 	const Animate::Publisher::SymbolContext& FCMPluginException::Symbol() const { return *m_context.get(); }
-	const FCMPluginException::Reason FCMPluginException::ExceptionReason() const { return m_reason; }
+	FCMPluginException::Reason FCMPluginException::ExceptionReason() const { return m_reason; }
 
 	const char* FCMPluginException::what() const noexcept {
 		switch (m_reason)
