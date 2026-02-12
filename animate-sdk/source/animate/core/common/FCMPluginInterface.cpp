@@ -168,7 +168,7 @@ namespace FCM
 #elif defined(__APPLE__)
         Dl_info info;
         if (dladdr((void*)(CurrentPath), &info)) {
-            modulePath = std::filesystem::path(info.dli_fname) / "../../../";
+            modulePath = (std::filesystem::path(info.dli_fname).parent_path()) / "../../../";
         } else {
             wk::Exception("Failed to get module path");
         }

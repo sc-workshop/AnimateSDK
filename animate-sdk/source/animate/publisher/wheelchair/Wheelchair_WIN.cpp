@@ -1,4 +1,5 @@
 #include "AdobeWheelchair.h"
+#if defined(_Windows)
 
 namespace Animate
 {
@@ -7,6 +8,7 @@ namespace Animate
 		size_t major = ((version >> 24) & 0xFF);
 
 		// Animate 2024
+        // Most likely not working
 		if (major == 24)
 		{
 			CPicPage_Is9SliceEnabled = 436;
@@ -28,3 +30,4 @@ namespace Animate
 		}
 	}
 }
+#endif
