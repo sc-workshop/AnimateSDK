@@ -1,5 +1,5 @@
 #include "AdobeWheelchair.h"
-#if defined(_Windows)
+#if defined(_WINDOWS)
 
 namespace Animate
 {

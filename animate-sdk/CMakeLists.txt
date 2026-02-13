@@ -28,18 +28,11 @@ target_include_directories(${TARGET} PUBLIC
     include
 )
 
-if (WK_MSVC)
-    add_definitions(
-        -DUNICODE -D_UNICODE
-    )
-endif()
-
 target_link_libraries(${TARGET} PUBLIC 
     wk::core
 )
 
-if (WK_XCODE OR WK_CLANG)
-    target_compile_options(AnimateSDK PUBLIC
-        -Wno-error=pragma-pack -Wno-pragma-pack
-    )
-endif()
+target_compile_options(AnimateSDK PUBLIC
+    $<${WK_MSVC}: -DUNICODE -D_UNICODE>
+    $<${WK_CLANG}: -Wno-error=pragma-pack -Wno-pragma-pack>
+)
