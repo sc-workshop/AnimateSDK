@@ -11,7 +11,7 @@ namespace Animate
         // Most likely not working
 		if (major == 24)
 		{
-			CPicPage_Is9SliceEnabled = 436;
+			CPicPage_Is9SliceEnabled = 1744;
 			CPicPage_9SliceGuides = 1748;
 		}
 

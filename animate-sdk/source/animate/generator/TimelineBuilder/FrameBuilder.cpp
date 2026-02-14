@@ -9,7 +9,7 @@ namespace Animate::Publisher
 	{
 		AdobeWheelchair& wheelchair = AdobeWheelchair::Instance();
 		if (!wheelchair.CPicObj_IsButton || !wheelchair.CPicSprite_GetName) return u"";
-		uint16_t* instanceName = 0;
+        const char16_t* instanceName = 0;
 
 		std::uintptr_t page;
 		{
@@ -36,21 +36,40 @@ namespace Animate::Publisher
 			std::uintptr_t propertyInstance = page + wheelchair.CPicSprite_GetName;
 
 			// CPropertyInstance::GetName
-
+            
+            // CString aka std::basic_string<wchar_t,std::char_traits<wchar_t>,dvacore::allocator::STLAllocator<wchar_t>>*
 			std::uintptr_t instanceNameString = propertyInstance + 24;
-
-			// Checking for SBO in CString aka std::basic_string<wchar_t,std::char_traits<wchar_t>,dvacore::allocator::STLAllocator<wchar_t>>
+            
+#if defined(_WINDOWS)
+			// Checking for SBO
 			size_t instanceNameLength = *(size_t*)(instanceNameString + 16);
 
 			// Is local allocated
 			if (instanceNameLength < 8) {
-				instanceName = (uint16_t*)instanceNameString;
+				instanceName = (const char16_t*)instanceNameString;
 			}
 
 			// Else take from heap
 			else {
-				instanceName = *(uint16_t**)instanceNameString;
+				instanceName = *(const char16_t**)instanceNameString;
 			}
+            
+#elif defined(__APPLE__)
+            uint8_t flags = *(uint8_t*)(instanceNameString);
+            
+            //size_t instanceNameLength = 0;
+            if (flags & 1)  // long string
+            {
+                const uint64_t* fields = reinterpret_cast<const uint64_t*>(instanceNameString);
+                //instanceNameLength = (size_t)fields[1];                      // size field
+                instanceName = reinterpret_cast<const char16_t*>(fields[2]); // data field
+            }
+            else            // short string
+            {
+                //instanceNameLength = flags >> 1; // size stored in upper 7 bits
+                instanceName = reinterpret_cast<const char16_t*>((uint8_t*)instanceNameString + 2);
+            }
+#endif
 		}
 
 		return std::u16string((const char16_t*)instanceName);

@@ -75,6 +75,11 @@ namespace Animate
 			*
 			*/
 			virtual FCM::Result _FCMCALL GetCameras(FCM::PIFCMList& cameraList) = 0;
+            
+#if defined(__APPLE__)
+            virtual void* _FCMCALL _destructor1() = 0;
+            virtual void* _FCMCALL _destructor2() = 0;
+#endif
 
 			virtual void _FCMCALL GetCallback() = 0;
 

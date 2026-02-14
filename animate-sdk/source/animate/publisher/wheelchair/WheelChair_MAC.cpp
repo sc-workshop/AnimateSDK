@@ -11,7 +11,7 @@ namespace Animate
 		if (major == 24)
 		{
 			CPicPage_Is9SliceEnabled = 1528;
-			CPicPage_9SliceGuides = 584;
+			CPicPage_9SliceGuides = 1532;
 
 			CPicObj_IsButton = 552;
 			CPicSprite_GetName = 912;
@@ -22,7 +22,7 @@ namespace Animate
 
 		if (major >= 21) {
 			CPicPage_Is9SliceEnabled = 1408;
-			CPicPage_9SliceGuides = 528;
+			CPicPage_9SliceGuides = 1412;
 
 			CPicObj_IsButton = 552;
 			CPicSprite_GetName = 888;
