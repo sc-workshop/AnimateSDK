@@ -203,6 +203,8 @@ namespace Animate::Publisher
 			}
 		}
 
+		writer->PreFinalize();
+
 		uint16_t identifier = m_id++;
 		std::size_t hash = writer->HashCode();
 		auto library_pair = library.find(hash);

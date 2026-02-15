@@ -108,13 +108,12 @@ namespace Animate::Publisher
 
 	DOM::Utils::RECT FilledElementRegion::Bound() const
 	{
-		DOM::Utils::RECT result{
-			{-std::numeric_limits<float>::max(),
-			-std::numeric_limits<float>::max()},
-			{std::numeric_limits<float>::max(),
-			std::numeric_limits<float>::max()}
-		};
+		DOM::Utils::RECT result;
+		return Bound(result);
+	}
 
+	DOM::Utils::RECT FilledElementRegion::Bound(const DOM::Utils::RECT& other) const {
+		DOM::Utils::RECT result = other;
 		for (size_t i = 0; contour.Count() > i; i++)
 		{
 			const FilledElementPathSegment& segment = contour.GetSegment(i);

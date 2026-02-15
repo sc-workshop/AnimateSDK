@@ -366,10 +366,10 @@ namespace Animate
 			struct RECT
 			{
 				/** Top-left point **/
-				POINT2D topLeft;
+				POINT2D topLeft = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
 
 				/** Bottom-right point **/
-				POINT2D bottomRight;
+				POINT2D bottomRight = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
 
 				RECT operator+(const RECT& other) const
 				{

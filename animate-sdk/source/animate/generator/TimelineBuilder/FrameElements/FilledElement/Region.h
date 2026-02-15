@@ -46,6 +46,7 @@ namespace Animate::Publisher
 
 		// Bound of contour
 		DOM::Utils::RECT Bound() const;
+		DOM::Utils::RECT Bound(const DOM::Utils::RECT& other) const;
 
 		void Transform(const DOM::Utils::MATRIX2D& matrix);
 

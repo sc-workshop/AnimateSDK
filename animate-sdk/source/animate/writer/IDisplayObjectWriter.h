@@ -47,6 +47,13 @@ namespace Animate::Publisher
 		virtual std::size_t GenerateHash() const = 0;
 
 	public:
+
+		/// <summary>
+        /// Hook that called before finalizing and object hash calculation.
+		/// Its purpose is to let the object know that it must complete all its actions now.
+        /// </summary>
+        virtual void PreFinalize() {};
+
 		/// <summary>
 		/// Writer must finalize object and add it to its own resource palette here
 		/// </summary>

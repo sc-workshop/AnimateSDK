@@ -481,7 +481,8 @@ namespace Animate::Publisher
 		builder.m_frame_layer->GetColorTransformAtFrame(m_timeline_position, color_b);
 
 		// Comparing color transforms of frames
-		for (size_t i = 0; sizeof(color_a.colorArray) > i; i++) {
+        constexpr size_t colorMatrixSize = sizeof(color_a.colorArray) / sizeof(FCM::Float);
+        for (size_t i = 0; colorMatrixSize > i; i++) {
 			if (color_a.colorArray[i] != color_b.colorArray[i])
 				return false;
 		}
