@@ -84,8 +84,8 @@ namespace Animate::Publisher
 		// Cant batch when layers frames has different properties
 		if (frameBuilder != next_layer.frameBuilder) return true;
 
-		// Cant batch when there is no static elements or layer`s frame builder cant afford elements inherit
-		if (next_layer.frameBuilder.StaticElementsState() != FrameBuilder::StaticElementsState::Valid) return true;
+		// Cant batch when frame builder contains invalid for batching elements
+		if (next_layer.frameBuilder.StaticElementsState() == FrameBuilder::StaticElementsState::Invalid) return true;
 
 		// Success
 		return false;
