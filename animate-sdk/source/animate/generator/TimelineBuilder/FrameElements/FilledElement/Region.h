@@ -27,6 +27,23 @@ namespace Animate::Publisher
 			bool is_clipped;
 		};
 
+		struct GradientFill
+		{
+        public:
+            enum class FillType {
+				Linear,
+				Radial
+			};
+
+		public:
+            DOM::Utils::MATRIX2D matrix;
+            DOM::FillStyle::GradientSpread spread;
+
+			FillType type;
+            std::vector<DOM::Utils::GRADIENT_COLOR_POINT> points;
+            int32_t focal_point;
+		};
+
 	public:
 		enum class ShapeType {
 			SolidColor,
@@ -52,8 +69,7 @@ namespace Animate::Publisher
 
 	public:
 		ShapeType type;
-
-		std::variant<SolidFill, BitmapFill> style;
+		std::variant<SolidFill, BitmapFill, GradientFill> style;
 
 		FilledElementPath contour;
 		std::vector<FilledElementPath> holes;

@@ -30,7 +30,7 @@ namespace Animate::Publisher
 
 		bool operator==(const BitmapElement& other) const
 		{
-			return m_name == other.m_name;
+			return m_name == other.m_name && m_matrix == other.m_matrix;
 		}
 
 	private:

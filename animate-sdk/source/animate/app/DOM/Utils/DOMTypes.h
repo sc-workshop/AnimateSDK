@@ -183,6 +183,26 @@ namespace Animate
 
 				/** Alpha component (Value can range from 0-255) */
 				FCM::Byte alpha;
+
+				bool operator==(const COLOR& color) const {
+                    if (red != color.red)
+                        return false;
+
+                    if (green != color.green)
+                        return false;
+
+                    if (blue != color.blue)
+                        return false;
+
+                    if (alpha != color.alpha)
+                        return false;
+
+                    return true;
+                }
+
+                bool operator!=(const COLOR& color) const { 
+					return !(*this == color); 
+				}
 			};
 
 			/**
@@ -254,6 +274,32 @@ namespace Animate
 				MATRIX2D& operator +=(const MATRIX2D& matrix)
 				{
 					return *this + matrix;
+				}
+
+				bool operator==(const MATRIX2D& matrix) const {
+                    if (a != matrix.a)
+                        return false;
+
+					if (b != matrix.b)
+                        return false;
+
+					if (c != matrix.c)
+                        return false;
+
+					if (d != matrix.d)
+                        return false;
+
+					if (tx != matrix.tx)
+                        return false;
+
+					if (ty != matrix.ty)
+                        return false;
+
+					return true;
+				}
+
+				bool operator!=(const MATRIX2D& matrix) const { 
+					return !(*this == matrix);
 				}
 			};
 

@@ -90,7 +90,7 @@ namespace Animate
 
             class IGradientFillStyle : public FCM::VirtualClass<IID_IGRADIENT_FILL_STYLE>
             {
-
+            public:
                 /**
                  * @brief  This function gets the transformation matrix that defines the
                  *         placement, orientation, and scales for the gradient fill.

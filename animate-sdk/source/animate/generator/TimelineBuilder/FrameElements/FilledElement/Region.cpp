@@ -18,6 +18,7 @@ namespace Animate::Publisher
 
 			FCM::AutoPtr<DOM::FillStyle::ISolidFillStyle> solid_style = unknown_style;
 			FCM::AutoPtr<DOM::FillStyle::IBitmapFillStyle> bitmap_style = unknown_style;
+			FCM::AutoPtr<DOM::FillStyle::IGradientFillStyle> gradient_style = unknown_style;
 
 			if (solid_style) {
 				type = ShapeType::SolidColor;
@@ -39,6 +40,44 @@ namespace Animate::Publisher
 				bool& is_clipped = bitmap.is_clipped;
 
 				bitmap_style->IsClipped((FCM::Boolean&)is_clipped);
+            } 
+			else if (gradient_style) {
+                type = ShapeType::GradientColor;
+				auto& gradient = style.emplace<GradientFill>();
+
+				gradient_style->GetMatrix(gradient.matrix);
+                gradient_style->GetSpread(gradient.spread);
+
+				FCM::AutoPtr<FCM::IFCMUnknown> unknown_gradient_style;
+                gradient_style->GetColorGradient(unknown_gradient_style.m_Ptr);
+
+                FCM::AutoPtr<DOM::Utils::ILinearColorGradient> linear_style = unknown_gradient_style;
+                FCM::AutoPtr<DOM::Utils::IRadialColorGradient> radial_style = unknown_gradient_style;
+
+                if (linear_style) {
+                    gradient.type = GradientFill::FillType::Linear;
+
+					uint8_t keys_count = 0;
+                    linear_style->GetKeyColorCount(keys_count);
+
+					gradient.points.resize(keys_count);
+                    for (uint8_t i = 0; keys_count > i; i++) {
+                        linear_style->GetKeyColorAtIndex(i, gradient.points[i]);
+					}
+
+                } else if (radial_style) {
+                    gradient.type = GradientFill::FillType::Radial;
+
+                    uint8_t keys_count = 0;
+                    radial_style->GetKeyColorCount(keys_count);
+
+                    gradient.points.resize(keys_count);
+                    for (uint8_t i = 0; keys_count > i; i++) {
+                        radial_style->GetKeyColorAtIndex(i, gradient.points[i]);
+                    }
+
+					radial_style->GetFocalPoint(gradient.focal_point);
+				}
 			}
 			else {
 				throw FCM::FCMPluginException(
@@ -81,7 +120,8 @@ namespace Animate::Publisher
 				const SolidFill& fill = std::get<SolidFill>(style);
 				const SolidFill& other_fill = std::get<SolidFill>(other.style);
 
-				if (*(uint32_t*)&fill.color != *(uint32_t*)&other_fill.color) { return false; };
+				if (fill.color != other_fill.color)
+                    return false;
 			}
 			break;
 		case ShapeType::Bitmap:
@@ -93,6 +133,36 @@ namespace Animate::Publisher
 				if (!(fill.bitmap == other_fill.bitmap)) return false;
 			}
 			break;
+        case ShapeType::GradientColor: 
+		{
+            const GradientFill fill = std::get<GradientFill>(style);
+            const GradientFill other_fill = std::get<GradientFill>(other.style);
+
+			if (fill.type != other_fill.type)
+                return false;
+
+			if (fill.spread != other_fill.spread)
+                return false;
+
+            if (fill.matrix != other_fill.matrix)
+                return false;
+
+			if (fill.points.size() != other_fill.points.size())
+                return false;
+
+			if (fill.focal_point != other_fill.focal_point)
+                return false;
+
+			for (size_t i = 0; fill.points.size() > i; i++) {
+                if (fill.points[i].pos != other_fill.points[i].pos)
+                    return false;
+
+				if (fill.points[i].color != other_fill.points[i].color)
+                    return false;
+			}
+
+        } 
+		break;
 		default:
 			return false;
 		}
@@ -138,7 +208,8 @@ namespace Animate::Publisher
 		break;
 		case ShapeType::GradientColor:
 		{
-			// TODO
+            GradientFill& fill = std::get<GradientFill>(style);
+            fill.matrix = fill.matrix * matrix;
 		}
 		break;
 		default:
