@@ -2,6 +2,7 @@
 
 #include "animate/publisher/ResourcePublisher.h"
 #include "animate/publisher/wheelchair/AdobeWheelchair.h"
+#include "LayerBuilder.h"
 
 namespace Animate::Publisher {
     std::u16string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> item) {
@@ -22,8 +23,7 @@ namespace Animate::Publisher {
         bool isButton;
         {
             using CPicObjIsButtonFN = bool (*)(std::uintptr_t);
-            CPicObjIsButtonFN CPicObj_IsButton =
-                *(CPicObjIsButtonFN*) (*(std::uintptr_t*) (page) + wheelchair.CPicObj_IsButton);
+            CPicObjIsButtonFN CPicObj_IsButton = *(CPicObjIsButtonFN*) (*(std::uintptr_t*) (page) + wheelchair.CPicObj_IsButton);
             isButton = CPicObj_IsButton(page);
         }
 
@@ -87,9 +87,7 @@ namespace Animate::Publisher {
         m_shape_tweener = nullptr;
     }
 
-    void FrameBuilder::Update(SymbolContext& symbol,
-                              FCM::AutoPtr<DOM::ILayer2> layer,
-                              FCM::AutoPtr<DOM::IFrame> frame) {
+    void FrameBuilder::Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame) {
         FCM::PluginModule& context = FCM::PluginModule::Instance();
         Reset();
 
@@ -162,15 +160,33 @@ namespace Animate::Publisher {
             FCM::FCMListPtr frameElements;
             frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frameElements.m_Ptr);
 
-            DeclareFrameElements(symbol, frameElements, std::nullopt, false);
+            DeclareFrameElements(frameElements, std::nullopt, false);
         }
 
         m_rigging_frame = frame;
+        UpdateShapeTweener();
     }
 
-    void FrameBuilder::ReleaseFrameElement(SymbolContext& symbol,
-                                           SharedMovieclipWriter& writer,
-                                           FrameBuilderElement& element) {
+    void FrameBuilder::UpdateShapeTweener() {
+        if (!m_shape_tweener)
+            return;
+
+        m_static_elements.Clear();
+        FCM::AutoPtr<DOM::FrameElement::IShape> filledShape = nullptr;
+        m_shape_tweener->GetShape(m_base_tween, m_frame_position, filledShape.m_Ptr);
+
+        if (filledShape) {
+            // Remove all previous elements
+            m_elements.clear();
+            
+            // Update states and add filled shape to queue
+            m_static_state = FrameBuilder::StaticElementsState::Valid;
+            m_static_elements.AddFilledElement(m_symbol, filledShape);
+            m_builder.frameUpdated = true;
+        }
+    }
+
+    void FrameBuilder::ReleaseFrameElement(SharedMovieclipWriter& writer, FrameBuilderElement& element) {
         if (m_frame_position > element.duration)
             return;
 
@@ -219,27 +235,23 @@ namespace Animate::Publisher {
             blend = frame_blend;
         }
 
-        if (m_shape_tweener) {
-            FCM::AutoPtr<DOM::FrameElement::IShape> filledShape = nullptr;
-            m_shape_tweener->GetShape(m_base_tween, m_frame_position, filledShape.m_Ptr);
-
-            // TODO: this place may have many bugs and issues
-            m_static_state = FrameBuilder::StaticElementsState::Valid;
-            m_static_elements.AddFilledElement(symbol, filledShape);
-
-            return;
-        }
-
         writer.AddFrameElement(element.reference, blend, element.name, matrix, color);
     }
 
-    void FrameBuilder::operator()(SymbolContext& symbol, SharedMovieclipWriter& writer) {
+    void FrameBuilder::operator()(SharedMovieclipWriter& writer) {
         uint32_t i = (uint32_t) m_elements.size();
         for (uint32_t elementIndex = 0; m_elements.size() > elementIndex; elementIndex++) {
             i--;
 
-            ReleaseFrameElement(symbol, writer, m_elements[i]);
+            ReleaseFrameElement(writer, m_elements[i]);
         }
+    }
+
+    void FrameBuilder::Next() {
+        m_frame_position++;
+        m_timeline_position++;
+        m_static_elements.Update();
+        UpdateShapeTweener();
     }
 
     void FrameBuilder::InvalidateStaticState() {
@@ -247,10 +259,7 @@ namespace Animate::Publisher {
         m_static_elements.Clear();
     }
 
-    void FrameBuilder::DeclareFrameElements(SymbolContext& symbol,
-                                            FCM::FCMListPtr frameElements,
-                                            std::optional<Matrix_t> base_transform,
-                                            bool reverse) {
+    void FrameBuilder::DeclareFrameElements(FCM::FCMListPtr frameElements, std::optional<Matrix_t> base_transform, bool reverse) {
         uint32_t frameElementsCount = 0;
         frameElements->Count(frameElementsCount);
         m_elements.reserve(frameElementsCount);
@@ -258,18 +267,16 @@ namespace Animate::Publisher {
         if (reverse) {
             uint32_t i = frameElementsCount - 1;
             for (uint32_t t = 0; frameElementsCount > t; t++) {
-                DeclareFrameElement(symbol, frameElements[i--], base_transform);
+                DeclareFrameElement(frameElements[i--], base_transform);
             }
         } else {
             for (uint32_t i = 0; frameElementsCount > i; i++) {
-                DeclareFrameElement(symbol, frameElements[i], base_transform);
+                DeclareFrameElement(frameElements[i], base_transform);
             }
         }
     }
 
-    void FrameBuilder::DeclareFrameElement(SymbolContext& symbol,
-                                           FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
-                                           std::optional<Matrix_t> base_transform) {
+    void FrameBuilder::DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement, std::optional<Matrix_t> base_transform) {
         using namespace Animate::DOM::FrameElement;
         using namespace FCM;
 
@@ -309,7 +316,7 @@ namespace Animate::Publisher {
 
         auto release_static = [&](const std::u16string& name) {
             if (m_static_state == FrameBuilder::StaticElementsState::Invalid) {
-                ReleaseStatic(symbol, name);
+                ReleaseStatic(name);
                 InvalidateStaticState();
                 return true;
             }
@@ -335,8 +342,7 @@ namespace Animate::Publisher {
 
             if (movieClipElement) {
                 // Instance name
-                element.name =
-                    context.falloc->GetString16(movieClipElement.m_Ptr, &DOM::FrameElement::IMovieClip::GetName);
+                element.name = context.falloc->GetString16(movieClipElement.m_Ptr, &DOM::FrameElement::IMovieClip::GetName);
 
                 movieClipElement->GetBlendMode(element.blend_mode);
             }
@@ -346,7 +352,7 @@ namespace Animate::Publisher {
                 mediaItem->GetMediaInfo(mediaInfo.m_Ptr);
 
                 AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmapMedia = mediaInfo;
-                m_static_elements.AddElement<BitmapElement>(symbol, mediaItem, matrix);
+                m_static_elements.AddElement<BitmapElement>(m_symbol, mediaItem, matrix);
                 if (!release_static(element.name)) {
                     m_static_state = StaticElementsState::Valid;
                 }
@@ -362,22 +368,21 @@ namespace Animate::Publisher {
         else if (textfieldElement) {
             InvalidateStaticState();
 
-            element.reference = m_resources.AddTextField(symbol, textfieldElement, filters);
+            element.reference = m_resources.AddTextField(m_symbol, textfieldElement, filters);
             if (element.reference) {
                 AutoPtr<ITextBehaviour> textfieldElementBehaviour;
                 textfieldElement->GetTextBehaviour(textfieldElementBehaviour.m_Ptr);
 
                 AutoPtr<IModifiableTextBehaviour> modifiableTextfieldBehaviour = textfieldElementBehaviour;
                 if (modifiableTextfieldBehaviour) {
-                    element.name = context.falloc->GetString16(modifiableTextfieldBehaviour.m_Ptr,
-                                                               &IModifiableTextBehaviour::GetInstanceName);
+                    element.name = context.falloc->GetString16(modifiableTextfieldBehaviour.m_Ptr, &IModifiableTextBehaviour::GetInstanceName);
                 }
             }
         }
 
         // Fills / Stroke
         else if (filledShapeItem) {
-            m_static_elements.AddFilledElement(symbol, filledShapeItem, matrix);
+            m_static_elements.AddFilledElement(m_symbol, filledShapeItem, matrix);
 
             if (!release_static(element.name)) {
                 m_static_state = StaticElementsState::Valid;
@@ -390,7 +395,7 @@ namespace Animate::Publisher {
             FCMListPtr groupElements;
             groupedElemenets->GetMembers(groupElements.m_Ptr);
 
-            DeclareFrameElements(symbol, groupElements, matrix);
+            DeclareFrameElements(groupElements, matrix);
             return;
         }
 
@@ -466,11 +471,11 @@ namespace Animate::Publisher {
         return true;
     }
 
-    void FrameBuilder::ReleaseStatic(SymbolContext& symbol, const std::u16string& name) {
+    void FrameBuilder::ReleaseStatic(const std::u16string& name) {
         if (m_static_elements.Empty())
             return;
 
-        ResourceReference reference = m_resources.AddGroup(symbol, m_static_elements);
+        ResourceReference reference = m_resources.AddGroup(m_symbol, m_static_elements);
         if (!reference)
             return;
 
@@ -497,8 +502,8 @@ namespace Animate::Publisher {
     }
 
     bool FrameBuilder::IsAnimated() const {
-        // Checking for any animation tween
-        if (m_base_tween)
+        // Checking for transformation tween
+        if (m_color_tweener || m_matrix_tweener)
             return true;
 
         return false;

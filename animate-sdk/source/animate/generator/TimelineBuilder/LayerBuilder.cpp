@@ -3,17 +3,6 @@
 #include "animate/publisher/ResourcePublisher.h"
 
 namespace Animate::Publisher {
-    void LayerBuilder::UpdateFrame(SymbolContext& symbol) {
-        FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[m_keyframeIndex];
-        frameBuilder.Update(symbol, m_layer, frame);
-    }
-
-    void LayerBuilder::AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type) {
-        ResourceReference reference = m_resources.AddModifier(type);
-
-        writer.AddFrameElement(reference, FCM::BlendMode::NORMAL, u"", std::nullopt, std::nullopt);
-    }
-
     LayerBuilder::LayerBuilder(
         LayerBuilderContext& context, FCM::AutoPtr<DOM::ILayer2> layer, uint32_t duration, ResourcePublisher& resources, SymbolContext& symbol) :
         m_context(context),
@@ -21,15 +10,14 @@ namespace Animate::Publisher {
         m_duration(duration),
         m_layer(layer),
         m_resources(resources),
-        frameBuilder(resources) {
+        frameBuilder(symbol, context, resources) {
         FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
         layer->GetLayerType(unknownLayer.m_Ptr);
         FCM::AutoPtr<DOM::Layer::ILayerNormal> normal_layer = unknownLayer;
 
         normal_layer->GetKeyFrames(m_keyframes.m_Ptr);
         m_keyframes->Count(m_keyframeCount);
-
-        UpdateFrame(m_symbol);
+        UpdateFrame();
 
         FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = unknownLayer;
         if (maskLayer) {
@@ -39,6 +27,17 @@ namespace Animate::Publisher {
             maskContext = wk::CreateRef<MaskedLayerContext>();
             SymbolGenerator::GetLayerBuilder(m_symbol, maskContext->context, maskedLayers, m_resources, maskContext->layers);
         }
+    }
+
+    void LayerBuilder::UpdateFrame() {
+        FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[m_keyframeIndex];
+        frameBuilder.Update(m_layer, frame);
+    }
+
+    void LayerBuilder::AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type) {
+        ResourceReference reference = m_resources.AddModifier(type);
+
+        writer.AddFrameElement(reference, FCM::BlendMode::NORMAL, u"", std::nullopt, std::nullopt);
     }
 
     void LayerBuilder::Next() {
@@ -52,7 +51,7 @@ namespace Animate::Publisher {
             if (!frameBuilder && m_duration > m_position) {
                 m_keyframeIndex++;
                 m_context.frameUpdated = true;
-                UpdateFrame(m_symbol);
+                UpdateFrame();
             } else if (activeFrame && !frameBuilder) {
                 m_context.frameUpdated = true;
             }
@@ -60,7 +59,7 @@ namespace Animate::Publisher {
     }
 
     void LayerBuilder::operator()(SharedMovieclipWriter& writer) {
-        frameBuilder(m_symbol, writer);
+        frameBuilder(writer);
     }
 
     bool LayerBuilder::ShouldReleaseStatic(const LayerBuilder& next_layer) const {
@@ -85,7 +84,7 @@ namespace Animate::Publisher {
     }
 
     void LayerBuilder::ReleaseStatic() {
-        frameBuilder.ReleaseStatic(m_symbol, std::u16string(u""));
+        frameBuilder.ReleaseStatic(std::u16string(u""));
     }
 
     void LayerBuilder::ProcessLayerFrame(LayerBuilderContext& context,

@@ -52,7 +52,7 @@ namespace Animate::Publisher {
         // Symbol building context
         LayerBuilderContext& m_context;
 
-        void UpdateFrame(SymbolContext& symbol);
+        void UpdateFrame();
         void AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type);
 
     public:

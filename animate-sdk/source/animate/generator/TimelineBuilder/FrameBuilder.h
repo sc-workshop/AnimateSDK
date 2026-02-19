@@ -5,9 +5,11 @@
 #include "AnimateWriter.h"
 #include "FrameElements/FilledElement.h"
 #include "FrameElements/StaticElementsGroup.h"
+#include "animate/publisher/symbol/SymbolContext.h"
 
 namespace Animate::Publisher {
     class ResourcePublisher;
+    struct LayerBuilderContext;
 
     using Matrix_t = DOM::Utils::MATRIX2D;
     using Color_t = DOM::Utils::COLOR_MATRIX;
@@ -42,6 +44,8 @@ namespace Animate::Publisher {
         static std::u16string GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> symbol);
 
     private:
+        SymbolContext& m_symbol;
+        LayerBuilderContext& m_builder;
         ResourcePublisher& m_resources;
 
         // Basic frame data
@@ -79,22 +83,22 @@ namespace Animate::Publisher {
         StaticElementsGroup m_static_elements;                                    // Array of sprites and filled shapes gathered for batch process
 
     public:
-        FrameBuilder(ResourcePublisher& resources) :
-            m_resources(resources) {};
+        FrameBuilder(SymbolContext& symbol, LayerBuilderContext& builder, ResourcePublisher& resources) :
+            m_resources(resources),
+            m_symbol(symbol),
+            m_builder(builder) {};
 
-        void Update(SymbolContext& symbol, FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame);
+        void Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame);
 
-        void ReleaseFrameElement(SymbolContext& symbol, SharedMovieclipWriter& writer, FrameBuilderElement& element);
+        void UpdateShapeTweener();
 
-        void operator()(SymbolContext& symbol, SharedMovieclipWriter& writer);
+        void ReleaseFrameElement(SharedMovieclipWriter& writer, FrameBuilderElement& element);
+
+        void operator()(SharedMovieclipWriter& writer);
 
         bool FlushMask() const { return !m_elements.empty() || !m_static_elements.Empty(); }
 
-        void Next() {
-            m_frame_position++;
-            m_timeline_position++;
-            m_static_elements.Update();
-        }
+        void Next();
 
         uint32_t Duration() const { return m_duration; }
 
@@ -114,7 +118,7 @@ namespace Animate::Publisher {
             }
         }
 
-        void ReleaseStatic(SymbolContext& symbol, const std::u16string& name);
+        void ReleaseStatic(const std::u16string& name);
         void InheritStatic(const FrameBuilder& frame);
 
         bool IsStatic() const;
@@ -125,13 +129,8 @@ namespace Animate::Publisher {
     private:
         void InvalidateStaticState();
 
-        void DeclareFrameElements(SymbolContext& symbol,
-                                  FCM::FCMListPtr frameElements,
-                                  std::optional<Matrix_t> base_transform = std::nullopt,
-                                  bool reverse = false);
+        void DeclareFrameElements(FCM::FCMListPtr frameElements, std::optional<Matrix_t> base_transform = std::nullopt, bool reverse = false);
 
-        void DeclareFrameElement(SymbolContext& symbol,
-                                 FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
-                                 std::optional<Matrix_t> base_transform = std::nullopt);
+        void DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement, std::optional<Matrix_t> base_transform = std::nullopt);
     };
 }
