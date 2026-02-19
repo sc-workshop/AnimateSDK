@@ -1,100 +1,99 @@
 #include "SymbolGenerator.h"
 
 #include "animate/publisher/ResourcePublisher.h"
-
 #include "animate/publisher/symbol/SlicingContext.h"
 
-namespace Animate::Publisher
-{
-	void SymbolGenerator::GetLayerBuilder(FCM::FCMListPtr& layers, ResourcePublisher& resources, SymbolContext& symbol, std::vector<LayerBuilder>& result) {
-		uint32_t layerCount = 0;
-		layers->Count(layerCount);
+namespace Animate::Publisher {
+    void SymbolGenerator::GetLayerBuilder(SymbolContext& symbol,
+                                          LayerBuilderContext& context,
+                                          FCM::FCMListPtr& layers,
+                                          ResourcePublisher& resources,
 
-		for (uint32_t i = 0; layerCount > i; i++) {
-			FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
-			if (!layer) {
-				continue;
-			}
+                                          std::vector<LayerBuilder>& result) {
+        uint32_t layerCount = 0;
+        layers->Count(layerCount);
 
-			FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
-			layer->GetLayerType(unknownLayer.m_Ptr);
+        for (uint32_t i = 0; layerCount > i; i++) {
+            FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
+            if (!layer) {
+                continue;
+            }
 
-			FCM::AutoPtr<DOM::Layer::ILayerNormal> normalLayer = unknownLayer;
-			FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
-			FCM::AutoPtr<DOM::Layer::ILayerFolder> folderLayer = unknownLayer;
+            FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
+            layer->GetLayerType(unknownLayer.m_Ptr);
 
-			if (folderLayer) {
-				FCM::FCMListPtr folderLayers;
-				folderLayer->GetChildren(folderLayers.m_Ptr);
+            FCM::AutoPtr<DOM::Layer::ILayerNormal> normalLayer = unknownLayer;
+            FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
+            FCM::AutoPtr<DOM::Layer::ILayerFolder> folderLayer = unknownLayer;
 
-				SymbolGenerator::GetLayerBuilder(folderLayers, resources, symbol, result);
-				continue;
-			}
-			else if (guideLayer) {
-				FCM::FCMListPtr guideChildren;
-				guideLayer->GetChildren(guideChildren.m_Ptr);
+            if (folderLayer) {
+                FCM::FCMListPtr folderLayers;
+                folderLayer->GetChildren(folderLayers.m_Ptr);
 
-				SymbolGenerator::GetLayerBuilder(guideChildren, resources, symbol, result);
-				continue;
-			}
-			else if (normalLayer) {
-				uint32_t duration = 0;
-				normalLayer->GetTotalDuration(duration);
-				if (duration <= 0) continue;
+                SymbolGenerator::GetLayerBuilder(symbol, context, folderLayers, resources, result);
+                continue;
+            } else if (guideLayer) {
+                FCM::FCMListPtr guideChildren;
+                guideLayer->GetChildren(guideChildren.m_Ptr);
 
-				result.emplace_back(layer, duration, resources, symbol);
-			}
-		}
-	};
+                SymbolGenerator::GetLayerBuilder(symbol, context, guideChildren, resources, result);
+                continue;
+            } else if (normalLayer) {
+                uint32_t duration = 0;
+                normalLayer->GetTotalDuration(duration);
+                if (duration <= 0)
+                    continue;
 
-	wk::Ref<IDisplayObjectWriter> SymbolGenerator::Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required) {
-		uint32_t duration = 0;
-		timeline->GetMaxFrameCount(duration);
+                result.emplace_back(context, layer, duration, resources, symbol);
+            }
+        }
+    };
 
-		SlicingContext slice_scaling = SlicingContext(timeline);
-		if (slice_scaling.IsEnabled())
-		{
-			symbol.slicing = slice_scaling;
-		}
+    wk::Ref<IDisplayObjectWriter> SymbolGenerator::Generate(SymbolContext& symbol,
+                                                            FCM::AutoPtr<DOM::ITimeline1> timeline,
+                                                            bool required) {
+        // Parsing layers data
+        uint32_t duration = 0;
+        timeline->GetMaxFrameCount(duration);
 
-		FCM::FCMListPtr layersList;
-		timeline->GetLayers(layersList.m_Ptr);
+        SlicingContext slice_scaling = SlicingContext(timeline);
+        if (slice_scaling.IsEnabled()) {
+            symbol.slicing = slice_scaling;
+        }
 
-		std::vector<LayerBuilder> layers;
-		SymbolGenerator::GetLayerBuilder(layersList, m_resources, symbol, layers);
+        FCM::FCMListPtr layersList;
+        timeline->GetLayers(layersList.m_Ptr);
 
-		bool isStatic = (!required && symbol.linkage_name.empty()) && !symbol.slicing.IsEnabled();
-		if (isStatic)
-		{
-			for (LayerBuilder& layer : layers)
-			{
-				if (!layer.IsStatic())
-				{
-					isStatic = false;
-					break;
-				}
-			}
-		}
-		
+        // Creating build context and creating builder wrapper
+        LayerBuilderContext context;
+        std::vector<LayerBuilder> layers;
+        SymbolGenerator::GetLayerBuilder(symbol, context, layersList, m_resources, layers);
 
-		if (isStatic)
-		{
-			wk::Ref<SharedShapeWriter> shape = m_resources.m_writer.AddShape(symbol);
-			const auto group = LayerBuilder::ProcessStaticLayers(layers);
-			if (group.has_value())
-			{
-				shape->AddGroup(symbol, group.value());
-			}
+        bool isStatic = (!required && symbol.linkage_name.empty()) && !symbol.slicing.IsEnabled();
+        if (isStatic) {
+            for (LayerBuilder& layer : layers) {
+                if (!layer.IsStatic()) {
+                    isStatic = false;
+                    break;
+                }
+            }
+        }
 
-			return shape;
-		}
-		else
-		{
-			wk::Ref<SharedMovieclipWriter> movieclip = m_resources.m_writer.AddMovieclip(symbol);
-			movieclip->InitializeTimeline(m_resources.document_fps, duration);
-			LayerBuilder::ProcessLayers(symbol, layers, *movieclip, duration);
+        // Trying to guess if we can use that symbol as a static shape
+        if (isStatic) {
+            wk::Ref<SharedShapeWriter> shape = m_resources.m_writer.AddShape(symbol);
+            const auto group = LayerBuilder::ProcessStaticLayers(layers);
+            if (group.has_value()) {
+                shape->AddGroup(symbol, group.value());
+            }
 
-			return movieclip;
-		}
-	}
+            return shape;
+        } else {
+            wk::Ref<SharedMovieclipWriter> movieclip = m_resources.m_writer.AddMovieclip(symbol);
+            movieclip->InitializeTimeline(m_resources.document_fps, duration);
+            LayerBuilder::ProcessLayers(symbol, context, layers, *movieclip, duration);
+
+            return movieclip;
+        }
+    }
 }

@@ -3,45 +3,45 @@
 #include "AnimatePublisher.h"
 #include "FilledElement.h"
 
-namespace Animate::Publisher
-{
-	StaticElementsGroup::StaticElementsGroup()
-	{
-		m_items = wk::CreateRef<Elements>();
-	}
+namespace Animate::Publisher {
+    StaticElementsGroup::StaticElementsGroup() {
+        m_items = wk::CreateRef<Elements>();
+        m_inherited = wk::CreateRef<Elements>();
+    }
 
-	StaticElement& StaticElementsGroup::operator[](size_t index) const
-	{
-		return *m_items->at(index);
-	}
+    StaticElement& StaticElementsGroup::operator[](size_t index) const {
+        if (index >= m_inherited->size()) {
+            return *m_items->at(index - m_inherited->size());
+        }
 
-	StaticElementsGroup& StaticElementsGroup::operator +=(const StaticElementsGroup& group)
-	{
-		m_items->insert(
-				m_items->begin(),
-				group.m_items->begin(), group.m_items->end()
-		);
+        return *m_inherited->at(index);
+    }
 
-		return *this;
-	}
+    StaticElementsGroup& StaticElementsGroup::operator+=(const StaticElementsGroup& group) {
+        m_inherited->insert(m_inherited->begin(), group.m_items->begin(), group.m_items->end());
+        m_inherited->insert(m_inherited->begin(), group.m_inherited->begin(), group.m_inherited->end());
 
-	size_t StaticElementsGroup::Size() const
-	{
-		return m_items->size();
-	}
+        return *this;
+    }
 
-	bool StaticElementsGroup::Empty() const
-	{
-		return m_items->empty();
-	}
+    size_t StaticElementsGroup::Size() const {
+        return m_items->size() + m_inherited->size();
+    }
 
-	void StaticElementsGroup::Clear()
-	{
-		m_items->clear();
-	}
+    bool StaticElementsGroup::Empty() const {
+        return m_items->empty() && m_inherited->empty();
+    }
 
-	StaticElementsGroup::operator bool() const
-	{
-		return m_items && !Empty();
-	}
+    void StaticElementsGroup::Clear() {
+        m_items->clear();
+        Update();
+    }
+
+    void StaticElementsGroup::Update() {
+        m_inherited->clear();
+    }
+
+    StaticElementsGroup::operator bool() const {
+        return m_items && m_inherited && !Empty();
+    }
 }

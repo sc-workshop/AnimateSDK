@@ -1,87 +1,112 @@
 #pragma once
 
-#include <cstdint>
-#include <vector>
-
-#include "AnimateWriter.h"
 #include "AnimateDOM.h"
-
+#include "AnimateWriter.h"
 #include "FrameBuilder.h"
 #include "animate/publisher/symbol/SymbolContext.h"
 
-namespace Animate::Publisher
-{
-	class ResourcePublisher;
+#include <cstdint>
+#include <vector>
 
-	class LayerBuilder {
-	private:
-		SymbolContext& m_symbol;
+namespace Animate::Publisher {
+    class ResourcePublisher;
+    class LayerBuilder;
 
-		uint32_t m_duration = 0;
-		uint32_t m_position = 0;
+    struct LayerBuilderContext {
+        bool frameUpdated = true;
+    };
 
-		FCM::FCMListPtr m_keyframes;
-		uint32_t m_keyframeCount = 0;
-		uint32_t m_keyframeIndex = 0;
+    struct MaskedLayerContext {
+        // Context
+        LayerBuilderContext context;
 
-		FCM::AutoPtr<DOM::ILayer2> m_layer;
-		ResourcePublisher& m_resources;
+        // Array of children builders
+        std::vector<LayerBuilder> layers;
+    };
 
-		bool m_mask_layer = false;
+    class LayerBuilder {
+    private:
+        SymbolContext& m_symbol;
 
-		void UpdateFrame(SymbolContext& symbol);
+        // Total layer duration
+        uint32_t m_duration = 0;
 
-		void AddModifier(
-			SharedMovieclipWriter& writer,
-			MaskedLayerState type
-		);
+        // Current layer position on timeline
+        uint32_t m_position = 0;
 
-	public:
-		LayerBuilder(FCM::AutoPtr<DOM::ILayer2> layer, uint32_t duration, ResourcePublisher& resources, SymbolContext& info);
+        // Array of native keyframes
+        FCM::FCMListPtr m_keyframes;
 
-		void operator()(SharedMovieclipWriter& writer);
+        // Total count of layer keyframes
+        uint32_t m_keyframeCount = 0;
 
-		operator bool() const
-		{
-			return m_duration > m_position;
-		}
+        // Current keyframe index
+        uint32_t m_keyframeIndex = 0;
 
-	public:
-		void Next();
+        // Current native layer
+        FCM::AutoPtr<DOM::ILayer2> m_layer;
 
-		bool IsHoldStatic() const { return !frameBuilder.StaticElements().Empty(); };
+        // Resource publisher from current document context
+        ResourcePublisher& m_resources;
 
-		bool ShouldReleaseStatic(const LayerBuilder& next_layer) const;
+        // Symbol building context
+        LayerBuilderContext& m_context;
 
-		void InheritStatic(const LayerBuilder& last_layer)
-		{
-			frameBuilder.InheritStatic(last_layer.frameBuilder);
-		}
+        void UpdateFrame(SymbolContext& symbol);
+        void AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type);
 
-		void ReleaseStatic();
+    public:
+        LayerBuilder(LayerBuilderContext& context,
+                     FCM::AutoPtr<DOM::ILayer2> layer,
+                     uint32_t duration,
+                     ResourcePublisher& resources,
+                     SymbolContext& info);
 
-		bool IsMaskLayer() const {
-			return m_mask_layer;
-		}
+        void operator()(SharedMovieclipWriter& writer);
 
-		bool IsStatic() const;
+        operator bool() const { return m_duration > m_position; }
 
-	public:
-		std::vector<LayerBuilder> maskedLayers;
-		FrameBuilder frameBuilder;
+    public:
+        void Next();
 
-	public:
+        bool IsHoldStatic() const { return !frameBuilder.StaticElements().Empty(); };
 
-		static void ProcessLayerFrame(
-			std::vector<LayerBuilder>& layers,
-			SharedMovieclipWriter& writer,
-			size_t layer_index, size_t last_layer_index,
-			bool is_end
-		);
+        bool ShouldReleaseStatic(const LayerBuilder& next_layer) const;
 
-		static void ProcessLayers(SymbolContext& context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer);
-		static void ProcessLayers(SymbolContext& context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer, uint32_t range);
-		static const std::optional<StaticElementsGroup> ProcessStaticLayers(std::vector<LayerBuilder>& layers);
-	};
+        void InheritStatic(const LayerBuilder& last_layer) { frameBuilder.InheritStatic(last_layer.frameBuilder); }
+
+        void ReleaseStatic();
+
+        bool IsMaskLayer() const { return (bool) maskContext; }
+
+        bool IsStatic() const;
+
+    public:
+        // Context for masked items should be seperated to invidual scope
+        wk::Ref<MaskedLayerContext> maskContext;
+
+        FrameBuilder frameBuilder;
+
+    public:
+        static void ProcessLayerFrame(LayerBuilderContext& build_context,
+                                      std::vector<LayerBuilder>& layers,
+                                      SharedMovieclipWriter& writer,
+                                      size_t layer_index,
+                                      size_t last_layer_index,
+                                      bool has_next_layer);
+
+        static void ProcessLayers(SymbolContext& context,
+                                  LayerBuilderContext& build_context,
+                                  std::vector<LayerBuilder>& layers,
+                                  SharedMovieclipWriter& writer);
+
+        static void ProcessLayers(SymbolContext& context,
+                                  LayerBuilderContext& build_context,
+                                  std::vector<LayerBuilder>& layers,
+                                  SharedMovieclipWriter& writer,
+                                  uint32_t range);
+
+        static const std::optional<StaticElementsGroup> ProcessStaticLayers(std::vector<LayerBuilder>& layers);
+    };
 
 }

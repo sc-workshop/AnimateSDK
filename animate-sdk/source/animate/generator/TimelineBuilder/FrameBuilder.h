@@ -28,6 +28,8 @@ namespace Animate::Publisher
 
 		// Count of playing frames
 		uint32_t duration = std::numeric_limits<uint32_t>::max();
+
+        bool isStatic = false;
 	};
 
 	class FrameBuilder {
@@ -48,9 +50,17 @@ namespace Animate::Publisher
 
 		// Basic frame data
 		FCM::AutoPtr<DOM::ILayer2> m_frame_layer;
+
+		// Current keyframe duration
 		uint32_t m_duration = 0;
+
+		// Current position on frame space [0 - m_duration]
 		uint32_t m_frame_position = 0;
+
+		// Current on timeline space [0 - timeline length]
 		uint32_t m_timeline_position = 0;
+
+		// Frame label
 		std::u16string m_label;
 
 		// Frame elements
@@ -64,12 +74,13 @@ namespace Animate::Publisher
 		FCM::AutoPtr<DOM::Service::Tween::IShapeTweener> m_shape_tweener = nullptr;
 
 		// Rigging
+		// Mostly for child layers feature
 		FCM::AutoPtr<DOM::IFrame1> m_rigging_frame = nullptr;
 
-		// Filled elements "Static Batching" things
-		StaticElementsState m_static_state = StaticElementsState::None;
-		StaticElementsState m_keyframe_static_state = StaticElementsState::Valid;
-		StaticElementsGroup m_static_elements;
+		// Graphic Batching state for filled shapes and sprites
+		StaticElementsState m_static_state = StaticElementsState::None; // State of current frame
+		StaticElementsState m_keyframe_static_state = StaticElementsState::Valid; // State of whole keyframe for early out
+		StaticElementsGroup m_static_elements; // Array of sprites and filled shapes gathered for batch process
 
 	public:
 		FrameBuilder(ResourcePublisher& resources) : m_resources(resources) { };
@@ -89,6 +100,7 @@ namespace Animate::Publisher
 		{
 			m_frame_position++;
 			m_timeline_position++;
+            m_static_elements.Update();
 		}
 
 		uint32_t Duration() const
@@ -134,6 +146,8 @@ namespace Animate::Publisher
 		void Reset();
 
 	private:
+        void InvalidateStaticState();
+
 		void DeclareFrameElements(
 			SymbolContext& symbol,
 			FCM::FCMListPtr frameElements,

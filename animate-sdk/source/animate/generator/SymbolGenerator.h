@@ -1,25 +1,30 @@
 #pragma once
 
-#include <vector>
-
 #include "AnimateCore.h"
 #include "AnimateWriter.h"
-
 #include "TimelineBuilder/LayerBuilder.h"
 #include "animate/publisher/symbol/SymbolContext.h"
 
-namespace Animate::Publisher
-{
-	class ResourcePublisher;
+#include <vector>
 
-	class SymbolGenerator {
-		ResourcePublisher& m_resources;
+namespace Animate::Publisher {
+    class ResourcePublisher;
 
-	public:
-		static void GetLayerBuilder(FCM::FCMListPtr& layers, ResourcePublisher& resources, SymbolContext& symbol, std::vector<LayerBuilder>& result);
+    class SymbolGenerator {
+        ResourcePublisher& m_resources;
 
-		SymbolGenerator(ResourcePublisher& resources) : m_resources(resources) {}
+    public:
+        static void GetLayerBuilder(SymbolContext& symbol,
+                                    LayerBuilderContext& context,
+                                    FCM::FCMListPtr& layers,
+                                    ResourcePublisher& resources,
+                                    std::vector<LayerBuilder>& result);
 
-		wk::Ref<IDisplayObjectWriter> Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required);
-	};
+        SymbolGenerator(ResourcePublisher& resources) :
+            m_resources(resources) {}
+
+        wk::Ref<IDisplayObjectWriter> Generate(SymbolContext& symbol,
+                                               FCM::AutoPtr<DOM::ITimeline1> timeline,
+                                               bool required);
+    };
 }
