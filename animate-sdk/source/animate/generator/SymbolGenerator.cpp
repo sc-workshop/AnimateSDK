@@ -8,10 +8,10 @@ namespace Animate::Publisher {
                                           LayerBuilderContext& context,
                                           FCM::FCMListPtr& layers,
                                           ResourcePublisher& resources,
-
                                           std::vector<LayerBuilder>& result) {
         uint32_t layerCount = 0;
         layers->Count(layerCount);
+        result.reserve(result.capacity() + layerCount);
 
         for (uint32_t i = 0; layerCount > i; i++) {
             FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
