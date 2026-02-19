@@ -1,48 +1,44 @@
 /******************************************************************************
-* ADOBE CONFIDENTIAL
-* ___________________
-*
-*  Copyright [2013] Adobe Systems Incorporated
-*  All Rights Reserved.
-*
-* NOTICE:  All information contained herein is, and remains
-* the property of Adobe Systems Incorporated and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual 
-* property laws, including trade secret and copyright laws.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from Adobe Systems Incorporated.
-******************************************************************************/
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright [2013] Adobe Systems Incorporated
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Adobe Systems Incorporated and its suppliers,
+ * if any.  The intellectual and technical concepts contained
+ * herein are proprietary to Adobe Systems Incorporated and its
+ * suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe Systems Incorporated.
+ ******************************************************************************/
 
 /**
  * @file  IFrame.h
  *
  * @brief This file contains the interface for IFrame. The IFrame
- *        interface represents a frame in the layer of a timeline. 
+ *        interface represents a frame in the layer of a timeline.
  */
 #pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/app/DOM/Utils/DOMTypes.h"
-
-#include "animate/core/common/FCMDeclarations.h"
 #include "animate/app/DOM/DOMDeclarations.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-namespace Animate
-{
+namespace Animate {
     /* -------------------------------------------------- Enums */
-    namespace DOM
-    {
+    namespace DOM {
         /**
          * @enum  KeyFrameLabelType
          *
          * @brief Defines the types of frames.
          */
-        enum class KeyFrameLabelType
-        {
+        enum class KeyFrameLabelType {
             /** No key frame label */
             KEY_FRAME_LABEL_NONE = 0,
 
@@ -57,24 +53,19 @@ namespace Animate
         };
     }
 
-
     /* -------------------------------------------------- Macros / Constants */
-    namespace DOM
-    {
+    namespace DOM {
         /**
          * @brief Defines the universally-unique interface ID for
          *        IFrame.
          *
          * @note  Textual Representation: {386CB02E-74D0-4114-9E10-CBE8E8D164A7}
          */
-        FCM::ConstFCMIID IID_IFRAME =
-        { 0x386cb02e, 0x74d0, 0x4114, {0x9e, 0x10, 0xcb, 0xe8, 0xe8, 0xd1, 0x64, 0xa7} };
+        FCM::ConstFCMIID IID_IFRAME = {0x386cb02e, 0x74d0, 0x4114, {0x9e, 0x10, 0xcb, 0xe8, 0xe8, 0xd1, 0x64, 0xa7}};
     }
 
-
     /* -------------------------------------------------- Class Declaration */
-    namespace DOM
-    {
+    namespace DOM {
 
         /**
          * @class IFrame
@@ -82,8 +73,7 @@ namespace Animate
          * @brief Defines the interface that represents a frame in a layer in the
          *        timeline.
          */
-        class IFrame : public FCM::VirtualClass<IID_IFRAME>
-        {
+        class IFrame : public FCM::VirtualClass<IID_IFRAME> {
         public:
             /**
              * @brief  This function gets the number of frames in a frame sequence.
@@ -94,7 +84,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetDuration(FCM::U_Int32& Duration) = 0;
-
 
             /**
              * @brief  This function returns an array of FrameElements. This will contain the Sound
@@ -144,7 +133,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetFrameElements(FCM::PIFCMList& pFrameElementsList) = 0;
 
-
             /**
              * @brief  This function returns an array of FrameElements of type IID_ISound, and
              *         IID_IFrameDisplayElements.
@@ -165,10 +153,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetFrameElementsByType(
-                FCM::ConstFCMIID& iid,
-                FCM::PIFCMList& pFrameElementsList) = 0;
-
+            virtual FCM::Result _FCMCALL GetFrameElementsByType(FCM::ConstFCMIID& iid, FCM::PIFCMList& pFrameElementsList) = 0;
 
             /**
              * @brief  This function gets the start frame index of the frame span.
@@ -183,7 +168,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetStartFrameIndex(FCM::U_Int32& frameIndex) = 0;
 
-
             /**
              * @brief  This function returns the label for the frame.
              *
@@ -197,7 +181,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetLabel(FCM::StringRep16& ppLabel) = 0;
 
-
             /**
              * @brief  This function gets the type of label on the frame.
              *
@@ -207,7 +190,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetLabelType(KeyFrameLabelType& labelType) = 0;
-
 
             /**
              * @brief  This function gets a string that represents the frame script
@@ -223,7 +205,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetScript(FCM::StringRep16& ppScript) = 0;
 
-
             /**
              * @brief  The function returns a tween object associated with this frame span.
              *
@@ -233,7 +214,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetTween(PITween& pTween) = 0;
-
         };
     }
 }

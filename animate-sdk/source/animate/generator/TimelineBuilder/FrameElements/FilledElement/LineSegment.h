@@ -1,29 +1,25 @@
 #pragma once
 
-#include "animate/app/DOM/Utils/DOMTypes.h"
 #include "Segment.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
 
-namespace Animate::Publisher
-{
-	class FilledElementPathLineSegment : public FilledElementPathSegment
-	{
-	public:
-		FilledElementPathLineSegment(const DOM::Utils::SEGMENT& segment);
+namespace Animate::Publisher {
+    class FilledElementPathLineSegment : public FilledElementPathSegment {
+    public:
+        FilledElementPathLineSegment(const DOM::Utils::SEGMENT& segment);
 
-	public:
-		virtual FilledElementPathSegment::Type SegmentType() const {
-			return FilledElementPathSegment::Type::Line;
-		};
+    public:
+        virtual FilledElementPathSegment::Type SegmentType() const { return FilledElementPathSegment::Type::Line; };
 
-		virtual Point2D Rasterize(float t_step) const;
+        virtual Point2D Rasterize(float t_step) const;
 
-		virtual float IterationStep() const;
+        virtual float IterationStep() const;
 
-		virtual void Transform(const DOM::Utils::MATRIX2D& matrix);
-		virtual void Bound(DOM::Utils::RECT& rect) const;
+        virtual void Transform(const DOM::Utils::MATRIX2D& matrix);
+        virtual void Bound(DOM::Utils::RECT& rect) const;
 
-	public:
-		Point2D begin;
-		Point2D end;
-	};
+    public:
+        Point2D begin;
+        Point2D end;
+    };
 }

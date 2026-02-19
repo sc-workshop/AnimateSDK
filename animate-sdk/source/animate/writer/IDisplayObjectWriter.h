@@ -5,66 +5,60 @@
 
 #include <functional>
 
-namespace Animate::Publisher
-{
-	struct GlowFilter
-	{
-		double blurX = 0.0;
-		double blurY = 0.0;
-		int strength = 0;
-		DOM::Utils::COLOR color;
-	};
+namespace Animate::Publisher {
+    struct GlowFilter {
+        double blurX = 0.0;
+        double blurY = 0.0;
+        int strength = 0;
+        DOM::Utils::COLOR color;
+    };
 
-	struct DisplayObjectWriterHasher {
-		static inline std::size_t counter = 0;
-		size_t operator()(const std::size_t& key) const {
-			return key;
-		}
-	};
+    struct DisplayObjectWriterHasher {
+        static inline std::size_t counter = 0;
+        size_t operator()(const std::size_t& key) const { return key; }
+    };
 
-	class IDisplayObjectWriter
-	{
-	public:
-		IDisplayObjectWriter(SymbolContext& context) : m_symbol(context) {};
-		virtual ~IDisplayObjectWriter() = default;
+    class IDisplayObjectWriter {
+    public:
+        IDisplayObjectWriter(SymbolContext& context) :
+            m_symbol(context) {};
+        virtual ~IDisplayObjectWriter() = default;
 
-	public:
-		virtual void SetGlowFilter(const GlowFilter&) { };
+    public:
+        virtual void SetGlowFilter(const GlowFilter&) {};
 
-	public:
-		std::size_t HashCode() const
-		{
-			if (!m_hash_code)
-			{
-				m_hash_code = GenerateHash();
-				if (!m_hash_code) m_hash_code = ++DisplayObjectWriterHasher::counter;
-			}
+    public:
+        std::size_t HashCode() const {
+            if (!m_hash_code) {
+                m_hash_code = GenerateHash();
+                if (!m_hash_code)
+                    m_hash_code = ++DisplayObjectWriterHasher::counter;
+            }
 
-			return m_hash_code;
-		}
+            return m_hash_code;
+        }
 
-	protected:
-		virtual std::size_t GenerateHash() const = 0;
+    protected:
+        virtual std::size_t GenerateHash() const = 0;
 
-	public:
-
-		/// <summary>
+    public:
+        /// <summary>
         /// Hook that called before finalizing and object hash calculation.
-		/// Its purpose is to let the object know that it must complete all its actions now.
+        /// Its purpose is to let the object know that it must complete all its actions now.
         /// </summary>
         virtual void PreFinalize() {};
 
-		/// <summary>
-		/// Writer must finalize object and add it to its own resource palette here
-		/// </summary>
-		/// <param name="reference"> Reference of object in library </param>
-		/// <param name="required"> If True then writer must return positive status, else writer can skip object writing and return False </param>
-		/// <param name="new_symbol"> True when symbol is new in library, otherwise it is used only to notify about object id </param>
-		/// <returns> True if object was written </returns>
-		virtual bool Finalize(ResourceReference reference, bool required, bool new_symbol) = 0;
+        /// <summary>
+        /// Writer must finalize object and add it to its own resource palette here
+        /// </summary>
+        /// <param name="reference"> Reference of object in library </param>
+        /// <param name="required"> If True then writer must return positive status, else writer can skip object writing and return False </param>
+        /// <param name="new_symbol"> True when symbol is new in library, otherwise it is used only to notify about object id </param>
+        /// <returns> True if object was written </returns>
+        virtual bool Finalize(ResourceReference reference, bool required, bool new_symbol) = 0;
 
-	protected:
-		SymbolContext& m_symbol;
-		mutable std::size_t m_hash_code = 0;
-	};
+    protected:
+        SymbolContext& m_symbol;
+        mutable std::size_t m_hash_code = 0;
+    };
 }

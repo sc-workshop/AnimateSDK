@@ -1,74 +1,66 @@
 /*************************************************************************
-* ADOBE CONFIDENTIAL
-* ___________________
-*
-*  Copyright [2013] Adobe Systems Incorporated
-*  All Rights Reserved.
-*
-* NOTICE:  All information contained herein is, and remains
-* the property of Adobe Systems Incorporated and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual 
-* property laws, including trade secret and copyright laws.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from Adobe Systems Incorporated.
-**************************************************************************/
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright [2013] Adobe Systems Incorporated
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Adobe Systems Incorporated and its suppliers,
+ * if any.  The intellectual and technical concepts contained
+ * herein are proprietary to Adobe Systems Incorporated and its
+ * suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe Systems Incorporated.
+ **************************************************************************/
 
 /**
  * @file  IFCMPluginDictionary.h
  *
- * @brief This file contains interface for IFCMPluginDictionary. 
+ * @brief This file contains interface for IFCMPluginDictionary.
  *        The IFCMPluginDictionary interface provides a generic mechanism for exchanging plug-in
  *        data with FCM Application. This interface provides a list of registry dictionaries. Each
  *        registry dictionary corresponds to dictionary for an interface implementation in plug-in.
  *        <tt>IFCMPluginDictionary</tt> aggregates <tt>IFCMDictionary</tt>. The FCM Application
- *        can define a set of keys for an interface and data corresponding to these keys will be 
+ *        can define a set of keys for an interface and data corresponding to these keys will be
  *        populated by the plug-in in the registry dictionary and this data can be used by the FCM
  *        Application.
  */
 
 #pragma once
-#include "animate/core/common/FCMTypes.h"
 #include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
 /* -------------------------------------------------- Forward Decl */
 
-
 /* -------------------------------------------------- Macros / Constants */
 
-namespace FCM 
-{
+namespace FCM {
     /**
      * @brief Defines the universally-unique interface ID for IFCMPluginDictionary.
      *
      * @note  Textual Representation:  {6DC4BA91-3BF2-4DD7-85B6-8D6C3E765520}
      */
-    ConstFCMIID FCMIID_IFCMPluginDictionary =
-        {0x6dc4ba91, 0x3bf2, 0x4dd7, {0x85, 0xb6, 0x8d, 0x6c, 0x3e, 0x76, 0x55, 0x20}};
+    ConstFCMIID FCMIID_IFCMPluginDictionary = {0x6dc4ba91, 0x3bf2, 0x4dd7, {0x85, 0xb6, 0x8d, 0x6c, 0x3e, 0x76, 0x55, 0x20}};
 }
-
 
 /* -------------------------------------------------- Enums */
 
-
 /* -------------------------------------------------- Structs / Unions */
-
 
 /* -------------------------------------------------- Class Declaration */
 
-namespace FCM
-{ 
+namespace FCM {
     /**
      * @class IFCMPluginDictionary
      *
      * @brief Defines the interface that represents the Plugin Dictionary.
      */
-    class IFCMPluginDictionary : public FCM::VirtualClass<FCMIID_IFCMPluginDictionary>
-    {
+    class IFCMPluginDictionary : public FCM::VirtualClass<FCMIID_IFCMPluginDictionary> {
     public:
         /**
          * @brief  Create a registry dictionary and adds it to the list of registry dictionaries.
@@ -87,11 +79,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL CreateRegistryEntry(
-            ConstRefFCMCLSID classID,
-            ConstRefFCMIID interfaceID,
-            PIFCMDictionary& ppRegistryDict) = 0;
-
+        virtual FCM::Result _FCMCALL CreateRegistryEntry(ConstRefFCMCLSID classID, ConstRefFCMIID interfaceID, PIFCMDictionary& ppRegistryDict) = 0;
 
         /**
          * @brief  Fetches the number of registry dictionaries.
@@ -102,7 +90,6 @@ namespace FCM
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
         virtual FCM::Result _FCMCALL GetRegistryEntriesCount(FCM::U_Int32& count) = 0;
-
 
         /**
          * @brief  Returns the nth registry dictionary.
@@ -122,16 +109,10 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL GetNthRegistryEntry(
-            FCM::U_Int32 index,
-            FCMCLSID& classID,
-            FCMIID& interfaceID,
-            PIFCMDictionary& pRegistryDict) = 0;
-
+        virtual FCM::Result _FCMCALL GetNthRegistryEntry(FCM::U_Int32 index, FCMCLSID& classID, FCMIID& interfaceID, PIFCMDictionary& pRegistryDict) = 0;
     };
 
-};  // namespace FCM
-
+};
 
 /* -------------------------------------------------- Inline / Functions */
 

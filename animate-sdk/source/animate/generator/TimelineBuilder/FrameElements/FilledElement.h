@@ -1,13 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <optional>
-
 #include "AnimateDOM.h"
 #include "AnimateService.h"
-
-#include "StaticElement.h"
 #include "FilledElement/Region.h"
+#include "StaticElement.h"
+
+#include <optional>
+#include <vector>
 
 // ----------------------------------------------
 // --------------- Mini Docs --------------------
@@ -19,43 +18,32 @@
 // ---------------- Point Iterator --------------	// FilledElementPathLineSegment, FilledElementPathCubicSegment, FilledElementPathQuadSegment
 // ----------------------------------------------
 
-namespace Animate::Publisher
-{
-	class SymbolContext;
+namespace Animate::Publisher {
+    class SymbolContext;
 
-	class FilledElement : public StaticElement
-	{
-	public:
-		using Contour = std::vector<FilledElementRegion>;
+    class FilledElement : public StaticElement {
+    public:
+        using Contour = std::vector<FilledElementRegion>;
 
-	public:
-		FilledElement(
-			SymbolContext& symbol, 
-			FCM::AutoPtr<DOM::FrameElement::IShape> shape, 
-			const std::optional<DOM::Utils::MATRIX2D> matrix = std::nullopt
-		);
+    public:
+        FilledElement(SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape, const std::optional<DOM::Utils::MATRIX2D> matrix = std::nullopt);
 
-	public:
-		bool operator==(const FilledElement& other) const;
+    public:
+        bool operator==(const FilledElement& other) const;
 
-		bool operator!=(const FilledElement& other) const {
-			return !operator==(other);
-		}
+        bool operator!=(const FilledElement& other) const { return !operator==(other); }
 
-	public:
-		DOM::Utils::RECT Bound() const;
-		void Transform(const DOM::Utils::MATRIX2D& matrix);
+    public:
+        DOM::Utils::RECT Bound() const;
+        void Transform(const DOM::Utils::MATRIX2D& matrix);
 
-	public:
-		Contour fill;
-		Contour stroke;
+    public:
+        Contour fill;
+        Contour stroke;
 
-		virtual bool IsFilledArea() const
-		{
-			return true;
-		}
+        virtual bool IsFilledArea() const { return true; }
 
-	private:
-		void AddRegions(SymbolContext& symbol, FCM::FCMListPtr regions, std::vector<FilledElementRegion>& elements);
-	};
+    private:
+        void AddRegions(SymbolContext& symbol, FCM::FCMListPtr regions, std::vector<FilledElementRegion>& elements);
+    };
 }

@@ -23,7 +23,7 @@ namespace Animate::Publisher {
         using FilledDictValue = std::pair<std::vector<FilledElement>, ResourceReference>;
         using FilledDict = std::vector<FilledDictValue>;
 
-        // Name  /  Id
+        // Symbol  /  Id
         using SymbolDict = std::unordered_map<SymbolContext, ResourceReference>;
 
         // Type / Id
@@ -56,30 +56,57 @@ namespace Animate::Publisher {
             m_writer(writer),
             symbolGenerator(*this) {}
 
-        void SetIdOffset(uint16_t);
+        /**
+         * @brief Special junk function for cases when publishing into external file with existing items
+         * @param Id offset
+         */
+        void SetIdOffset(uint16_t id);
 
-        ResourceReference AddLibraryItem(SymbolContext& symbol,
-                                         FCM::AutoPtr<DOM::ILibraryItem> item,
-                                         bool required = false);
+        /**
+         * @brief Adds library item into file
+         * @param symbol Symbol context
+         * @param item Native library item
+         * @param required When True, function is required to return non-null symbol reference
+         * @return Id reference to item
+         */
+        ResourceReference AddLibraryItem(SymbolContext& symbol, FCM::AutoPtr<DOM::ILibraryItem> item, bool required = false);
 
+        /**
+         * @brief Adds modifier (a.k.a masked layer state) into file
+         * @param type Masked layer state
+         * @return Id reference to item
+         */
         ResourceReference AddModifier(MaskedLayerState type);
 
+        /**
+         * @brief Adds text field into file
+         * @param symbol Symbol context
+         * @param field Native text field
+         * @param filters Array of filters, for special settings setup
+         * @return Id reference to item
+         */
         ResourceReference AddTextField(SymbolContext& symbol,
                                        FCM::AutoPtr<DOM::FrameElement::IClassicText> field,
                                        std::optional<FCM::FCMListPtr> filters = std::nullopt);
 
+        /**
+         * @brief Adds a group of sprites and/or filled shapes
+         * @param symbol Symbol context
+         * @param elements Group of static elements
+         * @param required When True, function is required to return non-null symbol reference
+         * @return Id reference to item
+         */
         ResourceReference AddGroup(SymbolContext& symbol, const StaticElementsGroup& elements, bool required = false);
 
+        /**
+         * @brief Finalizes and closes file writer
+         */
         void Finalize();
 
     private:
-        ResourceReference AddSymbol(SymbolContext& symbol,
-                                    FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
-                                    bool required = false);
+        ResourceReference AddSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item, bool required = false);
 
-        ResourceReference AddMediaSymbol(SymbolContext& symbol,
-                                         FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
-                                         bool required);
+        ResourceReference AddMediaSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item, bool required);
 
         ResourceReference FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer,
                                          bool required,

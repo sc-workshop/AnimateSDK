@@ -14,11 +14,8 @@ namespace Animate::Publisher {
         writer.AddFrameElement(reference, FCM::BlendMode::NORMAL, u"", std::nullopt, std::nullopt);
     }
 
-    LayerBuilder::LayerBuilder(LayerBuilderContext& context,
-                               FCM::AutoPtr<DOM::ILayer2> layer,
-                               uint32_t duration,
-                               ResourcePublisher& resources,
-                               SymbolContext& symbol) :
+    LayerBuilder::LayerBuilder(
+        LayerBuilderContext& context, FCM::AutoPtr<DOM::ILayer2> layer, uint32_t duration, ResourcePublisher& resources, SymbolContext& symbol) :
         m_context(context),
         m_symbol(symbol),
         m_duration(duration),
@@ -40,11 +37,7 @@ namespace Animate::Publisher {
             maskLayer->GetChildren(maskedLayers.m_Ptr);
 
             maskContext = wk::CreateRef<MaskedLayerContext>();
-            SymbolGenerator::GetLayerBuilder(m_symbol,
-                                             maskContext->context,
-                                             maskedLayers,
-                                             m_resources,
-                                             maskContext->layers);
+            SymbolGenerator::GetLayerBuilder(m_symbol, maskContext->context, maskedLayers, m_resources, maskContext->layers);
         }
     }
 
@@ -156,33 +149,21 @@ namespace Animate::Publisher {
                     }
                 }
 
-
                 // Notifying about mask layers
                 if (is_masked_frame)
                     current_layer.AddModifier(writer, MaskedLayerState::MASK_LAYER);
 
-                LayerBuilder::ProcessLayerFrame(build_context,
-                                                layers,
-                                                writer,
-                                                current_layer_index,
-                                                next_layer_index,
-                                                last_layer);
+                LayerBuilder::ProcessLayerFrame(build_context, layers, writer, current_layer_index, next_layer_index, last_layer);
 
                 if (is_masked_frame) {
                     // Processing masked layer childrens
                     current_layer.AddModifier(writer, MaskedLayerState::MASKED_LAYERS);
-                    LayerBuilder::ProcessLayers(context,
-                                                current_layer.maskContext->context,
-                                                current_layer.maskContext->layers,
-                                                writer);
+                    LayerBuilder::ProcessLayers(context, current_layer.maskContext->context, current_layer.maskContext->layers, writer);
                     current_layer.AddModifier(writer, MaskedLayerState::MASKED_LAYERS_END);
                 }
             } else {
                 if (current_layer.IsMaskLayer() && !current_layer.maskContext->layers.empty()) {
-                    LayerBuilder::ProcessLayers(context,
-                                                current_layer.maskContext->context,
-                                                current_layer.maskContext->layers,
-                                                writer);
+                    LayerBuilder::ProcessLayers(context, current_layer.maskContext->context, current_layer.maskContext->layers, writer);
                 }
             }
         }
@@ -196,11 +177,8 @@ namespace Animate::Publisher {
         }
     }
 
-    void LayerBuilder::ProcessLayers(SymbolContext& symbol,
-                                     LayerBuilderContext& build_context,
-                                     std::vector<LayerBuilder>& layers,
-                                     SharedMovieclipWriter& writer,
-                                     uint32_t range) {
+    void LayerBuilder::ProcessLayers(
+        SymbolContext& symbol, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer, uint32_t range) {
         for (uint32_t t = 0; range > t; t++) {
             LayerBuilder::ProcessLayers(symbol, build_context, layers, writer);
             writer.Next();

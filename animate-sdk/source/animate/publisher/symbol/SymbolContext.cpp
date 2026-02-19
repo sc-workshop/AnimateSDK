@@ -1,6 +1,6 @@
 #include "SymbolContext.h"
 
-namespace Animate { namespace Publisher {
+namespace Animate::Publisher {
     SymbolContext::SymbolContext(FCM::AutoPtr<DOM::ILibraryItem> item) :
         name(GetName(item)),
         type(GetType(item)),
@@ -53,4 +53,4 @@ namespace Animate { namespace Publisher {
 
         return result;
     }
-}}
+}

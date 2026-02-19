@@ -4,11 +4,8 @@
 #include "animate/publisher/symbol/SlicingContext.h"
 
 namespace Animate::Publisher {
-    void SymbolGenerator::GetLayerBuilder(SymbolContext& symbol,
-                                          LayerBuilderContext& context,
-                                          FCM::FCMListPtr& layers,
-                                          ResourcePublisher& resources,
-                                          std::vector<LayerBuilder>& result) {
+    void SymbolGenerator::GetLayerBuilder(
+        SymbolContext& symbol, LayerBuilderContext& context, FCM::FCMListPtr& layers, ResourcePublisher& resources, std::vector<LayerBuilder>& result) {
         uint32_t layerCount = 0;
         layers->Count(layerCount);
         result.reserve(result.capacity() + layerCount);
@@ -49,9 +46,7 @@ namespace Animate::Publisher {
         }
     };
 
-    wk::Ref<IDisplayObjectWriter> SymbolGenerator::Generate(SymbolContext& symbol,
-                                                            FCM::AutoPtr<DOM::ITimeline1> timeline,
-                                                            bool required) {
+    wk::Ref<IDisplayObjectWriter> SymbolGenerator::Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required) {
         // Parsing layers data
         uint32_t duration = 0;
         timeline->GetMaxFrameCount(duration);

@@ -1,62 +1,56 @@
 /******************************************************************************
-* ADOBE CONFIDENTIAL
-* ___________________
-*
-*  Copyright [2013] Adobe Systems Incorporated
-*  All Rights Reserved.
-*
-* NOTICE:  All information contained herein is, and remains
-* the property of Adobe Systems Incorporated and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual 
-* property laws, including trade secret and copyright laws.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from Adobe Systems Incorporated.
-******************************************************************************/
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright [2013] Adobe Systems Incorporated
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Adobe Systems Incorporated and its suppliers,
+ * if any.  The intellectual and technical concepts contained
+ * herein are proprietary to Adobe Systems Incorporated and its
+ * suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe Systems Incorporated.
+ ******************************************************************************/
 
 /**
  * @file  IFLADocument.h
  *
- * @brief This file contains the interface for IFLADocument. The IFLADocument 
+ * @brief This file contains the interface for IFLADocument. The IFLADocument
  *        interface represents a FLA document.
  */
 #pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/app/DOM/Utils/DOMTypes.h"
-
-#include "animate/core/common/FCMDeclarations.h"
 #include "animate/app/DOM/DOMDeclarations.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-namespace Animate
-{
+namespace Animate {
     /* -------------------------------------------------- Macros / Constants */
-    namespace DOM
-    {
+    namespace DOM {
         /**
-         * @brief Defines the universally-unique interface ID for 
+         * @brief Defines the universally-unique interface ID for
          *        IFLADocument.
          *
          * @note  Textual Representation: {9F54B497-9471-4C13-985B-7CB1D4576030}
          */
-        FCM::ConstFCMIID IID_IFLA_DOCUMENT =
-            {0x9f54b497, 0x9471, 0x4c13, {0x98, 0x5b, 0x7c, 0xb1, 0xd4, 0x57, 0x60, 0x30}};
+        FCM::ConstFCMIID IID_IFLA_DOCUMENT = {0x9f54b497, 0x9471, 0x4c13, {0x98, 0x5b, 0x7c, 0xb1, 0xd4, 0x57, 0x60, 0x30}};
     }
 
     /* -------------------------------------------------- Class Declaration */
-    namespace DOM 
-    {
+    namespace DOM {
 
         /**
          * @class IFLADocument
          *
          * @brief Defines the interface that represents an FLA document.
          */
-        class IFLADocument : public FCM::VirtualClass<IID_IFLA_DOCUMENT>
-        {
+        class IFLADocument : public FCM::VirtualClass<IID_IFLA_DOCUMENT> {
         public:
             /**
              * @brief  This function provides the background color of the stage.
@@ -67,7 +61,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetBackgroundColor(Utils::COLOR& color) const = 0;
-
 
             /**
              * @brief  This function provides the frame-rate when the published file
@@ -80,7 +73,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetFrameRate(FCM::Double& frameRate) const = 0;
 
-
             /**
              * @brief  This function returns the stage height (in pixels).
              *
@@ -91,7 +83,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetStageHeight(FCM::U_Int32& height) const = 0;
 
-
             /**
              * @brief  This function returns the stage width (in pixels).
              *
@@ -101,7 +92,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetStageWidth(FCM::U_Int32& width) const = 0;
-
 
             /**
              * @brief  This returns the items which are part of the Library.
@@ -128,7 +118,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetLibraryItems(FCM::PIFCMList& pLibItemsList) const = 0;
 
-
             /**
              * @brief  This function finds the library item from its path.
              *
@@ -145,12 +134,7 @@ namespace Animate
              *
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
-            virtual FCM::Result _FCMCALL GetLibraryItemByPath 
-            (
-                FCM::CStringRep16 pPath,
-                PILibraryItem& pLibItem
-            ) const = 0;
-
+            virtual FCM::Result _FCMCALL GetLibraryItemByPath(FCM::CStringRep16 pPath, PILibraryItem& pLibItem) const = 0;
 
             /**
              * @brief  This function returns the list of timelines (scenes).
@@ -164,7 +148,6 @@ namespace Animate
              */
             virtual FCM::Result _FCMCALL GetTimelines(FCM::PIFCMList& pTimelineList) const = 0;
 
-
             /**
              * @brief  This function returns the document type identification of
              *         the FLA document.
@@ -175,7 +158,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetTypeId(FCM::FCMGUID& docId) const = 0;
-
 
             /**
              * @brief  This function returns the path of the FLA document.
@@ -190,7 +172,6 @@ namespace Animate
              *         FCM::IFCMCalloc.
              */
             virtual FCM::Result _FCMCALL GetPath(FCM::StringRep16& ppPath) const = 0;
-
         };
     }
 }

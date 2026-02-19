@@ -1,74 +1,64 @@
 /*************************************************************************
-* ADOBE CONFIDENTIAL
-* ___________________
-*
-*  Copyright [2013] Adobe Systems Incorporated
-*  All Rights Reserved.
-*
-* NOTICE:  All information contained herein is, and remains
-* the property of Adobe Systems Incorporated and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual 
-* property laws, including trade secret and copyright laws.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from Adobe Systems Incorporated.
-**************************************************************************/
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright [2013] Adobe Systems Incorporated
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Adobe Systems Incorporated and its suppliers,
+ * if any.  The intellectual and technical concepts contained
+ * herein are proprietary to Adobe Systems Incorporated and its
+ * suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe Systems Incorporated.
+ **************************************************************************/
 
 /**
  * @file  IFCMNotificationService.h
  *
- * @brief This file contains interface for IFCMNotificationService. 
+ * @brief This file contains interface for IFCMNotificationService.
  *        The IFCMNotificationService interface is supported by any FCM Application that wants to
- *        provide system wide notification hooks to plug-ins.  These notifications are mainly 
+ *        provide system wide notification hooks to plug-ins.  These notifications are mainly
  *        provided by the application, but can also be provided by specific plug-ins. This Interface
  *        can be obtained by GetService of the main Application callback Interface.
  */
 
 #pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/core/common/FCMDeclarations.h"
-
 #include "animate/core/IFCMNotificationClient.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-
 /* -------------------------------------------------- Forward Decl */
-
 
 /* -------------------------------------------------- Macros / Constants */
 
-namespace FCM 
-{
+namespace FCM {
     /**
      * @brief Defines the universally-unique interface ID for IFCMNotificationService.
      *
      * @note  Textual Representation:  {4488009E-53CA-43EF-8890-50482CDE31AA}
      */
-    ConstFCMIID FCMIID_IFCMNotificationService =
-        {0x4488009e, 0x53ca, 0x43ef, {0x88, 0x90, 0x50, 0x48, 0x2c, 0xde, 0x31, 0xaa}};
+    ConstFCMIID FCMIID_IFCMNotificationService = {0x4488009e, 0x53ca, 0x43ef, {0x88, 0x90, 0x50, 0x48, 0x2c, 0xde, 0x31, 0xaa}};
 }
-
 
 /* -------------------------------------------------- Enums */
 
-
 /* -------------------------------------------------- Structs / Unions */
-
 
 /* -------------------------------------------------- Class Declaration */
 
-namespace FCM
-{ 
+namespace FCM {
     /**
      * @class IFCMNotificationService
      *
      * @brief Defines the interface that represents a notification service.
      */
-    class IFCMNotificationService : public FCM::VirtualClass<FCMIID_IFCMNotificationService>
-    {
+    class IFCMNotificationService : public FCM::VirtualClass<FCMIID_IFCMNotificationService> {
     public:
         /**
          * @brief  Registers a <tt>IFCMNotificationClient</tt> interface to receive notification
@@ -85,11 +75,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL RegisterNotificationClient(
-           IFCMNotificationClient* pClient,
-           ConstRefFCMNotifyID nid,
-           const FCM::PVoid pRefCon) = 0;
-
+        virtual FCM::Result _FCMCALL RegisterNotificationClient(IFCMNotificationClient* pClient, ConstRefFCMNotifyID nid, const FCM::PVoid pRefCon) = 0;
 
         /**
          * @brief  Unregisters an <tt>IFCMNotificationClient</tt> interface that was previously
@@ -104,10 +90,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL UnregisterNotificationClient(
-            IFCMNotificationClient* pClient,
-            ConstRefFCMNotifyID nid) = 0;
-
+        virtual FCM::Result _FCMCALL UnregisterNotificationClient(IFCMNotificationClient* pClient, ConstRefFCMNotifyID nid) = 0;
 
         /**
          * @brief  Sends a notification call to all <tt>IFCMNotificationClients</tt> registered for
@@ -123,14 +106,10 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL SendNotification(
-            ConstRefFCMNotifyID nid,
-            const FCM::PVoid pNotificationData) = 0;
-
+        virtual FCM::Result _FCMCALL SendNotification(ConstRefFCMNotifyID nid, const FCM::PVoid pNotificationData) = 0;
     };
 
-};  // namespace FCM
-
+}; // namespace FCM
 
 /* -------------------------------------------------- Inline / Functions */
 

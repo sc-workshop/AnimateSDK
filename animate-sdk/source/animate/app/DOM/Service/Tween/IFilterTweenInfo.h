@@ -16,69 +16,51 @@
  * from Adobe Systems Incorporated.
  **************************************************************************/
 
- /**
-  * @file  IFilterTweenInfo.h
-  *
-  * @brief This file contains interface for IFilterTweenInfo. IFilterTweenInfo
-  *        represents a filter tween information.
-  */
-#pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/app/DOM/Utils/DOMTypes.h"
+/**
+ * @file  IFilterTweenInfo.h
+ *
+ * @brief This file contains interface for IFilterTweenInfo. IFilterTweenInfo
+ *        represents a filter tween information.
+ */
 
-#include "animate/core/common/FCMDeclarations.h"
+#pragma once
 #include "animate/app/DOM/DOMDeclarations.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-namespace Animate
-{
-	/* -------------------------------------------------- Macros / Constants */
-	namespace DOM
-	{
-		namespace Service
-		{
-			namespace Tween
-			{
-				/**
-				 * @brief Defines the universally-unique interface ID for
-				 *        IFilterTweenInfo.
-				 *
-				 * @note  Textual Representation: {CC46BD20-6A95-4A89-8131-8334576272BC}
-				 */
-				FCM::ConstFCMIID IID_IFILTER_TWEEN_INFO =
-				{ 0xcc46bd20, 0x6a95, 0x4a89, {0x81, 0x31, 0x83, 0x34, 0x57, 0x62, 0x72, 0xbc} };
-			}
-		}
-	}
+namespace Animate {
+    /* -------------------------------------------------- Macros / Constants */
+    namespace DOM::Service::Tween {
+        /**
+         * @brief Defines the universally-unique interface ID for
+         *        IFilterTweenInfo.
+         *
+         * @note  Textual Representation: {CC46BD20-6A95-4A89-8131-8334576272BC}
+         */
+        FCM::ConstFCMIID IID_IFILTER_TWEEN_INFO = {0xcc46bd20, 0x6a95, 0x4a89, {0x81, 0x31, 0x83, 0x34, 0x57, 0x62, 0x72, 0xbc}};
+    }
 
-	/* -------------------------------------------------- Class Declaration */
-	namespace DOM
-	{
-		namespace Service
-		{
-			namespace Tween
-			{
-				/**
-				 * @class IFilterTweenInfo
-				 *
-				 * @brief Defines an interface that represents a tweening of filters.
-				 *        Filter tween provides information about starting and ending positions of
-				 *        a filter tween.
-				 */
-				class IFilterTweenInfo : public FCM::VirtualClass<IID_IFILTER_TWEEN_INFO>
-				{
-				public:
-					// Returns a list of dictionary. Each dictionary will correspond to one filter.
-					// And elements in each dictionary will be of form <key, value>.
-					// Value will typically be a IPropertyTweenInfo and key will be a string
-					// (example BLUR_X)
-					virtual FCM::Result _FCMCALL GetProperties(FCM::PIFCMList& pPropDictList) = 0;
-
-				};
-			}
-		}
-	}
+    /* -------------------------------------------------- Class Declaration */
+    namespace DOM::Service::Tween {
+        /**
+         * @class IFilterTweenInfo
+         *
+         * @brief Defines an interface that represents a tweening of filters.
+         *        Filter tween provides information about starting and ending positions of
+         *        a filter tween.
+         */
+        class IFilterTweenInfo : public FCM::VirtualClass<IID_IFILTER_TWEEN_INFO> {
+        public:
+            // Returns a list of dictionary. Each dictionary will correspond to one filter.
+            // And elements in each dictionary will be of form <key, value>.
+            // Value will typically be a IPropertyTweenInfo and key will be a string
+            // (example BLUR_X)
+            virtual FCM::Result _FCMCALL GetProperties(FCM::PIFCMList& pPropDictList) = 0;
+        };
+    }
 }
 
 #include "animate/core/common/FCMPostConfig.h"

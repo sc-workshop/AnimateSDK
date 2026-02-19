@@ -71,9 +71,7 @@ namespace Animate::Publisher {
         m_id += offset;
     }
 
-    ResourceReference ResourcePublisher::AddLibraryItem(SymbolContext& symbol,
-                                                        FCM::AutoPtr<DOM::ILibraryItem> item,
-                                                        bool required) {
+    ResourceReference ResourcePublisher::AddLibraryItem(SymbolContext& symbol, FCM::AutoPtr<DOM::ILibraryItem> item, bool required) {
         auto cached = m_libraryCache.find(symbol);
         if (cached != m_libraryCache.end()) {
             return cached->second;
@@ -95,9 +93,7 @@ namespace Animate::Publisher {
         return result;
     }
 
-    ResourceReference ResourcePublisher::AddSymbol(SymbolContext& symbol,
-                                                   FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
-                                                   bool required) {
+    ResourceReference ResourcePublisher::AddSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item, bool required) {
         FCM::AutoPtr<DOM::ITimeline> timeline;
         item->GetTimeLine(timeline.m_Ptr);
 
@@ -105,9 +101,7 @@ namespace Animate::Publisher {
         return FinalizeWriter(writer, required, m_movieClips);
     };
 
-    ResourceReference ResourcePublisher::AddMediaSymbol(SymbolContext& symbol,
-                                                        FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
-                                                        bool required) {
+    ResourceReference ResourcePublisher::AddMediaSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item, bool required) {
         FCM::AutoPtr<FCM::IFCMUnknown> unknownMedia;
         media_item->GetMediaInfo(unknownMedia.m_Ptr);
 
@@ -148,9 +142,7 @@ namespace Animate::Publisher {
         return FinalizeWriter(writer, false, m_textFields, filters);
     }
 
-    ResourceReference ResourcePublisher::AddGroup(SymbolContext& symbol,
-                                                  const StaticElementsGroup& elements,
-                                                  bool required) {
+    ResourceReference ResourcePublisher::AddGroup(SymbolContext& symbol, const StaticElementsGroup& elements, bool required) {
         SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
         auto writer = m_writer.AddShape(shape_symbol);
 

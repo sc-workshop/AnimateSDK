@@ -2,15 +2,13 @@
 
 #include "AnimateDOM.h"
 #include "AnimateWriter.h"
-
 #include "animate/publisher/symbol/SymbolContext.h"
 
-namespace Animate::Publisher
-{
-	class ResourcePublisher;
+namespace Animate::Publisher {
+    class ResourcePublisher;
 
-	class TextFieldGenerator {
-	public:
-		static void Generate(wk::Ref<SharedTextFieldWriter> writer, FCM::AutoPtr<DOM::FrameElement::IClassicText> textFieldData);
-	};
+    class TextFieldGenerator {
+    public:
+        static void Generate(wk::Ref<SharedTextFieldWriter> writer, FCM::AutoPtr<DOM::FrameElement::IClassicText> textFieldData);
+    };
 }

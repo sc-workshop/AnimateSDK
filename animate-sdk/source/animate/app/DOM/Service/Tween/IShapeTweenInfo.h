@@ -20,66 +20,47 @@
  * @file  IShapeTweenInfo.h
  *
  * @brief This file contains interface for IShapeTweenInfo. IShapeTweenInfo
- *        represents a shape tween information. 
+ *        represents a shape tween information.
  */
 #pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/app/DOM/Utils/DOMTypes.h"
-
-#include "animate/core/common/FCMDeclarations.h"
 #include "animate/app/DOM/DOMDeclarations.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-namespace Animate
-{
+namespace Animate {
     /* -------------------------------------------------- Macros / Constants */
-    namespace DOM
-    {
-        namespace Service
-        {
-            namespace Tween
-            {
-                /**
-                 * @brief Defines the universally-unique interface ID for
-                 *        IShapeTweenInfo.
-                 *
-                 * @note  Textual Representation: {3105E118-297E-4BDC-8055-6FB74BB501C1}
-                 */
-                FCM::ConstFCMIID IID_ISHAPE_TWEEN_INFO =
-                { 0x3105e118, 0x297e, 0x4bdc, {0x80, 0x55, 0x6f, 0xb7, 0x4b, 0xb5, 0x1, 0xc1} };
-            }
-        }
+    namespace DOM::Service::Tween {
+        /**
+         * @brief Defines the universally-unique interface ID for
+         *        IShapeTweenInfo.
+         *
+         * @note  Textual Representation: {3105E118-297E-4BDC-8055-6FB74BB501C1}
+         */
+        FCM::ConstFCMIID IID_ISHAPE_TWEEN_INFO = {0x3105e118, 0x297e, 0x4bdc, {0x80, 0x55, 0x6f, 0xb7, 0x4b, 0xb5, 0x1, 0xc1}};
     }
 
     /* -------------------------------------------------- Class Declaration */
-    namespace DOM
-    {
-        namespace Service
-        {
-            namespace Tween
-            {
-                /**
-                 * @class IShapeTweenInfo
-                 *
-                 * @brief Defines an interface that provides information about a shape tween.
-                 */
-                class IShapeTweenInfo : public FCM::VirtualClass<IID_ISHAPE_TWEEN_INFO>
-                {
-                public:
-                    /*
-                    * Returns a shape pair - Starting shape and ending shape (IShape)
-                    */
-                    virtual FCM::Result _FCMCALL GetShapePair(FCM::PIFCMPair& pShapePair) = 0;
+    namespace DOM::Service::Tween {
+        /**
+         * @class IShapeTweenInfo
+         *
+         * @brief Defines an interface that provides information about a shape tween.
+         */
+        class IShapeTweenInfo : public FCM::VirtualClass<IID_ISHAPE_TWEEN_INFO> {
+        public:
+            /*
+             * Returns a shape pair - Starting shape and ending shape (IShape)
+             */
+            virtual FCM::Result _FCMCALL GetShapePair(FCM::PIFCMPair& pShapePair) = 0;
 
-                    /* Returns a shape hint object. Right now shape hint is a marker interface
-                    * and can be used to know if the shape tween contains hint information.
-                    */
-                    virtual FCM::Result _FCMCALL GetShapeHint(PIShapeHintInfo& pShapeHint) = 0;
-
-                };
-            }
-        }
+            /* Returns a shape hint object. Right now shape hint is a marker interface
+             * and can be used to know if the shape tween contains hint information.
+             */
+            virtual FCM::Result _FCMCALL GetShapeHint(PIShapeHintInfo& pShapeHint) = 0;
+        };
     }
 }
 

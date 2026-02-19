@@ -2,44 +2,39 @@
 
 #include "AnimateCore.h"
 
-namespace Animate
-{
-	// Class with any kind of offset to different classes
-	// This class was created with the goal of fixing some Adobe Wheelchairs by obtaining the necessary data directly, using offsets in memory
-	// not good, but its the only way...
-	class AdobeWheelchair
-	{
-	public:
-		static AdobeWheelchair& Instance()
-		{
-			static AdobeWheelchair singleton;
-			return singleton;
-		}
+namespace Animate {
+    // Class with any kind of offset to different classes
+    // This class was created with the goal of fixing some Adobe Wheelchairs by obtaining the necessary data directly, using offsets in memory
+    // not good, but its the only way...
+    class AdobeWheelchair {
+    public:
+        static AdobeWheelchair& Instance() {
+            static AdobeWheelchair singleton;
+            return singleton;
+        }
 
-	public:
-		AdobeWheelchair() {};
-		~AdobeWheelchair() = default;
-		AdobeWheelchair(const AdobeWheelchair&) = delete;
-		AdobeWheelchair& operator=(const AdobeWheelchair&) = delete;
+    public:
+        AdobeWheelchair() {};
+        ~AdobeWheelchair() = default;
+        AdobeWheelchair(const AdobeWheelchair&) = delete;
+        AdobeWheelchair& operator=(const AdobeWheelchair&) = delete;
 
-		bool IsWheelchairMoving() const {
-			return m_initialized;
-		}
+        bool IsWheelchairMoving() const { return m_initialized; }
 
-	public:
-		// Sets offsets by Animate version
-		void RunWheelchair(FCM::U_Int32 version);
+    public:
+        // Sets offsets by Animate version
+        void RunWheelchair(FCM::U_Int32 version);
 
-	public:
-		// For some reason SDK does not support 9slice...
-		size_t CPicPage_Is9SliceEnabled = 0;
-		size_t CPicPage_9SliceGuides = 0;
+    public:
+        // For some reason SDK does not support 9slice...
+        size_t CPicPage_Is9SliceEnabled = 0;
+        size_t CPicPage_9SliceGuides = 0;
 
-		// And instance name for Graphic instances....
-		size_t CPicObj_IsButton = 0;
-		size_t CPicSprite_GetName = 0;
+        // And instance name for Graphic instances....
+        size_t CPicObj_IsButton = 0;
+        size_t CPicSprite_GetName = 0;
 
-	private:
-		bool m_initialized = true;
-	};
+    private:
+        bool m_initialized = true;
+    };
 }

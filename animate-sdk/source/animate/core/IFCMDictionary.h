@@ -1,20 +1,20 @@
 /*************************************************************************
-* ADOBE CONFIDENTIAL
-* ___________________
-*
-*  Copyright [2013] Adobe Systems Incorporated
-*  All Rights Reserved.
-*
-* NOTICE:  All information contained herein is, and remains
-* the property of Adobe Systems Incorporated and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual
-* property laws, including trade secret and copyright laws.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from Adobe Systems Incorporated.
-**************************************************************************/
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright [2013] Adobe Systems Incorporated
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Adobe Systems Incorporated and its suppliers,
+ * if any.  The intellectual and technical concepts contained
+ * herein are proprietary to Adobe Systems Incorporated and its
+ * suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe Systems Incorporated.
+ **************************************************************************/
 
 /**
  * @file  IFCMDictionary.h
@@ -24,28 +24,24 @@
  */
 
 #pragma once
-#include "animate/core/common/FCMTypes.h"
 #include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include <string>
 
 #include "animate/core/common/FCMPreConfig.h"
 
- /* -------------------------------------------------- Forward Decl */
+/* -------------------------------------------------- Forward Decl */
 
+/* -------------------------------------------------- Macros / Constants */
 
- /* -------------------------------------------------- Macros / Constants */
-
-namespace FCM
-{
+namespace FCM {
     /**
      * @brief Defines the universally-unique interface ID for IFCMDictionary.
      *
      * @note  Textual Representation:  {8BB58643-057E-4158-8876-6FF334E5ECE6}
      */
-    ConstFCMIID FCMIID_IFCMDictionary =
-    { 0x8bb58643, 0x57e, 0x4158, {0x88, 0x76, 0x6f, 0xf3, 0x34, 0xe5, 0xec, 0xe6} };
-
+    ConstFCMIID FCMIID_IFCMDictionary = {0x8bb58643, 0x57e, 0x4158, {0x88, 0x76, 0x6f, 0xf3, 0x34, 0xe5, 0xec, 0xe6}};
 
     /**
      * @def   FCMDICT_RUNTIME_KEY_PREFIX
@@ -55,16 +51,13 @@ namespace FCM
     String8Key FCMDICT_RUNTIME_KEY_PREFIX = "_rt_";
 }
 
-
 /* -------------------------------------------------- Enums */
 
-namespace FCM
-{
+namespace FCM {
     /**
      * @brief This defines different types of dictionary IDs.
      */
-    enum class FCMDictRecTypeID
-    {
+    enum class FCMDictRecTypeID {
         /** illegal */
         Invalid = 0,
 
@@ -97,27 +90,22 @@ namespace FCM
 
         /* Last */
         _Last_
-
     };
 
-};  // namespace FCM
-
+}; // namespace FCM
 
 /* -------------------------------------------------- Structs / Unions */
 
-
 /* -------------------------------------------------- Class Declaration */
 
-namespace FCM
-{
+namespace FCM {
     /**
      * @class IFCMDictionary
      *
      * @brief Defines the interface that represents the dictionary.
      */
 
-    class IFCMDictionary : public FCM::VirtualClass<FCMIID_IFCMDictionary>
-    {
+    class IFCMDictionary : public FCM::VirtualClass<FCMIID_IFCMDictionary> {
     public:
         /**
          * @brief  Inserts a value for a given key into a dictionary.
@@ -136,12 +124,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL Add(
-           CStringRep8 pKey,
-           FCMDictRecTypeID type,
-           FCM::PVoid value,
-           FCM::U_Int32 valueLen) = 0;
-
+        virtual FCM::Result _FCMCALL Add(CStringRep8 pKey, FCMDictRecTypeID type, FCM::PVoid value, FCM::U_Int32 valueLen) = 0;
 
         /**
          * @brief  Create a dictionary and places it inside another under a given key.
@@ -158,7 +141,6 @@ namespace FCM
          */
         virtual FCM::Result _FCMCALL AddLevel(CStringRep8 pKey, PIFCMDictionary& ppDict) = 0;
 
-
         /**
          * @brief  Removes an entry for the given key from a dictionary. For reference counted
          *         types, count will simply be decremented.
@@ -168,8 +150,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL Remove(CStringRep8    pKey) = 0;
-
+        virtual FCM::Result _FCMCALL Remove(CStringRep8 pKey) = 0;
 
         /**
          * @brief  Returns a value from a dictionary given its key. The param value should be
@@ -195,12 +176,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL Get(
-            CStringRep8 pKey,
-            FCMDictRecTypeID type,
-            FCM::PVoid pValue,
-            FCM::U_Int32& valueLen) = 0;
-
+        virtual FCM::Result _FCMCALL Get(CStringRep8 pKey, FCMDictRecTypeID type, FCM::PVoid pValue, FCM::U_Int32& valueLen) = 0;
 
         /**
          * @brief  Removes all the values in dictionary.
@@ -208,7 +184,6 @@ namespace FCM
          * @return FCM_SUCCESS is returned for success. Otherwise an error code is returned.
          */
         virtual FCM::Result _FCMCALL Clear() = 0;
-
 
         /**
          * @brief  Fetches the number of entries in the dictionary.
@@ -219,7 +194,6 @@ namespace FCM
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
         virtual FCM::Result _FCMCALL Count(FCM::U_Int32& count) = 0;
-
 
         /**
          * @brief  Returns info on the nth entry in a dictionary.
@@ -240,12 +214,7 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success. Otherwise an error code is returned.
          */
-        virtual FCM::Result _FCMCALL GetNth(
-            FCM::U_Int32 index,
-            StringRep8& pKey,
-            FCMDictRecTypeID& type,
-            FCM::U_Int32& valueLen) = 0;
-
+        virtual FCM::Result _FCMCALL GetNth(FCM::U_Int32 index, StringRep8& pKey, FCMDictRecTypeID& type, FCM::U_Int32& valueLen) = 0;
 
         /**
          * @brief  Returns info on the entry with the given key in a dictionary.
@@ -261,26 +230,20 @@ namespace FCM
          *
          * @return FCM_SUCCESS is returned for success, else an error code is returned.
          */
-        virtual FCM::Result _FCMCALL GetInfo(
-            CStringRep8 pKey,
-            FCMDictRecTypeID& type,
-            FCM::U_Int32& valueLen) = 0;
+        virtual FCM::Result _FCMCALL GetInfo(CStringRep8 pKey, FCMDictRecTypeID& type, FCM::U_Int32& valueLen) = 0;
 
-        bool Get(CStringRep8 key, std::string& result)
-        {
+        bool Get(CStringRep8 key, std::string& result) {
             FCM::U_Int32 valueLen;
             FCM::FCMDictRecTypeID type;
 
             Result status = GetInfo(key, type, valueLen);
-            if (FCM_FAILURE_CODE(status) || type != FCM::FCMDictRecTypeID::StringRep8)
-            {
+            if (FCM_FAILURE_CODE(status) || type != FCM::FCMDictRecTypeID::StringRep8) {
                 return false;
             }
 
             result.resize(valueLen);
-            status = Get(key, type, (FCM::PVoid)result.data(), valueLen);
-            if (FCM_FAILURE_CODE(status))
-            {
+            status = Get(key, type, (FCM::PVoid) result.data(), valueLen);
+            if (FCM_FAILURE_CODE(status)) {
                 return false;
             }
 
@@ -289,11 +252,9 @@ namespace FCM
 
             return true;
         }
-
     };
 
-};  // namespace FCM
-
+}; // namespace FCM
 
 /* -------------------------------------------------- Inline / Functions */
 

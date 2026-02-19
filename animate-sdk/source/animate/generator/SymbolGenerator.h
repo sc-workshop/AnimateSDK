@@ -14,17 +14,12 @@ namespace Animate::Publisher {
         ResourcePublisher& m_resources;
 
     public:
-        static void GetLayerBuilder(SymbolContext& symbol,
-                                    LayerBuilderContext& context,
-                                    FCM::FCMListPtr& layers,
-                                    ResourcePublisher& resources,
-                                    std::vector<LayerBuilder>& result);
+        static void GetLayerBuilder(
+            SymbolContext& symbol, LayerBuilderContext& context, FCM::FCMListPtr& layers, ResourcePublisher& resources, std::vector<LayerBuilder>& result);
 
         SymbolGenerator(ResourcePublisher& resources) :
             m_resources(resources) {}
 
-        wk::Ref<IDisplayObjectWriter> Generate(SymbolContext& symbol,
-                                               FCM::AutoPtr<DOM::ITimeline1> timeline,
-                                               bool required);
+        wk::Ref<IDisplayObjectWriter> Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required);
     };
 }

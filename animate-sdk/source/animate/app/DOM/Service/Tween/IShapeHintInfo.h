@@ -20,57 +20,39 @@
  * @file  IShapeHintInfo.h
  *
  * @brief This file contains interface for IShapeHintInfo. IShapeHintInfo
- *        represents a shape hint information. 
+ *        represents a shape hint information.
  */
-#pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/app/DOM/Utils/DOMTypes.h"
 
-#include "animate/core/common/FCMDeclarations.h"
+#pragma once
 #include "animate/app/DOM/DOMDeclarations.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-namespace Animate
-{
+namespace Animate {
     /* -------------------------------------------------- Macros / Constants */
-    namespace DOM
-    {
-        namespace Service
-        {
-            namespace Tween
-            {
-                /**
-                 * @brief Defines the universally-unique interface ID for
-                 *        IShapeHintInfo.
-                 *
-                 * @note  Textual Representation: {33DDE09B-0DCC-45D3-8854-D705AA99AEF0}
-                 */
-                FCM::ConstFCMIID IID_ISHAPE_HINT_INFO =
-                { 0x33dde09b, 0xdcc, 0x45d3, {0x88, 0x54, 0xd7, 0x5, 0xaa, 0x99, 0xae, 0xf0} };
-            }
-        }
+    namespace DOM::Service::Tween {
+        /**
+         * @brief Defines the universally-unique interface ID for
+         *        IShapeHintInfo.
+         *
+         * @note  Textual Representation: {33DDE09B-0DCC-45D3-8854-D705AA99AEF0}
+         */
+        FCM::ConstFCMIID IID_ISHAPE_HINT_INFO = {0x33dde09b, 0xdcc, 0x45d3, {0x88, 0x54, 0xd7, 0x5, 0xaa, 0x99, 0xae, 0xf0}};
     }
 
     /* -------------------------------------------------- Class Declaration */
-    namespace DOM
-    {
-        namespace Service
-        {
-            namespace Tween
-            {
-                /**
-                 *
-                 * @class IShapeHintInfo
-                 *
-                 * @brief Defines an interface that provides information about hints for shape tweens.
-                 *        Currently, this is a marker(blank) interface.
-                 */
-                class IShapeHintInfo : public FCM::VirtualClass<IID_ISHAPE_HINT_INFO>
-                {
-                };
-            }
-        }
+    namespace DOM::Service::Tween {
+        /**
+         *
+         * @class IShapeHintInfo
+         *
+         * @brief Defines an interface that provides information about hints for shape tweens.
+         *        Currently, this is a marker(blank) interface.
+         */
+        class IShapeHintInfo : public FCM::VirtualClass<IID_ISHAPE_HINT_INFO> {};
     }
 }
 

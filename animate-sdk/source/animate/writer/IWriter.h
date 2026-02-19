@@ -3,35 +3,32 @@
 #include "IGraphicWriter.h"
 #include "IMovieclipWriter.h"
 #include "ITextFieldWriter.h"
-
 #include "animate/publisher/ResourceReference.h"
 #include "core/memory/ref.h"
 
-namespace Animate::Publisher
-{
-	class SymbolContext;
+namespace Animate::Publisher {
+    class SymbolContext;
 
-	enum class MaskedLayerState : uint8_t
-	{
-		MASK_LAYER = 0,
-		MASKED_LAYERS,
-		MASKED_LAYERS_END
-	};
+    enum class MaskedLayerState : uint8_t {
+        MASK_LAYER = 0,
+        MASKED_LAYERS,
+        MASKED_LAYERS_END
+    };
 
-	class SharedWriter {
-	public:
-		virtual ~SharedWriter() = default;
+    class SharedWriter {
+    public:
+        virtual ~SharedWriter() = default;
 
-	public:
-		virtual void SetExportedSymbols(const std::vector<SymbolContext>& /*symbols*/) {};
+    public:
+        virtual void SetExportedSymbols(const std::vector<SymbolContext>& /*symbols*/) {};
 
-	public:
-		virtual wk::Ref<SharedMovieclipWriter> AddMovieclip(SymbolContext& symbol) = 0;
-		virtual wk::Ref<SharedShapeWriter> AddShape(SymbolContext& symbol) = 0;
-		virtual wk::Ref<SharedTextFieldWriter> AddTextField(SymbolContext& symbol) = 0;
+    public:
+        virtual wk::Ref<SharedMovieclipWriter> AddMovieclip(SymbolContext& symbol) = 0;
+        virtual wk::Ref<SharedShapeWriter> AddShape(SymbolContext& symbol) = 0;
+        virtual wk::Ref<SharedTextFieldWriter> AddTextField(SymbolContext& symbol) = 0;
 
-		virtual void AddModifier(ResourceReference ref, MaskedLayerState type) = 0;
+        virtual void AddModifier(ResourceReference ref, MaskedLayerState type) = 0;
 
-		virtual void Finalize() = 0;
-	};
+        virtual void Finalize() = 0;
+    };
 }

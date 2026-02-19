@@ -1,226 +1,204 @@
 /******************************************************************************
-* ADOBE CONFIDENTIAL
-* ___________________
-*
-*  Copyright [2013] Adobe Systems Incorporated
-*  All Rights Reserved.
-*
-* NOTICE:  All information contained herein is, and remains
-* the property of Adobe Systems Incorporated and its suppliers,
-* if any.  The intellectual and technical concepts contained
-* herein are proprietary to Adobe Systems Incorporated and its
-* suppliers and are protected by all applicable intellectual 
-* property laws, including trade secret and copyright laws.
-* Dissemination of this information or reproduction of this material
-* is strictly forbidden unless prior written permission is obtained
-* from Adobe Systems Incorporated.
-******************************************************************************/
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright [2013] Adobe Systems Incorporated
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Adobe Systems Incorporated and its suppliers,
+ * if any.  The intellectual and technical concepts contained
+ * herein are proprietary to Adobe Systems Incorporated and its
+ * suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe Systems Incorporated.
+ ******************************************************************************/
 
 /**
  * @file  ILibraryItem.h
  *
- * @brief This file contains the interface for ILibraryItem. 
- *        Each Library item is a reusable resource residing in the library. 
+ * @brief This file contains the interface for ILibraryItem.
+ *        Each Library item is a reusable resource residing in the library.
  */
 #pragma once
-#include "animate/core/common/FCMTypes.h"
-#include "animate/app/DOM/Utils/DOMTypes.h"
-
-#include "animate/core/common/FCMDeclarations.h"
 #include "animate/app/DOM/DOMDeclarations.h"
+#include "animate/app/DOM/Utils/DOMTypes.h"
+#include "animate/core/common/FCMDeclarations.h"
+#include "animate/core/common/FCMTypes.h"
 
 #include "animate/core/common/FCMPreConfig.h"
 
-
-namespace Animate
-{
+namespace Animate {
     /* -------------------------------------------------- Macros / Constants */
 
     /**
-	* @def   kLibProp_LinkageClass_DictKey
-	*
-	* @brief Dictionary key for linkage class name.
-	*/
+     * @def   kLibProp_LinkageClass_DictKey
+     *
+     * @brief Dictionary key for linkage class name.
+     */
     FCM::String8Key kLibProp_LinkageClass_DictKey = "LinkageClass";
 
-
     /**
-    * @def   kLibProp_LinkageClass_DictType
-    *
-    * @brief Type of value for linkage class.
-    */
+     * @def   kLibProp_LinkageClass_DictType
+     *
+     * @brief Type of value for linkage class.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageClass_DictType = FCM::FCMDictRecTypeID::StringRep8;
 
     /**
-    * @def   kLibProp_LinkageBaseClass_DictKey
-    *
-    * @brief Dictionary key for linkage class base name.
-    */
+     * @def   kLibProp_LinkageBaseClass_DictKey
+     *
+     * @brief Dictionary key for linkage class base name.
+     */
     FCM::String8Key kLibProp_LinkageBaseClass_DictKey = "LinkageBaseClass";
 
-
     /**
-    * @def   kLibProp_LinkageBaseClass_DictType
-    *
-    * @brief Type of value for linkage base class.
-    */
+     * @def   kLibProp_LinkageBaseClass_DictType
+     *
+     * @brief Type of value for linkage base class.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageBaseClass_DictType = FCM::FCMDictRecTypeID::StringRep8;
 
     /**
-	* @def   kLibProp_LinkageIdentifier_DictKey
-	*
-	* @brief Dictionary key for linkage identifier.
-	*/
+     * @def   kLibProp_LinkageIdentifier_DictKey
+     *
+     * @brief Dictionary key for linkage identifier.
+     */
     FCM::String8Key kLibProp_LinkageIdentifier_DictKey = "LinkageIdentifier";
 
-
     /**
-    * @def   kLibProp_LinkageIdentifier_DictType
-    *
-    * @brief Type of value for linkage identifer.
-    */
+     * @def   kLibProp_LinkageIdentifier_DictType
+     *
+     * @brief Type of value for linkage identifer.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageIdentifier_DictType = FCM::FCMDictRecTypeID::StringRep8;
 
     /**
-    * @def   kLibProp_LinkageURL_DictKey
-    *
-    * @brief Dictionary key for linkage URL.
-    */
+     * @def   kLibProp_LinkageURL_DictKey
+     *
+     * @brief Dictionary key for linkage URL.
+     */
     FCM::String8Key kLibProp_LinkageURL_DictKey = "LinkageURL";
 
-
     /**
-    * @def   kLibProp_LinkageURL_DictType
-    *
-    * @brief Type of value for linkage URL.
-    */
+     * @def   kLibProp_LinkageURL_DictType
+     *
+     * @brief Type of value for linkage URL.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageURL_DictType = FCM::FCMDictRecTypeID::StringRep8;
 
-
     /**
-	* @def   kLibProp_LinkageExportForRS_DictKey
-	*
-	* @brief Dictionary key for 'Linkage Export For Runtime Sharing'.
-	*/
+     * @def   kLibProp_LinkageExportForRS_DictKey
+     *
+     * @brief Dictionary key for 'Linkage Export For Runtime Sharing'.
+     */
     FCM::String8Key kLibProp_LinkageExportForRS_DictKey = "LinkageExportForRS";
 
-
     /**
-    * @def   kLibProp_LinkageExportForRS_DictType
-    *
-    * @brief Type of value for 'Linkage Export For Runtime Sharing'.
-    */
+     * @def   kLibProp_LinkageExportForRS_DictType
+     *
+     * @brief Type of value for 'Linkage Export For Runtime Sharing'.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageExportForRS_DictType = FCM::FCMDictRecTypeID::Bool;
 
-
     /**
-    * @def   kLibProp_LinkageImportForRS_DictKey
-    *
-    * @brief Dictionary key for 'Import For Runtime Sharing'.
-    */
+     * @def   kLibProp_LinkageImportForRS_DictKey
+     *
+     * @brief Dictionary key for 'Import For Runtime Sharing'.
+     */
     FCM::String8Key kLibProp_LinkageImportForRS_DictKey = "LinkageImportForRS";
 
-
     /**
-    * @def   kLibProp_LinkageImportForRS_DictType
-    *
-    * @brief Type of value for 'Import For Runtime Sharing'.
-    */
+     * @def   kLibProp_LinkageImportForRS_DictType
+     *
+     * @brief Type of value for 'Import For Runtime Sharing'.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageImportForRS_DictType = FCM::FCMDictRecTypeID::Bool;
 
-
     /**
-	* @def   kLibProp_LinkageExportInFirstFrame_DictKey
-	*
-	* @brief Dictionary key for 'Export In First Frame'.
-	*/
+     * @def   kLibProp_LinkageExportInFirstFrame_DictKey
+     *
+     * @brief Dictionary key for 'Export In First Frame'.
+     */
     FCM::String8Key kLibProp_LinkageExportInFirstFrame_DictKey = "LinkageExportInFirstFrame";
 
-
     /**
-    * @def   kLibProp_LinkageExportInFirstFrame_DictType
-    *
-    * @brief Type of value for 'Export In First Frame'.
-    */
+     * @def   kLibProp_LinkageExportInFirstFrame_DictType
+     *
+     * @brief Type of value for 'Export In First Frame'.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageExportInFirstFrame_DictType = FCM::FCMDictRecTypeID::Bool;
 
-
     /**
-    * @def   kLibProp_LinkageExportForAS_DictKey
-    *
-    * @brief Dictionary key for 'Export For Actionscript'.
-    */
+     * @def   kLibProp_LinkageExportForAS_DictKey
+     *
+     * @brief Dictionary key for 'Export For Actionscript'.
+     */
     FCM::String8Key kLibProp_LinkageExportForAS_DictKey = "LinkageExportForAS";
 
-
     /**
-    * @def   kLibProp_LinkageExportForAS_DictType
-    *
-    * @brief Type of value for 'Export For Actionscript'.
-    */
+     * @def   kLibProp_LinkageExportForAS_DictType
+     *
+     * @brief Type of value for 'Export For Actionscript'.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_LinkageExportForAS_DictType = FCM::FCMDictRecTypeID::Bool;
 
     /**
-    * @def   kLibProp_SymbolType_DictKey
-    *
-    * @brief Dictionary key for the property "type" of the Symbol.
-    */
+     * @def   kLibProp_SymbolType_DictKey
+     *
+     * @brief Dictionary key for the property "type" of the Symbol.
+     */
     FCM::String8Key kLibProp_SymbolType_DictKey = "SymbolType";
 
-
     /**
-    * @def   kLibProp_SymbolType_DictType
-    *
-    * @brief Type of value of the property "type" of the Symbol.
-    */
+     * @def   kLibProp_SymbolType_DictType
+     *
+     * @brief Type of value of the property "type" of the Symbol.
+     */
     constexpr FCM::FCMDictRecTypeID kLibProp_SymbolType_DictType = FCM::FCMDictRecTypeID::StringRep8;
 
     /**
-    * @def   kLibProp_SymbolType_Button
-    *
-    * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Button
-    */
+     * @def   kLibProp_SymbolType_Button
+     *
+     * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Button
+     */
     FCM::String8Key kLibProp_SymbolType_Button = "Button";
 
     /**
-    * @def   kLibProp_SymbolType_MovieClip
-    *
-    * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Movie Clip
-    */
+     * @def   kLibProp_SymbolType_MovieClip
+     *
+     * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Movie Clip
+     */
     FCM::String8Key kLibProp_SymbolType_MovieClip = "MovieClip";
 
     /**
-    * @def   kLibProp_SymbolType_Graphic
-    *
-    * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Graphic
-    */
+     * @def   kLibProp_SymbolType_Graphic
+     *
+     * @brief Dictionary value for the key kLibProp_SymbolType_DictKey if the symbol is Graphic
+     */
     FCM::String8Key kLibProp_SymbolType_Graphic = "Graphic";
 
-
-    namespace DOM
-    {
+    namespace DOM {
         /**
          * @brief Defines the universally-unique interface ID for
          *        ILibraryItem.
          *
          * @note  Textual Representation: {2EA5B91D-26C8-45A4-8BDC-41AD1F2C7B73}
          */
-        FCM::ConstFCMIID IID_ILIBRARY_ITEM =
-        { 0x2ea5b91d, 0x26c8, 0x45a4, {0x8b, 0xdc, 0x41, 0xad, 0x1f, 0x2c, 0x7b, 0x73} };
+        FCM::ConstFCMIID IID_ILIBRARY_ITEM = {0x2ea5b91d, 0x26c8, 0x45a4, {0x8b, 0xdc, 0x41, 0xad, 0x1f, 0x2c, 0x7b, 0x73}};
     }
 
-
     /* -------------------------------------------------- Class Declaration */
-    namespace DOM
-    {
+    namespace DOM {
         /**
-        * @class ILibraryItem
-        *
-        * @brief Defines the interface that represents a library item in the library.
-        */
+         * @class ILibraryItem
+         *
+         * @brief Defines the interface that represents a library item in the library.
+         */
 
-        class ILibraryItem : public FCM::VirtualClass<IID_ILIBRARY_ITEM>
-        {
+        class ILibraryItem : public FCM::VirtualClass<IID_ILIBRARY_ITEM> {
         public:
             /**
              * @brief  Returns the name of the item.
@@ -234,7 +212,6 @@ namespace Animate
              *         by the caller using IFCMCalloc::Free().
              */
             virtual FCM::Result _FCMCALL GetName(FCM::StringRep16& ppName) = 0;
-
 
             /**
              * @brief  GetProperties returns a set of property names and their values.
@@ -255,7 +232,6 @@ namespace Animate
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetProperties(FCM::PIFCMDictionary& pPropDict) = 0;
-
         };
     }
 }

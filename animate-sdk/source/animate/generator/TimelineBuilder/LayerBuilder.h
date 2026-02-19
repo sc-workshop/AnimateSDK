@@ -56,11 +56,7 @@ namespace Animate::Publisher {
         void AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type);
 
     public:
-        LayerBuilder(LayerBuilderContext& context,
-                     FCM::AutoPtr<DOM::ILayer2> layer,
-                     uint32_t duration,
-                     ResourcePublisher& resources,
-                     SymbolContext& info);
+        LayerBuilder(LayerBuilderContext& context, FCM::AutoPtr<DOM::ILayer2> layer, uint32_t duration, ResourcePublisher& resources, SymbolContext& info);
 
         void operator()(SharedMovieclipWriter& writer);
 
@@ -95,16 +91,10 @@ namespace Animate::Publisher {
                                       size_t last_layer_index,
                                       bool has_next_layer);
 
-        static void ProcessLayers(SymbolContext& context,
-                                  LayerBuilderContext& build_context,
-                                  std::vector<LayerBuilder>& layers,
-                                  SharedMovieclipWriter& writer);
+        static void ProcessLayers(SymbolContext& context, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer);
 
-        static void ProcessLayers(SymbolContext& context,
-                                  LayerBuilderContext& build_context,
-                                  std::vector<LayerBuilder>& layers,
-                                  SharedMovieclipWriter& writer,
-                                  uint32_t range);
+        static void ProcessLayers(
+            SymbolContext& context, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer, uint32_t range);
 
         static const std::optional<StaticElementsGroup> ProcessStaticLayers(std::vector<LayerBuilder>& layers);
     };
