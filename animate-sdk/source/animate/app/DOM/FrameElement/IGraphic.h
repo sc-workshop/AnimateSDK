@@ -47,7 +47,13 @@ namespace Animate {
             ANIMATION_PLAY_ONCE,
 
             /** Single frame */
-            ANIMATION_SINGLE_FRAME
+            ANIMATION_SINGLE_FRAME,
+
+            /** Play once reverse */
+            ANIMATION_PLAY_REVERSE_ONCE,
+
+            /** Reverse loop */
+            ANIMATION_PLAY_REVERSE
         };
     }
 
