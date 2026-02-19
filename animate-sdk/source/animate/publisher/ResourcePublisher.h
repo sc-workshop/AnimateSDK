@@ -1,111 +1,89 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <unordered_map>
-
 #include "AnimateCore.h"
 #include "AnimateDOM.h"
 #include "AnimateGenerator.h"
 #include "ResourceReference.h"
-
 #include "animate/publisher/symbol/SymbolContext.h"
 
-namespace Animate::Publisher
-{
-	class ResourcePublisher {
-	public:
-		void PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document);
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-	private:
-		static void GetExportSymbols(
-			FCM::FCMListPtr libraryItems,
-			std::vector<SymbolContext>& paths
-		);
+namespace Animate::Publisher {
+    class ResourcePublisher {
+    public:
+        void PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document);
 
-	private:
-		// Shape / Id
-		using FilledDictValue = std::pair<std::vector<FilledElement>, ResourceReference>;
-		using FilledDict = std::vector<FilledDictValue>;
+    private:
+        static void GetExportSymbols(FCM::FCMListPtr libraryItems, std::vector<SymbolContext>& paths);
 
-		// Name  /  Id
-		using SymbolDict = std::unordered_map<std::u16string, ResourceReference>;
+    private:
+        // Shape / Id
+        using FilledDictValue = std::pair<std::vector<FilledElement>, ResourceReference>;
+        using FilledDict = std::vector<FilledDictValue>;
 
-		// Type / Id
-		using ModifierDict = std::unordered_map<MaskedLayerState, ResourceReference>;
+        // Name  /  Id
+        using SymbolDict = std::unordered_map<SymbolContext, ResourceReference>;
 
-		// Info / Id
-		using TextsDictValue = std::pair<TextElement, ResourceReference>;
-		using TextsDict = std::vector<TextsDictValue>;
+        // Type / Id
+        using ModifierDict = std::unordered_map<MaskedLayerState, ResourceReference>;
 
-		using Library = std::unordered_map<std::size_t, uint16_t, DisplayObjectWriterHasher>;
+        // Info / Id
+        using TextsDictValue = std::pair<TextElement, ResourceReference>;
+        using TextsDict = std::vector<TextsDictValue>;
 
-	private:
-		SymbolDict m_libraryCache;
-		ModifierDict m_modifierCache;
+        using Library = std::unordered_map<std::size_t, uint16_t, DisplayObjectWriterHasher>;
 
-		Library m_textFields;
-		Library m_graphics;
-		Library m_movieClips;
+    private:
+        SymbolDict m_libraryCache;
+        ModifierDict m_modifierCache;
 
-		uint16_t m_id = 0;
+        Library m_textFields;
+        Library m_graphics;
+        Library m_movieClips;
 
-	public:
-		SharedWriter& m_writer;
+        uint16_t m_id = 0;
 
-		SymbolGenerator symbolGenerator;
-		uint32_t document_fps = 30;
+    public:
+        SharedWriter& m_writer;
 
-	public:
-		ResourcePublisher(SharedWriter& writer) :
-			m_writer(writer), symbolGenerator(*this)
-		{
-		}
+        SymbolGenerator symbolGenerator;
+        uint32_t document_fps = 30;
 
-		void SetIdOffset(uint16_t);
+    public:
+        ResourcePublisher(SharedWriter& writer) :
+            m_writer(writer),
+            symbolGenerator(*this) {}
 
-		ResourceReference AddLibraryItem(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::ILibraryItem> item,
-			bool required = false
-		);
+        void SetIdOffset(uint16_t);
 
-		ResourceReference AddModifier(
-			MaskedLayerState type
-		);
+        ResourceReference AddLibraryItem(SymbolContext& symbol,
+                                         FCM::AutoPtr<DOM::ILibraryItem> item,
+                                         bool required = false);
 
-		ResourceReference AddTextField(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::FrameElement::IClassicText> field,
-			std::optional<FCM::FCMListPtr> filters = std::nullopt
-		);
+        ResourceReference AddModifier(MaskedLayerState type);
 
-		ResourceReference AddGroup(
-			SymbolContext& symbol,
-			const StaticElementsGroup& elements,
-			bool required = false
-		);
+        ResourceReference AddTextField(SymbolContext& symbol,
+                                       FCM::AutoPtr<DOM::FrameElement::IClassicText> field,
+                                       std::optional<FCM::FCMListPtr> filters = std::nullopt);
 
-		void Finalize();
+        ResourceReference AddGroup(SymbolContext& symbol, const StaticElementsGroup& elements, bool required = false);
 
-	private:
-		ResourceReference AddSymbol(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
-			bool required = false
-		);
+        void Finalize();
 
-		ResourceReference AddMediaSymbol(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
-			bool required
-		);
+    private:
+        ResourceReference AddSymbol(SymbolContext& symbol,
+                                    FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
+                                    bool required = false);
 
-		ResourceReference FinalizeWriter(
-			wk::Ref<IDisplayObjectWriter> writer,
-			bool required,
-			Library& library,
-			std::optional<FCM::FCMListPtr> filters = std::nullopt
-		);
-	};
+        ResourceReference AddMediaSymbol(SymbolContext& symbol,
+                                         FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
+                                         bool required);
+
+        ResourceReference FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer,
+                                         bool required,
+                                         Library& library,
+                                         std::optional<FCM::FCMListPtr> filters = std::nullopt);
+    };
 }

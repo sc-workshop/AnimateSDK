@@ -1,235 +1,210 @@
 #include "ResourcePublisher.h"
 
-namespace Animate::Publisher
-{
-	void ResourcePublisher::PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document) {
-		{
-			FCM::Double framerate;
-			document->GetFrameRate(framerate);
-			document_fps = (uint32_t)std::ceil(framerate);
-		}
+namespace Animate::Publisher {
+    void ResourcePublisher::PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document) {
+        {
+            FCM::Double framerate;
+            document->GetFrameRate(framerate);
+            document_fps = (uint32_t) std::ceil(framerate);
+        }
 
-		FCM::FCMListPtr libraryItems;
-		document->GetLibraryItems(libraryItems.m_Ptr);
+        // Parsing library items
+        FCM::FCMListPtr libraryItems;
+        document->GetLibraryItems(libraryItems.m_Ptr);
 
-		std::vector<SymbolContext> symbols;
-		GetExportSymbols(libraryItems, symbols);
-		m_writer.SetExportedSymbols(symbols);
+        // Getting items with linkage names
+        std::vector<SymbolContext> symbols;
+        GetExportSymbols(libraryItems, symbols);
+        m_writer.SetExportedSymbols(symbols);
 
-		for (auto& symbol : symbols) {
-			ResourceReference ref = AddLibraryItem(symbol, symbol.library_item, true);
-			if (!ref)
-			{
-				throw FCM::FCMPluginException(symbol.library_item, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
-			}
-		}
-	}
+        // Export each linkage item
+        for (auto& symbol : symbols) {
+            ResourceReference ref = AddLibraryItem(symbol, symbol.library_item, true);
 
-	void ResourcePublisher::GetExportSymbols(FCM::FCMListPtr libraryItems, std::vector<SymbolContext>& result) {
-		uint32_t itemCount = 0;
-		libraryItems->Count(itemCount);
+            // If just somehow symbol is failed to export, throw exception
+            if (!ref) {
+                throw FCM::FCMPluginException(symbol.library_item, FCM::FCMPluginException::Reason::SYMBOL_EXPORT_FAIL);
+            }
+        }
 
-		uint32_t itemIndex = itemCount;
-		for (uint32_t i = 0; i < itemCount; i++)
-		{
-			FCM::AutoPtr<DOM::ILibraryItem> item = libraryItems[--itemIndex];
+        // Clear document library cache to avoid collision between different documents
+        m_libraryCache.clear();
+    }
 
-			FCM::AutoPtr<DOM::LibraryItem::IFolderItem> folderItem = item;
-			if (folderItem)
-			{
-				FCM::FCMListPtr childrens;
-				folderItem->GetChildren(childrens.m_Ptr);
+    void ResourcePublisher::GetExportSymbols(FCM::FCMListPtr libraryItems, std::vector<SymbolContext>& result) {
+        uint32_t itemCount = 0;
+        libraryItems->Count(itemCount);
 
-				GetExportSymbols(childrens, result);
-			}
-			else
-			{
-				FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbolItem = item;
-				if (!symbolItem) continue;
+        uint32_t itemIndex = itemCount;
+        for (uint32_t i = 0; i < itemCount; i++) {
+            FCM::AutoPtr<DOM::ILibraryItem> item = libraryItems[--itemIndex];
 
-				FCM::AutoPtr<FCM::IFCMDictionary> dict;
+            FCM::AutoPtr<DOM::LibraryItem::IFolderItem> folderItem = item;
+            if (folderItem) {
+                FCM::FCMListPtr childrens;
+                folderItem->GetChildren(childrens.m_Ptr);
 
-				FCM::Result status = item->GetProperties(dict.m_Ptr);
-				if (FCM_FAILURE_CODE(status) || dict == nullptr)
-					continue;
+                GetExportSymbols(childrens, result);
+            } else {
+                FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbolItem = item;
+                if (!symbolItem)
+                    continue;
 
-				FCM::U_Int32 valueLen = 0;
-				FCM::FCMDictRecTypeID type;
-				status = dict->GetInfo(kLibProp_LinkageClass_DictKey, type, valueLen);
-				if (FCM_FAILURE_CODE(status) || type != FCM::FCMDictRecTypeID::StringRep8 || valueLen == 0)
-					continue;
+                FCM::AutoPtr<FCM::IFCMDictionary> dict;
 
-				result.emplace_back(item);
-			}
-		}
-	}
+                FCM::Result status = item->GetProperties(dict.m_Ptr);
+                if (FCM_FAILURE_CODE(status) || dict == nullptr)
+                    continue;
 
-	void ResourcePublisher::SetIdOffset(uint16_t offset)
-	{
-		m_id += offset;
-	}
+                FCM::U_Int32 valueLen = 0;
+                FCM::FCMDictRecTypeID type;
+                status = dict->GetInfo(kLibProp_LinkageClass_DictKey, type, valueLen);
+                if (FCM_FAILURE_CODE(status) || type != FCM::FCMDictRecTypeID::StringRep8 || valueLen == 0)
+                    continue;
 
-	ResourceReference ResourcePublisher::AddLibraryItem(
-		SymbolContext& symbol,
-		FCM::AutoPtr<DOM::ILibraryItem> item,
-		bool required
-	) {
-		if (m_libraryCache.count(symbol.name))
-		{
-			return m_libraryCache[symbol.name];
-		}
+                result.emplace_back(item);
+            }
+        }
+    }
 
-		FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbol_item = item;
-		FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item = item;
+    void ResourcePublisher::SetIdOffset(uint16_t offset) {
+        m_id += offset;
+    }
 
-		ResourceReference result;
-		if (symbol_item) {
-			result = AddSymbol(symbol, symbol_item, required);
-		}
-		else if (media_item) {
-			result = AddMediaSymbol(symbol, media_item, required);
-		}
-		else
-		{
-			throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::UNKNOWN_LIBRARY_ITEM);
-		}
-			
-		m_libraryCache[symbol.name] = result;
-		return result;
-	}
+    ResourceReference ResourcePublisher::AddLibraryItem(SymbolContext& symbol,
+                                                        FCM::AutoPtr<DOM::ILibraryItem> item,
+                                                        bool required) {
+        auto cached = m_libraryCache.find(symbol);
+        if (cached != m_libraryCache.end()) {
+            return cached->second;
+        }
 
-	ResourceReference ResourcePublisher::AddSymbol(
-		SymbolContext& symbol,
-		FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
-		bool required
-	) {
-		FCM::AutoPtr<DOM::ITimeline> timeline;
-		item->GetTimeLine(timeline.m_Ptr);
+        FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbol_item = item;
+        FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item = item;
 
-		auto writer = symbolGenerator.Generate(symbol, timeline, required);
-		return FinalizeWriter(writer, required, m_movieClips);
-	};
+        ResourceReference result;
+        if (symbol_item) {
+            result = AddSymbol(symbol, symbol_item, required);
+        } else if (media_item) {
+            result = AddMediaSymbol(symbol, media_item, required);
+        } else {
+            throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::UNKNOWN_LIBRARY_ITEM);
+        }
 
-	ResourceReference ResourcePublisher::AddMediaSymbol(
-			SymbolContext& symbol,
-			FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
-			bool required
-	)
-	{
-		FCM::AutoPtr<FCM::IFCMUnknown> unknownMedia;
-		media_item->GetMediaInfo(unknownMedia.m_Ptr);
+        m_libraryCache[symbol] = result;
+        return result;
+    }
 
-		FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap = unknownMedia;
+    ResourceReference ResourcePublisher::AddSymbol(SymbolContext& symbol,
+                                                   FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item,
+                                                   bool required) {
+        FCM::AutoPtr<DOM::ITimeline> timeline;
+        item->GetTimeLine(timeline.m_Ptr);
 
-		if (bitmap)
-		{
-			auto writer = m_writer.AddShape(symbol);
+        auto writer = symbolGenerator.Generate(symbol, timeline, required);
+        return FinalizeWriter(writer, required, m_movieClips);
+    };
 
-			BitmapElement element(symbol, media_item, DOM::Utils::MATRIX2D());
-			writer->AddGraphic(element);
+    ResourceReference ResourcePublisher::AddMediaSymbol(SymbolContext& symbol,
+                                                        FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item,
+                                                        bool required) {
+        FCM::AutoPtr<FCM::IFCMUnknown> unknownMedia;
+        media_item->GetMediaInfo(unknownMedia.m_Ptr);
 
-			return FinalizeWriter(writer, required, m_graphics);
-		}
+        FCM::AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmap = unknownMedia;
 
-		return {};
-	}
+        if (bitmap) {
+            auto writer = m_writer.AddShape(symbol);
 
-	ResourceReference ResourcePublisher::AddModifier(
-		MaskedLayerState type
-	) {
-		ModifierDict::const_iterator pos = m_modifierCache.find(type);
-		if (pos != m_modifierCache.end())
-		{
-			return pos->second;
-		}
+            BitmapElement element(symbol, media_item, DOM::Utils::MATRIX2D());
+            writer->AddGraphic(element);
 
-		uint16_t identifer = m_id++;
+            return FinalizeWriter(writer, required, m_graphics);
+        }
 
-		m_writer.AddModifier(identifer, type);
-		m_modifierCache[type] = identifer;
+        return {};
+    }
 
-		return identifer;
-	}
+    ResourceReference ResourcePublisher::AddModifier(MaskedLayerState type) {
+        ModifierDict::const_iterator pos = m_modifierCache.find(type);
+        if (pos != m_modifierCache.end()) {
+            return pos->second;
+        }
 
-	ResourceReference ResourcePublisher::AddTextField(
-		SymbolContext& symbol,
-		FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData,
-		std::optional<FCM::FCMListPtr> filters
-	) {
-		auto writer = m_writer.AddTextField(symbol);
-		TextFieldGenerator::Generate(writer, textfieldData);
+        uint16_t identifer = m_id++;
 
-		return FinalizeWriter(writer, false, m_textFields, filters);
-	}
+        m_writer.AddModifier(identifer, type);
+        m_modifierCache[type] = identifer;
 
-	ResourceReference ResourcePublisher::AddGroup(
-		SymbolContext& symbol,
-		const StaticElementsGroup& elements,
-		bool required
-	) {
-		SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
-		auto writer = m_writer.AddShape(shape_symbol);
+        return identifer;
+    }
 
-		writer->AddGroup(symbol, elements);
+    ResourceReference ResourcePublisher::AddTextField(SymbolContext& symbol,
+                                                      FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData,
+                                                      std::optional<FCM::FCMListPtr> filters) {
+        auto writer = m_writer.AddTextField(symbol);
+        TextFieldGenerator::Generate(writer, textfieldData);
 
-		return FinalizeWriter(writer, required, m_graphics);
-	}
+        return FinalizeWriter(writer, false, m_textFields, filters);
+    }
 
-	ResourceReference ResourcePublisher::FinalizeWriter(
-		wk::Ref<IDisplayObjectWriter> writer,
-		bool required,
-		Library& library,
-		std::optional<FCM::FCMListPtr> filters
-	)
-	{
-		if (filters.has_value())
-		{
-			uint32_t filterCount = 0;
-			filters.value()->Count(filterCount);
+    ResourceReference ResourcePublisher::AddGroup(SymbolContext& symbol,
+                                                  const StaticElementsGroup& elements,
+                                                  bool required) {
+        SymbolContext shape_symbol(symbol.name, SymbolContext::SymbolType::Graphic);
+        auto writer = m_writer.AddShape(shape_symbol);
 
-			for (uint32_t i = 0; filterCount > i; i++)
-			{
-				FCM::AutoPtr<DOM::GraphicFilter::IGlowFilter> glowFilter = filters.value()[i];
+        writer->AddGroup(symbol, elements);
 
-				if (glowFilter) {
-					GlowFilter filter;
-					glowFilter->GetBlurX(filter.blurX);
-					glowFilter->GetBlurY(filter.blurY);
-					glowFilter->GetShadowColor(filter.color);
-					glowFilter->GetStrength(filter.strength);
+        return FinalizeWriter(writer, required, m_graphics);
+    }
 
-					writer->SetGlowFilter(filter);
-				}
-			}
-		}
+    ResourceReference ResourcePublisher::FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer,
+                                                        bool required,
+                                                        Library& library,
+                                                        std::optional<FCM::FCMListPtr> filters) {
+        if (filters.has_value()) {
+            uint32_t filterCount = 0;
+            filters.value()->Count(filterCount);
 
-		writer->PreFinalize();
+            for (uint32_t i = 0; filterCount > i; i++) {
+                FCM::AutoPtr<DOM::GraphicFilter::IGlowFilter> glowFilter = filters.value()[i];
 
-		uint16_t identifier = m_id++;
-		std::size_t hash = writer->HashCode();
-		auto library_pair = library.find(hash);
-		bool in_library = library_pair != library.end();
-		if (in_library)
-		{
-			identifier = library_pair->second;
-		}
+                if (glowFilter) {
+                    GlowFilter filter;
+                    glowFilter->GetBlurX(filter.blurX);
+                    glowFilter->GetBlurY(filter.blurY);
+                    glowFilter->GetShadowColor(filter.color);
+                    glowFilter->GetStrength(filter.strength);
 
-		bool writer_success = writer->Finalize(identifier, required, !in_library);
-		if (!writer_success && !in_library)
-		{
-			m_id--;
-		}
+                    writer->SetGlowFilter(filter);
+                }
+            }
+        }
 
-		if (writer_success)
-		{
-			library[hash] = identifier;
-		}
+        writer->PreFinalize();
 
-		return writer_success || in_library ? identifier : 0xFFFF;
-	}
+        uint16_t identifier = m_id++;
+        std::size_t hash = writer->HashCode();
+        auto library_pair = library.find(hash);
+        bool in_library = library_pair != library.end();
+        if (in_library) {
+            identifier = library_pair->second;
+        }
 
-	void ResourcePublisher::Finalize()
-	{
-		m_writer.Finalize();
-	}
+        bool writer_success = writer->Finalize(identifier, required, !in_library);
+        if (!writer_success && !in_library) {
+            m_id--;
+        }
+
+        if (writer_success) {
+            library[hash] = identifier;
+        }
+
+        return writer_success || in_library ? identifier : 0xFFFF;
+    }
+
+    void ResourcePublisher::Finalize() {
+        m_writer.Finalize();
+    }
 }
