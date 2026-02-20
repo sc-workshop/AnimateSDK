@@ -5,6 +5,7 @@
 #include "AnimateWriter.h"
 #include "FrameElements/FilledElement.h"
 #include "FrameElements/StaticElementsGroup.h"
+#include "animate/publisher/symbol/LoopingContext.h"
 #include "animate/publisher/symbol/SymbolContext.h"
 
 namespace Animate::Publisher {
@@ -54,11 +55,8 @@ namespace Animate::Publisher {
         // Current keyframe duration
         uint32_t m_duration = 0;
 
-        // Current position on frame space [0 - m_duration]
-        uint32_t m_frame_position = 0;
-
-        // Current on timeline space [0 - timeline length]
-        uint32_t m_timeline_position = 0;
+        // Current keyframe position [0 - m_duration]
+        uint32_t m_position = 0;
 
         // Frame label
         std::u16string m_label;
@@ -88,7 +86,7 @@ namespace Animate::Publisher {
             m_symbol(symbol),
             m_builder(builder) {};
 
-        void Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame);
+        void Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset = 0);
 
         void UpdateShapeTweener();
 
@@ -102,11 +100,11 @@ namespace Animate::Publisher {
 
         uint32_t Duration() const { return m_duration; }
 
-        uint32_t Position() const { return m_frame_position; }
+        uint32_t Position() const { return m_position; }
 
         StaticElementsState StaticElementsState() const { return m_static_state; }
 
-        operator bool() const { return m_duration > m_frame_position; }
+        operator bool() const { return m_duration > m_position; }
 
         bool operator==(const FrameBuilder& builder) const;
 

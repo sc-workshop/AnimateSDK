@@ -8,6 +8,8 @@ namespace Animate::Publisher {
 
     SlicingContext::SlicingContext(FCM::AutoPtr<DOM::ITimeline1> timeline) {
         AdobeWheelchair& wheelchair = AdobeWheelchair::Instance();
+        if (!wheelchair.IsWheelchairMoving())
+            return;
 
         uint8_t* page = (uint8_t*) timeline->GetDocPage();
         m_enabled = *(uint8_t*) (page + wheelchair.CPicPage_Is9SliceEnabled) >= 1;

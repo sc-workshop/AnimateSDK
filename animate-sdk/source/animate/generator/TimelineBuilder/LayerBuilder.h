@@ -3,6 +3,7 @@
 #include "AnimateDOM.h"
 #include "AnimateWriter.h"
 #include "FrameBuilder.h"
+#include "FrameIterator.h"
 #include "animate/publisher/symbol/SymbolContext.h"
 
 #include <cstdint>
@@ -13,7 +14,11 @@ namespace Animate::Publisher {
     class LayerBuilder;
 
     struct LayerBuilderContext {
+        // True when one of layers has updated static elements or updated keyframe
         bool frameUpdated = true;
+
+        // Timeline position handler
+        FrameIterator iterator;
     };
 
     struct MaskedLayerContext {
@@ -30,9 +35,6 @@ namespace Animate::Publisher {
 
         // Total layer duration
         uint32_t m_duration = 0;
-
-        // Current layer position on timeline
-        uint32_t m_position = 0;
 
         // Array of native keyframes
         FCM::FCMListPtr m_keyframes;
@@ -52,7 +54,7 @@ namespace Animate::Publisher {
         // Symbol building context
         LayerBuilderContext& m_context;
 
-        void UpdateFrame();
+        void UpdateFrame(uint32_t offset = 0);
         void AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type);
 
     public:
@@ -60,7 +62,7 @@ namespace Animate::Publisher {
 
         void operator()(SharedMovieclipWriter& writer);
 
-        operator bool() const { return m_duration > m_position; }
+        operator bool() const { return m_duration > m_context.iterator; }
 
     public:
         void Next();
@@ -93,8 +95,7 @@ namespace Animate::Publisher {
 
         static void ProcessLayers(SymbolContext& context, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer);
 
-        static void ProcessLayers(
-            SymbolContext& context, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer, uint32_t range);
+        static void BuildLayers(SymbolContext& context, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer);
 
         static const std::optional<StaticElementsGroup> ProcessStaticLayers(std::vector<LayerBuilder>& layers);
     };

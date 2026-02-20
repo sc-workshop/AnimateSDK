@@ -76,7 +76,6 @@ namespace Animate::Publisher {
 
     void FrameBuilder::Reset() {
         m_duration = 0;
-        m_frame_position = 0;
         m_label.clear();
         m_elements.clear();
         m_static_elements.Clear();
@@ -87,9 +86,11 @@ namespace Animate::Publisher {
         m_shape_tweener = nullptr;
     }
 
-    void FrameBuilder::Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame) {
+    void FrameBuilder::Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset) {
         FCM::PluginModule& context = FCM::PluginModule::Instance();
         Reset();
+
+        m_position = offset;
 
         // Frame Label
         {
@@ -160,7 +161,7 @@ namespace Animate::Publisher {
             FCM::FCMListPtr frameElements;
             frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frameElements.m_Ptr);
 
-            DeclareFrameElements(frameElements, std::nullopt, false);
+            DeclareFrameElements(frameElements, std::nullopt, true);
         }
 
         m_rigging_frame = frame;
@@ -173,7 +174,7 @@ namespace Animate::Publisher {
 
         m_static_elements.Clear();
         FCM::AutoPtr<DOM::FrameElement::IShape> filledShape = nullptr;
-        m_shape_tweener->GetShape(m_base_tween, m_frame_position, filledShape.m_Ptr);
+        m_shape_tweener->GetShape(m_base_tween, m_position, filledShape.m_Ptr);
 
         if (filledShape) {
             // Remove all previous elements
@@ -187,7 +188,7 @@ namespace Animate::Publisher {
     }
 
     void FrameBuilder::ReleaseFrameElement(SharedMovieclipWriter& writer, FrameBuilderElement& element) {
-        if (m_frame_position > element.duration)
+        if (m_position > element.duration)
             return;
 
         FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
@@ -197,35 +198,36 @@ namespace Animate::Publisher {
 
         FCM::BlendMode frame_blend;
         Color_t frame_color;
-        m_frame_layer->GetColorTransformAtFrame(m_timeline_position, frame_color);
-        m_frame_layer->GetBlendModeAtFrame(m_timeline_position, frame_blend);
+        m_frame_layer->GetColorTransformAtFrame(m_builder.iterator, frame_color);
+        m_frame_layer->GetBlendModeAtFrame(m_builder.iterator, frame_blend);
 
         if (matrix.has_value()) {
             if (m_matrix_tweener) {
                 DOM::Utils::MATRIX2D transform_matrix;
-                m_matrix_tweener->GetGeometricTransform(m_base_tween, m_frame_position, transform_matrix);
+                m_matrix_tweener->GetGeometricTransform(m_base_tween, m_position, transform_matrix);
 
                 *matrix = *matrix * transform_matrix;
             }
         } else if (m_matrix_tweener) {
             matrix = DOM::Utils::MATRIX2D();
-            m_matrix_tweener->GetGeometricTransform(m_base_tween, m_frame_position, *matrix);
+            m_matrix_tweener->GetGeometricTransform(m_base_tween, m_position, *matrix);
         }
 
         if (m_rigging_frame) {
-            m_rigging_frame->GetRigParent(m_frame_position, rigging_layer.m_Ptr);
+            m_rigging_frame->GetRigParent(m_position, rigging_layer.m_Ptr);
         }
 
         if (rigging_layer) {
             DOM::Utils::RIG_PROPERTIES props;
-            m_rigging_frame->GetRigProperties(m_timeline_position, props);
+            uint32_t position = m_builder.iterator;
+            m_rigging_frame->GetRigProperties(position, props);
             matrix = *matrix * props.matrix;
         }
 
         if (frame_color.Identity()) {
             if (m_color_tweener) {
                 color = DOM::Utils::COLOR_MATRIX();
-                m_color_tweener->GetColorMatrix(m_base_tween, m_frame_position, *color);
+                m_color_tweener->GetColorMatrix(m_base_tween, m_position, *color);
             }
         } else {
             color = frame_color;
@@ -248,8 +250,7 @@ namespace Animate::Publisher {
     }
 
     void FrameBuilder::Next() {
-        m_frame_position++;
-        m_timeline_position++;
+        m_position++;
         m_static_elements.Update();
         UpdateShapeTweener();
     }
@@ -347,6 +348,11 @@ namespace Animate::Publisher {
                 movieClipElement->GetBlendMode(element.blend_mode);
             }
 
+            // Looping params
+            if (graphicItem) {
+                librarySymbol.looping = LoopingContext(graphicItem);
+            }
+
             if (mediaItem) {
                 AutoPtr<IFCMUnknown> mediaInfo;
                 mediaItem->GetMediaInfo(mediaInfo.m_Ptr);
@@ -395,7 +401,7 @@ namespace Animate::Publisher {
             FCMListPtr groupElements;
             groupedElemenets->GetMembers(groupElements.m_Ptr);
 
-            DeclareFrameElements(groupElements, matrix);
+            DeclareFrameElements(groupElements, matrix, true);
             return;
         }
 
@@ -415,42 +421,16 @@ namespace Animate::Publisher {
         element.matrix = matrix;
         element.color = color;
 
-        // Looping params
-        if (graphicItem) {
-            AnimationLoopMode mode;
-            graphicItem->GetLoopMode(mode);
-
-            switch (mode) {
-                case AnimationLoopMode::ANIMATION_PLAY_ONCE:
-                    if (libraryElement) {
-                        AutoPtr<DOM::ILibraryItem> libraryItem;
-                        libraryElement->GetLibraryItem(libraryItem.m_Ptr);
-                        AutoPtr<DOM::LibraryItem::ISymbolItem> symbolLibraryItem = libraryItem;
-                        if (symbolLibraryItem) {
-                            AutoPtr<DOM::ITimeline> itemTimeline;
-                            symbolLibraryItem->GetTimeLine(itemTimeline.m_Ptr);
-                            itemTimeline->GetMaxFrameCount(element.duration);
-                        }
-                    }
-                    break;
-
-                case AnimationLoopMode::ANIMATION_LOOP:
-                case AnimationLoopMode::ANIMATION_SINGLE_FRAME:
-                default:
-                    break;
-            }
-        }
-
         m_elements.push_back(element);
         m_keyframe_static_state = StaticElementsState::Invalid;
     }
 
     bool FrameBuilder::operator==(const FrameBuilder& builder) const {
         Color_t color_a;
-        m_frame_layer->GetColorTransformAtFrame(m_timeline_position, color_a);
+        m_frame_layer->GetColorTransformAtFrame(m_builder.iterator, color_a);
 
         Color_t color_b;
-        builder.m_frame_layer->GetColorTransformAtFrame(m_timeline_position, color_b);
+        builder.m_frame_layer->GetColorTransformAtFrame(m_builder.iterator, color_b);
 
         // Comparing color transforms of frames
         constexpr size_t colorMatrixSize = sizeof(color_a.colorArray) / sizeof(FCM::Float);
@@ -461,10 +441,10 @@ namespace Animate::Publisher {
 
         // Comparing frame blend modes
         FCM::BlendMode blend_a;
-        m_frame_layer->GetBlendModeAtFrame(m_timeline_position, blend_a);
+        m_frame_layer->GetBlendModeAtFrame(m_builder.iterator, blend_a);
 
         FCM::BlendMode blend_b;
-        builder.m_frame_layer->GetBlendModeAtFrame(m_timeline_position, blend_b);
+        builder.m_frame_layer->GetBlendModeAtFrame(m_builder.iterator, blend_b);
         if (blend_a != blend_b)
             return false;
 

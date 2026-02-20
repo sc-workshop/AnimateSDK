@@ -34,6 +34,10 @@ namespace Animate {
         size_t CPicObj_IsButton = 0;
         size_t CPicSprite_GetName = 0;
 
+        // And GetFrameEndOffset for graphic symbols...
+        // VTable offset
+        size_t CPicGraphic_stageFrameEndOffset = 0;
+
     private:
         bool m_initialized = true;
     };

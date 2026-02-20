@@ -20,6 +20,7 @@ namespace Animate {
     #else
         // Animate 2024
         if (major == 24) {
+            CPicGraphic_stageFrameEndOffset = 262;
             CPicPage_Is9SliceEnabled = 1528;
             CPicPage_9SliceGuides = 1532;
 
@@ -31,6 +32,7 @@ namespace Animate {
         }
 
         if (major >= 21) {
+            CPicGraphic_stageFrameEndOffset = 262;
             CPicPage_Is9SliceEnabled = 1408;
             CPicPage_9SliceGuides = 1412;
 

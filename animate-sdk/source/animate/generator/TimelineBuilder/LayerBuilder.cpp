@@ -17,7 +17,26 @@ namespace Animate::Publisher {
 
         normal_layer->GetKeyFrames(m_keyframes.m_Ptr);
         m_keyframes->Count(m_keyframeCount);
-        UpdateFrame();
+
+        // Should get right keyframe index if start frame is non-zero
+        if (context.iterator != 0) {
+            uint32_t total_duration = 0;
+            for (uint32_t i = 0; m_keyframeCount > i; i++) {
+                FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[i];
+                uint32_t frame_duration = 0;
+                frame->GetDuration(frame_duration);
+
+                if (total_duration + frame_duration > context.iterator) {
+                    m_keyframeIndex = i;
+                    UpdateFrame(context.iterator - total_duration);
+                    break;
+                }
+
+                total_duration += frame_duration;
+            }
+        } else {
+            UpdateFrame();
+        }
 
         FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = unknownLayer;
         if (maskLayer) {
@@ -29,9 +48,9 @@ namespace Animate::Publisher {
         }
     }
 
-    void LayerBuilder::UpdateFrame() {
+    void LayerBuilder::UpdateFrame(uint32_t offset) {
         FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[m_keyframeIndex];
-        frameBuilder.Update(m_layer, frame);
+        frameBuilder.Update(m_layer, frame, offset);
     }
 
     void LayerBuilder::AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type) {
@@ -44,11 +63,10 @@ namespace Animate::Publisher {
         bool activeFrame = (bool) frameBuilder;
 
         frameBuilder.Next();
-        m_position++;
 
         // if current frame not valid anymore but layer is still has more keyframes to reading
         if (m_keyframeCount != 0) {
-            if (!frameBuilder && m_duration > m_position) {
+            if (!frameBuilder && m_duration > m_context.iterator) {
                 m_keyframeIndex++;
                 m_context.frameUpdated = true;
                 UpdateFrame();
@@ -120,7 +138,6 @@ namespace Animate::Publisher {
                                      LayerBuilderContext& build_context,
                                      std::vector<LayerBuilder>& layers,
                                      SharedMovieclipWriter& writer) {
-        // First iteration with the most of logic
         size_t layer_index = layers.size();
         for (size_t i = 0; layers.size() > i; i++) {
             size_t current_layer_index = --layer_index;
@@ -166,20 +183,29 @@ namespace Animate::Publisher {
                 }
             }
         }
-
-        // Final iteration to update builder states
-        build_context.frameUpdated = false;
-        for (LayerBuilder& layer : layers) {
-            if (layer) {
-                layer.Next();
-            }
-        }
     }
 
-    void LayerBuilder::ProcessLayers(
-        SymbolContext& symbol, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer, uint32_t range) {
-        for (uint32_t t = 0; range > t; t++) {
+    void LayerBuilder::BuildLayers(SymbolContext& symbol,
+                                   LayerBuilderContext& build_context,
+                                   std::vector<LayerBuilder>& layers,
+                                   SharedMovieclipWriter& writer) {
+        while (build_context.iterator.Active()) {
             LayerBuilder::ProcessLayers(symbol, build_context, layers, writer);
+
+            // Update timeline state
+            for (auto& layer : layers) {
+                if (layer.IsMaskLayer())
+                    ++layer.maskContext->context.iterator;
+            }
+            ++build_context.iterator;
+
+            // Update layers state
+            build_context.frameUpdated = false;
+            for (LayerBuilder& layer : layers) {
+                if (layer) {
+                    layer.Next();
+                }
+            }
             writer.Next();
         }
     }
@@ -204,7 +230,7 @@ namespace Animate::Publisher {
     }
 
     bool LayerBuilder::IsStatic() const {
-        if (m_keyframeCount > 1)
+        if (m_keyframeCount > 1 && m_context.iterator.Duration() > 1)
             return false;
 
         if (IsMaskLayer())

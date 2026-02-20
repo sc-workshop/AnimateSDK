@@ -61,6 +61,8 @@ namespace Animate::Publisher {
 
         // Creating build context and creating builder wrapper
         LayerBuilderContext context;
+        context.iterator = FrameIterator(symbol.looping, duration);
+
         std::vector<LayerBuilder> layers;
         SymbolGenerator::GetLayerBuilder(symbol, context, layersList, m_resources, layers);
 
@@ -85,8 +87,8 @@ namespace Animate::Publisher {
             return shape;
         } else {
             wk::Ref<SharedMovieclipWriter> movieclip = m_resources.m_writer.AddMovieclip(symbol);
-            movieclip->InitializeTimeline(m_resources.document_fps, duration);
-            LayerBuilder::ProcessLayers(symbol, context, layers, *movieclip, duration);
+            movieclip->InitializeTimeline(m_resources.document_fps, context.iterator.Duration());
+            LayerBuilder::BuildLayers(symbol, context, layers, *movieclip);
 
             return movieclip;
         }
