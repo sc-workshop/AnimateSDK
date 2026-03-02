@@ -13,7 +13,6 @@ namespace Animate::Publisher {
 
     public:
         virtual DOM::Utils::MATRIX2D Transformation() const { return m_matrix; }
-
         virtual void Transform(const DOM::Utils::MATRIX2D& matrix) { m_matrix = m_matrix * matrix; }
 
     public:

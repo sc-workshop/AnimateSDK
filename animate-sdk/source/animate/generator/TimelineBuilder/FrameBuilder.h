@@ -5,6 +5,7 @@
 #include "AnimateWriter.h"
 #include "FrameElements/FilledElement.h"
 #include "FrameElements/StaticElementsGroup.h"
+#include "FrameIterator.h"
 #include "animate/publisher/symbol/LoopingContext.h"
 #include "animate/publisher/symbol/SymbolContext.h"
 
@@ -16,10 +17,16 @@ namespace Animate::Publisher {
     using Color_t = DOM::Utils::COLOR_MATRIX;
 
     struct FrameBuilderElement {
-    public:
-        // Elements data
+        // Element id
         ResourceReference reference;
+
+        // Local symbol iterator
+        std::optional<FrameIterator> iterator;
+
+        // Element blending
         FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
+
+        // Element instance name
         std::u16string name;
 
         // Optional basic transforms for each frame element
@@ -29,7 +36,11 @@ namespace Animate::Publisher {
         // Count of playing frames
         uint32_t duration = std::numeric_limits<uint32_t>::max();
 
-        bool isStatic = false;
+        // Is rasterized vector sprite
+        bool isRasterized : 1 = false;
+
+        // Is single frame copy of symbol
+        bool isStatic : 1 = false;
     };
 
     class FrameBuilder {
@@ -49,8 +60,8 @@ namespace Animate::Publisher {
         LayerBuilderContext& m_builder;
         ResourcePublisher& m_resources;
 
-        // Basic frame data
-        FCM::AutoPtr<DOM::ILayer2> m_frame_layer;
+        // Frame layer
+        FCM::AutoPtr<DOM::ILayer2> m_layer;
 
         // Current keyframe duration
         uint32_t m_duration = 0;
@@ -71,9 +82,12 @@ namespace Animate::Publisher {
         FCM::AutoPtr<DOM::Service::Tween::IColorTweener> m_color_tweener = nullptr;
         FCM::AutoPtr<DOM::Service::Tween::IShapeTweener> m_shape_tweener = nullptr;
 
-        // Rigging
+        // Current frame
         // Mostly for child layers feature
-        FCM::AutoPtr<DOM::IFrame1> m_rigging_frame = nullptr;
+        FCM::AutoPtr<DOM::IFrame1> m_frame = nullptr;
+
+        // Array of raw frame elements wrappers
+        FCM::FCMListPtr m_frame_elements;
 
         // Graphic Batching state for filled shapes and sprites
         StaticElementsState m_static_state = StaticElementsState::None;           // State of current frame
@@ -87,6 +101,8 @@ namespace Animate::Publisher {
             m_builder(builder) {};
 
         void Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset = 0);
+
+        void UpdateFrameElements(uint32_t offset = 0);
 
         void UpdateShapeTweener();
 
@@ -127,8 +143,15 @@ namespace Animate::Publisher {
     private:
         void InvalidateStaticState();
 
-        void DeclareFrameElements(FCM::FCMListPtr frameElements, std::optional<Matrix_t> base_transform = std::nullopt, bool reverse = false);
+        void DeclareFrameElements(FCM::FCMListPtr frameElements,
+                                  std::optional<Matrix_t> base_transform = std::nullopt,
+                                  bool reverse = false,
+                                  uint32_t offset = 0);
 
-        void DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement, std::optional<Matrix_t> base_transform = std::nullopt);
+        void DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
+                                 FrameBuilderElement& element,
+                                 std::optional<Matrix_t> base_transform = std::nullopt,
+                                 bool singleFrame = false,
+                                 uint32_t offset = 0);
     };
 }

@@ -19,6 +19,8 @@ namespace Animate::Publisher {
         virtual ~SharedShapeWriter() = default;
 
     public:
+        virtual WriterType Type() const { return WriterType::Graphic; }
+
         virtual void AddGraphic(const BitmapElement& item) = 0;
 
         virtual void AddFilledElement(const FilledElement& shape) = 0;

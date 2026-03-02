@@ -108,9 +108,6 @@ namespace Animate::Publisher {
 
         ResourceReference AddMediaSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item, bool required);
 
-        ResourceReference FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer,
-                                         bool required,
-                                         Library& library,
-                                         std::optional<FCM::FCMListPtr> filters = std::nullopt);
+        ResourceReference FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer, bool required, std::optional<FCM::FCMListPtr> filters = std::nullopt);
     };
 }

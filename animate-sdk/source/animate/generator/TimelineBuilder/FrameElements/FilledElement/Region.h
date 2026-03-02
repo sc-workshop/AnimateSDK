@@ -12,14 +12,22 @@ namespace Animate::Publisher {
     class FilledElementRegion {
     public:
         struct SolidFill {
+        public:
+            bool operator==(const SolidFill& other) const;
+
+        public:
             DOM::Utils::COLOR color;
         };
 
         struct BitmapFill {
+        public:
+            bool operator==(const BitmapFill& other) const;
+
+        public:
             BitmapFill(SymbolContext& context, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media, const DOM::Utils::MATRIX2D& matrix);
 
             BitmapElement bitmap;
-            bool is_clipped;
+            bool is_clipped = false;
         };
 
         struct GradientFill {
@@ -29,6 +37,8 @@ namespace Animate::Publisher {
                 Radial
             };
 
+            bool operator==(const GradientFill& other) const;
+
         public:
             DOM::Utils::MATRIX2D matrix;
             DOM::FillStyle::GradientSpread spread;
@@ -37,6 +47,9 @@ namespace Animate::Publisher {
             std::vector<DOM::Utils::GRADIENT_COLOR_POINT> points;
             int32_t focal_point;
         };
+
+    public:
+        using FillStyle = std::variant<SolidFill, BitmapFill, GradientFill>;
 
     public:
         enum class ShapeType {
@@ -61,7 +74,7 @@ namespace Animate::Publisher {
 
     public:
         ShapeType type;
-        std::variant<SolidFill, BitmapFill, GradientFill> style;
+        FillStyle style;
 
         FilledElementPath contour;
         std::vector<FilledElementPath> holes;

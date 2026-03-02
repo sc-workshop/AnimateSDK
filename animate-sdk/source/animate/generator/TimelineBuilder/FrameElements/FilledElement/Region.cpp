@@ -100,66 +100,18 @@ namespace Animate::Publisher {
     }
 
     bool FilledElementRegion::operator==(const FilledElementRegion& other) const {
-        if (type != other.type) {
+        if (type != other.type)
             return false;
-        }
-        if (contour != other.contour || holes.size() != other.holes.size()) {
+
+        if (contour != other.contour || holes.size() != other.holes.size())
             return false;
-        }
 
-        switch (type) {
-            case ShapeType::SolidColor: {
-                const SolidFill& fill = std::get<SolidFill>(style);
-                const SolidFill& other_fill = std::get<SolidFill>(other.style);
-
-                if (fill.color != other_fill.color)
-                    return false;
-            } break;
-            case ShapeType::Bitmap: {
-                const BitmapFill fill = std::get<BitmapFill>(style);
-                const BitmapFill other_fill = std::get<BitmapFill>(other.style);
-
-                if (fill.is_clipped != other_fill.is_clipped)
-                    return false;
-                if (!(fill.bitmap == other_fill.bitmap))
-                    return false;
-            } break;
-            case ShapeType::GradientColor: {
-                const GradientFill fill = std::get<GradientFill>(style);
-                const GradientFill other_fill = std::get<GradientFill>(other.style);
-
-                if (fill.type != other_fill.type)
-                    return false;
-
-                if (fill.spread != other_fill.spread)
-                    return false;
-
-                if (fill.matrix != other_fill.matrix)
-                    return false;
-
-                if (fill.points.size() != other_fill.points.size())
-                    return false;
-
-                if (fill.focal_point != other_fill.focal_point)
-                    return false;
-
-                for (size_t i = 0; fill.points.size() > i; i++) {
-                    if (fill.points[i].pos != other_fill.points[i].pos)
-                        return false;
-
-                    if (fill.points[i].color != other_fill.points[i].color)
-                        return false;
-                }
-
-            } break;
-            default:
-                return false;
-        }
+        if (style != other.style)
+            return false;
 
         for (uint32_t i = 0; holes.size() > i; i++) {
-            if (holes[i] != other.holes[i]) {
+            if (holes[i] != other.holes[i])
                 return false;
-            }
         }
 
         return true;
@@ -200,5 +152,49 @@ namespace Animate::Publisher {
         for (FilledElementPath& hole : holes) {
             hole.Transform(matrix);
         }
+    }
+
+    bool FilledElementRegion::SolidFill::operator==(const SolidFill& other) const {
+        if (color != other.color)
+            return false;
+
+        return true;
+    }
+
+    bool FilledElementRegion::BitmapFill::operator==(const BitmapFill& other) const {
+        if (is_clipped != other.is_clipped)
+            return false;
+
+        if (!(bitmap == other.bitmap))
+            return false;
+
+        return true;
+    }
+
+    bool FilledElementRegion::GradientFill::operator==(const GradientFill& other) const {
+        if (type != other.type)
+            return false;
+
+        if (spread != other.spread)
+            return false;
+
+        if (matrix != other.matrix)
+            return false;
+
+        if (points.size() != other.points.size())
+            return false;
+
+        if (focal_point != other.focal_point)
+            return false;
+
+        for (size_t i = 0; points.size() > i; i++) {
+            if (points[i].pos != other.points[i].pos)
+                return false;
+
+            if (points[i].color != other.points[i].color)
+                return false;
+        }
+
+        return true;
     }
 }

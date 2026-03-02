@@ -98,7 +98,7 @@ namespace Animate::Publisher {
         item->GetTimeLine(timeline.m_Ptr);
 
         auto writer = symbolGenerator.Generate(symbol, timeline, required);
-        return FinalizeWriter(writer, required, m_movieClips);
+        return FinalizeWriter(writer, required);
     };
 
     ResourceReference ResourcePublisher::AddMediaSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item, bool required) {
@@ -113,7 +113,7 @@ namespace Animate::Publisher {
             BitmapElement element(symbol, media_item, DOM::Utils::MATRIX2D());
             writer->AddGraphic(element);
 
-            return FinalizeWriter(writer, required, m_graphics);
+            return FinalizeWriter(writer, required);
         }
 
         return {};
@@ -139,7 +139,7 @@ namespace Animate::Publisher {
         auto writer = m_writer.AddTextField(symbol);
         TextFieldGenerator::Generate(writer, textfieldData);
 
-        return FinalizeWriter(writer, false, m_textFields, filters);
+        return FinalizeWriter(writer, false, filters);
     }
 
     ResourceReference ResourcePublisher::AddGroup(SymbolContext& symbol, const StaticElementsGroup& elements, bool required) {
@@ -148,13 +148,10 @@ namespace Animate::Publisher {
 
         writer->AddGroup(symbol, elements);
 
-        return FinalizeWriter(writer, required, m_graphics);
+        return FinalizeWriter(writer, required);
     }
 
-    ResourceReference ResourcePublisher::FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer,
-                                                        bool required,
-                                                        Library& library,
-                                                        std::optional<FCM::FCMListPtr> filters) {
+    ResourceReference ResourcePublisher::FinalizeWriter(wk::Ref<IDisplayObjectWriter> writer, bool required, std::optional<FCM::FCMListPtr> filters) {
         if (filters.has_value()) {
             uint32_t filterCount = 0;
             filters.value()->Count(filterCount);
@@ -174,12 +171,25 @@ namespace Animate::Publisher {
             }
         }
 
+        Library* targetLibrary = nullptr;
+        switch (writer->Type()) {
+            case WriterType::Graphic:
+                targetLibrary = &m_graphics;
+                break;
+            case WriterType::MovieClip:
+                targetLibrary = &m_movieClips;
+                break;
+            case WriterType::TextField:
+                targetLibrary = &m_textFields;
+                break;
+        }
+
         writer->PreFinalize();
 
         uint16_t identifier = m_id++;
         std::size_t hash = writer->HashCode();
-        auto library_pair = library.find(hash);
-        bool in_library = library_pair != library.end();
+        auto library_pair = targetLibrary->find(hash);
+        bool in_library = library_pair != targetLibrary->end();
         if (in_library) {
             identifier = library_pair->second;
         }
@@ -190,7 +200,7 @@ namespace Animate::Publisher {
         }
 
         if (writer_success) {
-            library[hash] = identifier;
+            targetLibrary->try_emplace(hash, identifier);
         }
 
         return writer_success || in_library ? identifier : 0xFFFF;

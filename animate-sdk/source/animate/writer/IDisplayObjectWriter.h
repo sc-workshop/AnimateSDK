@@ -18,6 +18,12 @@ namespace Animate::Publisher {
         size_t operator()(const std::size_t& key) const { return key; }
     };
 
+    enum class WriterType {
+        Graphic = 0,
+        MovieClip,
+        TextField
+    };
+
     class IDisplayObjectWriter {
     public:
         IDisplayObjectWriter(SymbolContext& context) :
@@ -28,6 +34,8 @@ namespace Animate::Publisher {
         virtual void SetGlowFilter(const GlowFilter&) {};
 
     public:
+        virtual WriterType Type() const = 0;
+
         std::size_t HashCode() const {
             if (!m_hash_code) {
                 m_hash_code = GenerateHash();

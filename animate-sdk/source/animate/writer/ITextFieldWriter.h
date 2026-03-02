@@ -36,6 +36,8 @@ namespace Animate::Publisher {
         virtual ~SharedTextFieldWriter() = default;
 
     public:
+        virtual WriterType Type() const { return WriterType::TextField; }
+
         virtual void Initialize(const TextElement& textfield) = 0;
         virtual void AddParagraph(const TextParagraph& paragraph) = 0;
     };

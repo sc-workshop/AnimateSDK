@@ -6,7 +6,7 @@ file(GLOB_RECURSE SOURCES source/*.cpp)
 
 set(TARGET AnimateSDK)
 
-add_library(${TARGET} STATIC)	
+add_library(${TARGET} STATIC)
 add_library(Adobe::Animate ALIAS ${TARGET})
 set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "AnimateSDK")
 
@@ -24,11 +24,11 @@ wk_include_locale()
 
 file(GLOB_RECURSE PUBLIC_HEADERS include/*.h)
 target_sources(${TARGET} PRIVATE ${PUBLIC_HEADERS})
-target_include_directories(${TARGET} PUBLIC 
+target_include_directories(${TARGET} PUBLIC
     include
 )
 
-target_link_libraries(${TARGET} PUBLIC 
+target_link_libraries(${TARGET} PUBLIC
     wk::core
 )
 

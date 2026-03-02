@@ -152,7 +152,7 @@ namespace FCM {
         if (dladdr((void*) (CurrentPath), &info)) {
             modulePath = (std::filesystem::path(info.dli_fname).parent_path()) / "../../../";
         } else {
-            wk::Exception("Failed to get module path");
+            wk::Exception("Failed to get module contour");
         }
 #else
     #error not implemented

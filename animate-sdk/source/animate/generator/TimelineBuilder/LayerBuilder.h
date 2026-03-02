@@ -54,7 +54,23 @@ namespace Animate::Publisher {
         // Symbol building context
         LayerBuilderContext& m_context;
 
+        /**
+         * @brief Updates FrameBuilder`s frame to specific frame
+         * @param target_frame Timeline frame index
+         */
+        void UpdateFrameTo(uint32_t target_frame);
+
+        /**
+         * @brief Updates FrameBuilder`s state
+         * @param offset Frame offset in keyframe space
+         */
         void UpdateFrame(uint32_t offset = 0);
+
+        /**
+         * @brief Updates masked layer state for MovieClip writer
+         * @param writer target writer
+         * @param type Masked layer state
+         */
         void AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type);
 
     public:
@@ -97,7 +113,7 @@ namespace Animate::Publisher {
 
         static void BuildLayers(SymbolContext& context, LayerBuilderContext& build_context, std::vector<LayerBuilder>& layers, SharedMovieclipWriter& writer);
 
-        static const std::optional<StaticElementsGroup> ProcessStaticLayers(std::vector<LayerBuilder>& layers);
+        static const std::optional<StaticElementsGroup> BuildStaticLayers(std::vector<LayerBuilder>& layers);
     };
 
 }

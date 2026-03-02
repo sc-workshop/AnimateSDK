@@ -8,7 +8,7 @@ namespace Animate::Publisher {
         using LoopMode = DOM::FrameElement::AnimationLoopMode;
 
     public:
-        LoopingContext();
+        LoopingContext(LoopMode mode = LoopMode::ANIMATION_LOOP, uint32_t start = 0, uint32_t end = 0xFFFFFFFF);
         LoopingContext(FCM::AutoPtr<DOM::FrameElement::IGraphic> graphic);
 
     public:
@@ -19,6 +19,6 @@ namespace Animate::Publisher {
     private:
         LoopMode m_mode = LoopMode::ANIMATION_LOOP;
         uint32_t m_start_frame = 0;
-        uint32_t m_end_frame = 0;
+        uint32_t m_end_frame = 0xFFFFFFFF;
     };
 }

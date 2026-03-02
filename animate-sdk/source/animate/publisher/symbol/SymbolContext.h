@@ -24,13 +24,13 @@ namespace Animate::Publisher {
 
     public:
         // Library item name like 'folder/folder2/item'
-        const std::u16string name;
+        std::u16string name;
 
         // Linkage name or name which is will be used to export item with
-        const std::string linkage_name;
+        std::string linkage_name;
 
         // Library item symbol type
-        const SymbolType type = SymbolType::Unknown;
+        SymbolType type = SymbolType::Unknown;
 
         // Current frame index while processing in LayerBuilder
         // Useful for exception handling

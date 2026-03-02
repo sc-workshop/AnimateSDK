@@ -20,20 +20,7 @@ namespace Animate::Publisher {
 
         // Should get right keyframe index if start frame is non-zero
         if (context.iterator != 0) {
-            uint32_t total_duration = 0;
-            for (uint32_t i = 0; m_keyframeCount > i; i++) {
-                FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[i];
-                uint32_t frame_duration = 0;
-                frame->GetDuration(frame_duration);
-
-                if (total_duration + frame_duration > context.iterator) {
-                    m_keyframeIndex = i;
-                    UpdateFrame(context.iterator - total_duration);
-                    break;
-                }
-
-                total_duration += frame_duration;
-            }
+            UpdateFrameTo(context.iterator);
         } else {
             UpdateFrame();
         }
@@ -45,6 +32,23 @@ namespace Animate::Publisher {
 
             maskContext = wk::CreateRef<MaskedLayerContext>();
             SymbolGenerator::GetLayerBuilder(m_symbol, maskContext->context, maskedLayers, m_resources, maskContext->layers);
+        }
+    }
+
+    void LayerBuilder::UpdateFrameTo(uint32_t target_frame) {
+        uint32_t total_duration = 0;
+        for (uint32_t i = 0; m_keyframeCount > i; i++) {
+            FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[i];
+            uint32_t frame_duration = 0;
+            frame->GetDuration(frame_duration);
+
+            if (total_duration + frame_duration > target_frame) {
+                m_keyframeIndex = i;
+                UpdateFrame(target_frame - total_duration);
+                break;
+            }
+
+            total_duration += frame_duration;
         }
     }
 
@@ -60,18 +64,33 @@ namespace Animate::Publisher {
     }
 
     void LayerBuilder::Next() {
-        bool activeFrame = (bool) frameBuilder;
+        // Check if frame builder is valid ahead of time
+        bool isValidBuilder = (bool) frameBuilder;
 
+        // Update frame builder
         frameBuilder.Next();
 
-        // if current frame not valid anymore but layer is still has more keyframes to reading
-        if (m_keyframeCount != 0) {
-            if (!frameBuilder && m_duration > m_context.iterator) {
-                m_keyframeIndex++;
+        if (m_context.iterator.Active()) {
+            // Handling looping propeties
+            // Check for current frame index mismatch
+            if (m_context.iterator != m_symbol.current_frame_index + 1) {
+                // If frame differs from what we expect here, we should update keyframe index as well
                 m_context.frameUpdated = true;
-                UpdateFrame();
-            } else if (activeFrame && !frameBuilder) {
-                m_context.frameUpdated = true;
+                UpdateFrameTo(m_context.iterator);
+                return;
+            }
+
+            // Handling cases when current frame not valid anymore but layer is still has more keyframes to reading
+            if (m_keyframeCount != 0 && !frameBuilder) {
+                if (m_duration > m_context.iterator) {
+                    m_context.frameUpdated = true;
+
+                    m_keyframeIndex++;
+                    UpdateFrame();
+                } else if (isValidBuilder) {
+                    // Frame builder become invalid which means that frame was updated
+                    m_context.frameUpdated = true;
+                }
             }
         }
     }
@@ -103,6 +122,16 @@ namespace Animate::Publisher {
 
     void LayerBuilder::ReleaseStatic() {
         frameBuilder.ReleaseStatic(std::u16string(u""));
+    }
+
+    bool LayerBuilder::IsStatic() const {
+        if (m_keyframeCount > 1 && m_context.iterator.Duration() > 1)
+            return false;
+
+        if (IsMaskLayer())
+            return false;
+
+        return frameBuilder.IsStatic();
     }
 
     void LayerBuilder::ProcessLayerFrame(LayerBuilderContext& context,
@@ -192,7 +221,7 @@ namespace Animate::Publisher {
         while (build_context.iterator.Active()) {
             LayerBuilder::ProcessLayers(symbol, build_context, layers, writer);
 
-            // Update timeline state
+            // Update timeline context state
             for (auto& layer : layers) {
                 if (layer.IsMaskLayer())
                     ++layer.maskContext->context.iterator;
@@ -210,7 +239,7 @@ namespace Animate::Publisher {
         }
     }
 
-    const std::optional<StaticElementsGroup> LayerBuilder::ProcessStaticLayers(std::vector<LayerBuilder>& layers) {
+    const std::optional<StaticElementsGroup> LayerBuilder::BuildStaticLayers(std::vector<LayerBuilder>& layers) {
         size_t layer_index = layers.size();
         for (size_t i = 0; layers.size() > i; i++) {
             size_t current_layer_index = --layer_index;
@@ -227,15 +256,5 @@ namespace Animate::Publisher {
         }
 
         return std::nullopt;
-    }
-
-    bool LayerBuilder::IsStatic() const {
-        if (m_keyframeCount > 1 && m_context.iterator.Duration() > 1)
-            return false;
-
-        if (IsMaskLayer())
-            return false;
-
-        return frameBuilder.IsStatic();
     }
 }

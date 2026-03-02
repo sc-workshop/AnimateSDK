@@ -79,7 +79,7 @@ namespace Animate::Publisher {
         // Trying to guess if we can use that symbol as a static shape
         if (isStatic) {
             wk::Ref<SharedShapeWriter> shape = m_resources.m_writer.AddShape(symbol);
-            const auto group = LayerBuilder::ProcessStaticLayers(layers);
+            const auto group = LayerBuilder::BuildStaticLayers(layers);
             if (group.has_value()) {
                 shape->AddGroup(symbol, group.value());
             }

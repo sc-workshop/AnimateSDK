@@ -3,7 +3,8 @@
 #include "animate/publisher/wheelchair/AdobeWheelchair.h"
 
 namespace Animate::Publisher {
-    LoopingContext::LoopingContext() {
+    LoopingContext::LoopingContext(LoopMode mode, uint32_t start, uint32_t end) : m_mode(mode), m_start_frame(start), m_end_frame(end) {
+
     }
 
     LoopingContext::LoopingContext(FCM::AutoPtr<DOM::FrameElement::IGraphic> graphic) {

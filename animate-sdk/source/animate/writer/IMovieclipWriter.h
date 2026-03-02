@@ -21,6 +21,8 @@ namespace Animate::Publisher {
         uint32_t m_position = 0;
 
     public:
+        virtual WriterType Type() const { return WriterType::MovieClip; }
+
         virtual void Next() {
             m_position++;
             m_symbol.current_frame_index++;
