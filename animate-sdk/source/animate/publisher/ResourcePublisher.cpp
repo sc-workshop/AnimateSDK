@@ -72,6 +72,7 @@ namespace Animate::Publisher {
     }
 
     ResourceReference ResourcePublisher::AddLibraryItem(SymbolContext& symbol, FCM::AutoPtr<DOM::ILibraryItem> item, bool required) {
+        // Cache lookup
         auto cached = m_libraryCache.find(symbol);
         if (cached != m_libraryCache.end()) {
             return cached->second;
@@ -120,6 +121,7 @@ namespace Animate::Publisher {
     }
 
     ResourceReference ResourcePublisher::AddModifier(MaskedLayerState type) {
+        // Cache lookup
         ModifierDict::const_iterator pos = m_modifierCache.find(type);
         if (pos != m_modifierCache.end()) {
             return pos->second;

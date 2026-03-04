@@ -18,6 +18,7 @@ namespace Animate::Publisher {
 
     public:
         explicit operator bool() const { return !IsNull(); }
+        bool operator==(const ResourceReference& other) const { return id == other.id; }
 
     private:
         uint16_t id;

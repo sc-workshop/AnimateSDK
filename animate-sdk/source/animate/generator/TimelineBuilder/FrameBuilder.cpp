@@ -286,8 +286,11 @@ namespace Animate::Publisher {
         m_elements.reserve(frameElementsCount);
 
         auto addElement = [&](uint32_t index) {
-            auto& element = m_elements.emplace_back();
+            FrameBuilderElement element;
             DeclareFrameElement(frameElements[index], element, base_transform, false, offset);
+
+            if (element.reference)
+                m_elements.push_back(element);
         };
 
         if (reverse) {
@@ -379,18 +382,18 @@ namespace Animate::Publisher {
             // Looping params
             LoopingContext::LoopMode loopMode = LoopingContext::LoopMode::ANIMATION_LOOP;
             bool hasLoopMode = false;
-            bool singleFrame = false;
+            bool singleFrameLoop = false;
             if (graphicItem) {
                 librarySymbol.looping = LoopingContext(graphicItem);
                 bool hasEndFrame = librarySymbol.looping.GetEndFrame() != 0xFFFFFFFF;
                 loopMode = librarySymbol.looping.GetMode();
-                singleFrame = loopMode == LoopingContext::LoopMode::ANIMATION_SINGLE_FRAME;
+                singleFrameLoop = loopMode == LoopingContext::LoopMode::ANIMATION_SINGLE_FRAME;
                 hasLoopMode = loopMode != LoopingContext::LoopMode::ANIMATION_LOOP;
 
                 // Set our own end frame to export less frames if user has not already set this
                 if (hasLoopMode && !hasEndFrame) {
                     librarySymbol.looping =
-                        LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame(), m_duration - singleFrame ? 0 : offset);
+                        LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame(), m_duration - singleFrameLoop ? 0 : offset);
                 }
             }
 
@@ -426,7 +429,7 @@ namespace Animate::Publisher {
 
             // Handling nested looping properties
             if (offset != 0) {
-                if (!singleFrame) {
+                if (!singleFrameLoop) {
                     librarySymbol.looping =
                         LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame() + offset, librarySymbol.looping.GetEndFrame());
                 }
@@ -523,17 +526,24 @@ namespace Animate::Publisher {
         if (!reference)
             return;
 
-        FrameBuilderElement& element = m_elements.emplace_back();
-        element.reference = reference;
-        element.name = name;
-        element.isRasterized = true;
+        auto existing = std::find_if(m_elements.begin(), m_elements.end(), [&reference, &name](const FrameBuilderElement& element) {
+            return element.reference == reference && element.name == name && element.isVector;
+        });
+
+        // Add only if there is no such element already
+        if (existing == m_elements.end()) {
+            FrameBuilderElement& element = m_elements.emplace_back();
+            element.reference = reference;
+            element.name = name;
+            element.isVector = true;
+        }
     }
 
     void FrameBuilder::InheritStatic(const FrameBuilder& frame) {
         m_static_elements += frame.StaticElements();
 
         // Remove all already inherited elements
-        std::erase_if(m_elements, [](const FrameBuilderElement& element) { return element.isRasterized; });
+        std::erase_if(m_elements, [](const FrameBuilderElement& element) { return element.isVector; });
     }
 
     bool FrameBuilder::IsStatic() const {

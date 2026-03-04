@@ -36,8 +36,8 @@ namespace Animate::Publisher {
         // Count of playing frames
         uint32_t duration = std::numeric_limits<uint32_t>::max();
 
-        // Is rasterized vector sprite
-        bool isRasterized : 1 = false;
+        // Is vector fill or stroke shape
+        bool isVector : 1 = false;
 
         // Is single frame copy of symbol
         bool isStatic : 1 = false;
