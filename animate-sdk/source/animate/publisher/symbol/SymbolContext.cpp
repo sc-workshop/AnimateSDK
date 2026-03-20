@@ -39,7 +39,8 @@ namespace Animate::Publisher {
     }
 
     bool SymbolContext::operator==(const SymbolContext& other) const {
-        return name == other.name && linkage_name == other.linkage_name && type == other.type;
+        return name == other.name && linkage_name == other.linkage_name && type == other.type && 
+            looping.GetMode() == other.looping.GetMode() && looping.GetStartFrame() == other.looping.GetStartFrame() && looping.GetEndFrame() == other.looping.GetEndFrame();
     }
 
     std::string SymbolContext::GetLinkage(FCM::AutoPtr<DOM::ILibraryItem> symbol) {
