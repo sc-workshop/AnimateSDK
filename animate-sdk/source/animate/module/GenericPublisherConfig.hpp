@@ -7,6 +7,7 @@ namespace Animate::Publisher {
     public:
         virtual void SetDocument(DOM::PIFLADocument document, const FCM::PIFCMDictionary /*settings*/, const FCM::PIFCMDictionary /*publishSettings*/) {
             activeDocument = document;
+            activeDocumentInstance = this;
         }
 
         virtual bool FromDict(const FCM::PIFCMDictionary /*dict*/) { return true; };
@@ -15,5 +16,8 @@ namespace Animate::Publisher {
 
     public:
         DOM::PIFLADocument activeDocument;
+
+    public:
+        static inline GenericPublisherConfig* activeDocumentInstance = nullptr;
     };
 }

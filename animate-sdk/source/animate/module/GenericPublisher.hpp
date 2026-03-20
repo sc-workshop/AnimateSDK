@@ -36,6 +36,8 @@ namespace Animate::Publisher {
             publisher.Publish(config);
 
             config.Reset();
+            GenericPublisherConfig::activeDocumentInstance = nullptr;
+
             return FCM_SUCCESS;
         }
 
