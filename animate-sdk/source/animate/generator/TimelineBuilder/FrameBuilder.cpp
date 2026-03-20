@@ -166,7 +166,7 @@ namespace Animate::Publisher {
         m_frame_elements = FCM::FCMListPtr();
         m_frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, m_frame_elements.m_Ptr);
 
-        DeclareFrameElements(m_frame_elements, std::nullopt, true, offset);
+        DeclareFrameElements(m_frame_elements, std::nullopt, false, offset);
     }
 
     void FrameBuilder::UpdateShapeTweener() {
@@ -391,9 +391,9 @@ namespace Animate::Publisher {
                 hasLoopMode = loopMode != LoopingContext::LoopMode::ANIMATION_LOOP;
 
                 // Set our own end frame to export less frames if user has not already set this
-                if (hasLoopMode && !hasEndFrame) {
+                if (!hasEndFrame) {
                     librarySymbol.looping =
-                        LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame(), m_duration - singleFrameLoop ? 0 : offset);
+                        LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame(), librarySymbol.looping.GetStartFrame() + m_duration);
                 }
             }
 
