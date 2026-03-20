@@ -31,6 +31,10 @@ namespace Animate::Publisher {
             maskLayer->GetChildren(maskedLayers.m_Ptr);
 
             maskContext = wk::CreateRef<MaskedLayerContext>();
+
+            // Copy local iterator to masked layers context
+            maskContext->context.iterator = context.iterator;
+
             SymbolGenerator::GetLayerBuilder(m_symbol, maskContext->context, maskedLayers, m_resources, maskContext->layers);
         }
     }
@@ -233,6 +237,12 @@ namespace Animate::Publisher {
             for (LayerBuilder& layer : layers) {
                 if (layer) {
                     layer.Next();
+                }
+
+                if (layer.IsMaskLayer()) {
+                    for (LayerBuilder& maskedLayer : layer.maskContext->layers) {
+                        maskedLayer.Next();
+                    }
                 }
             }
             writer.Next();
