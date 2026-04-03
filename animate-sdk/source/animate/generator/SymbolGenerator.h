@@ -17,6 +17,8 @@ namespace Animate::Publisher {
         static void GetLayerBuilder(
             SymbolContext& symbol, LayerBuilderContext& context, FCM::FCMListPtr& layers, ResourcePublisher& resources, std::vector<LayerBuilder>& result);
 
+        static void GetLayerCount(FCM::FCMListPtr& layers, uint32_t& count);
+
         SymbolGenerator(ResourcePublisher& resources) :
             m_resources(resources) {}
 

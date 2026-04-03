@@ -11,30 +11,38 @@
 
 namespace Animate::Publisher {
     class ResourcePublisher;
+    class LayerBuilder;
     struct LayerBuilderContext;
 
     using Matrix_t = DOM::Utils::MATRIX2D;
     using Color_t = DOM::Utils::COLOR_MATRIX;
 
     struct FrameBuilderElement {
-        // Element id
-        ResourceReference reference;
+        // Optional symbol context for symbol instances and graphic items
+        std::optional<SymbolContext> symbol = std::nullopt;
 
-        // Local symbol iterator
-        std::optional<FrameIterator> iterator;
-
-        // Element blending
-        FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
+        // Optional color transform
+        std::optional<Color_t> color = std::nullopt;
 
         // Element instance name
         std::u16string name;
 
         // Optional basic transforms for each frame element
         std::optional<Matrix_t> matrix = std::nullopt;
-        std::optional<Color_t> color = std::nullopt;
+
+        // Local symbol iterator
+        // Used for control over creating different versions of same symbol in case of looping properties
+        std::optional<FrameIterator> iterator;
+
+        // Element blending
+        FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
 
         // Count of playing frames
-        uint32_t duration = std::numeric_limits<uint32_t>::max();
+        // Used for optimization purposes to create less object when using looping properties
+        uint32_t framesCount = 0;
+
+        // Element id
+        ResourceReference reference;
 
         // Is vector fill or stroke shape
         bool isVector : 1 = false;
@@ -45,6 +53,8 @@ namespace Animate::Publisher {
 
     class FrameBuilder {
     public:
+        friend LayerBuilder;
+
         enum class StaticElementsState {
             None = 0,
             Invalid,
@@ -59,9 +69,7 @@ namespace Animate::Publisher {
         SymbolContext& m_symbol;
         LayerBuilderContext& m_builder;
         ResourcePublisher& m_resources;
-
-        // Frame layer
-        FCM::AutoPtr<DOM::ILayer2> m_layer;
+        LayerBuilder& m_layer_builder;
 
         // Current keyframe duration
         uint32_t m_duration = 0;
@@ -95,12 +103,13 @@ namespace Animate::Publisher {
         StaticElementsGroup m_static_elements;                                    // Array of sprites and filled shapes gathered for batch process
 
     public:
-        FrameBuilder(SymbolContext& symbol, LayerBuilderContext& builder, ResourcePublisher& resources) :
+        FrameBuilder(SymbolContext& symbol, LayerBuilder& layer, LayerBuilderContext& builder, ResourcePublisher& resources) :
             m_resources(resources),
             m_symbol(symbol),
-            m_builder(builder) {};
+            m_builder(builder),
+            m_layer_builder(layer) {};
 
-        void Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset = 0);
+        void Update(FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset = 0);
 
         void UpdateFrameElements(uint32_t offset = 0);
 
@@ -149,9 +158,12 @@ namespace Animate::Publisher {
                                   uint32_t offset = 0);
 
         void DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
+                                 uint32_t frameElementIndex,
                                  FrameBuilderElement& element,
                                  std::optional<Matrix_t> base_transform = std::nullopt,
                                  bool singleFrame = false,
                                  uint32_t offset = 0);
+
+        uint32_t GetGraphicEndFrame(const SymbolContext& targetSymbol, const LoopingContext& baseLooping);
     };
 }

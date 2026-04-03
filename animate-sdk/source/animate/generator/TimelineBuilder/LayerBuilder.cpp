@@ -10,7 +10,7 @@ namespace Animate::Publisher {
         m_duration(duration),
         m_layer(layer),
         m_resources(resources),
-        frameBuilder(symbol, context, resources) {
+        frameBuilder(symbol, *this, context, resources) {
         FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
         layer->GetLayerType(unknownLayer.m_Ptr);
         FCM::AutoPtr<DOM::Layer::ILayerNormal> normal_layer = unknownLayer;
@@ -58,7 +58,7 @@ namespace Animate::Publisher {
 
     void LayerBuilder::UpdateFrame(uint32_t offset) {
         FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[m_keyframeIndex];
-        frameBuilder.Update(m_layer, frame, offset);
+        frameBuilder.Update(frame, offset);
     }
 
     void LayerBuilder::AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type) {

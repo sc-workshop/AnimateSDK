@@ -30,6 +30,9 @@ namespace Animate::Publisher {
     };
 
     class LayerBuilder {
+    public:
+        friend class FrameBuilder;
+
     private:
         SymbolContext& m_symbol;
 

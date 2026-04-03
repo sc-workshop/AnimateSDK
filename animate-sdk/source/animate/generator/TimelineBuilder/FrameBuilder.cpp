@@ -4,6 +4,8 @@
 #include "animate/publisher/ResourcePublisher.h"
 #include "animate/publisher/wheelchair/AdobeWheelchair.h"
 
+#include <ranges>
+
 namespace Animate::Publisher {
     std::u16string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> item) {
         AdobeWheelchair& wheelchair = AdobeWheelchair::Instance();
@@ -77,8 +79,8 @@ namespace Animate::Publisher {
     void FrameBuilder::Reset() {
         m_duration = 0;
         m_label.clear();
-        m_elements.clear();
         m_static_elements.Clear();
+        std::erase_if(m_elements, [](const FrameBuilderElement& element) { return element.framesCount == 0; });
 
         m_base_tween = nullptr;
         m_matrix_tweener = nullptr;
@@ -86,7 +88,7 @@ namespace Animate::Publisher {
         m_shape_tweener = nullptr;
     }
 
-    void FrameBuilder::Update(FCM::AutoPtr<DOM::ILayer2> layer, FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset) {
+    void FrameBuilder::Update(FCM::AutoPtr<DOM::IFrame> frame, uint32_t offset) {
         FCM::PluginModule& context = FCM::PluginModule::Instance();
         Reset();
 
@@ -155,10 +157,13 @@ namespace Animate::Publisher {
             }
         }
 
-        m_layer = layer;
+        // Update current frame
         m_frame = frame;
 
+        // Update all frame children elements
         UpdateFrameElements(offset);
+
+        // Update shape tweener if exists
         UpdateShapeTweener();
     }
 
@@ -166,6 +171,7 @@ namespace Animate::Publisher {
         m_frame_elements = FCM::FCMListPtr();
         m_frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, m_frame_elements.m_Ptr);
 
+        // Add child elements to processing queue
         DeclareFrameElements(m_frame_elements, std::nullopt, false, offset);
     }
 
@@ -189,9 +195,6 @@ namespace Animate::Publisher {
     }
 
     void FrameBuilder::ReleaseFrameElement(SharedMovieclipWriter& writer, FrameBuilderElement& element) {
-        if (m_position > element.duration)
-            return;
-
         FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
         FCM::BlendMode blend = element.blend_mode;
         std::optional<Matrix_t> matrix = element.matrix;
@@ -199,8 +202,8 @@ namespace Animate::Publisher {
 
         FCM::BlendMode frame_blend;
         Color_t frame_color;
-        m_layer->GetColorTransformAtFrame(m_builder.iterator, frame_color);
-        m_layer->GetBlendModeAtFrame(m_builder.iterator, frame_blend);
+        m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, frame_color);
+        m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, frame_blend);
 
         if (matrix.has_value()) {
             if (m_matrix_tweener) {
@@ -253,25 +256,37 @@ namespace Animate::Publisher {
             FrameBuilderElement& element = m_elements[i];
 
             // Check if symbol has local iterator for looping properties
+            // If it is time to create single frame copy of movieclip - do it and remove iterator to prevent future checks
             if (element.iterator.has_value() && element.iterator->Static()) {
                 // Create single frame copy of movieclip
-                DeclareFrameElement(m_frame_elements[elementIndex], element, std::nullopt, true);
+                DeclareFrameElement(m_frame_elements[elementIndex], 0, element, std::nullopt, true);
 
                 // Reset iterator
                 element.iterator = std::nullopt;
             }
 
+            // Single frame copy can be empty or invalid, so check reference and skip if it is null
             if (!element.reference)
                 continue;
 
             // Release element to writer
             ReleaseFrameElement(writer, element);
+
+            // Update element remaining frames counter
+            if (element.framesCount != 0) {
+                element.framesCount--;
+            }
         }
     }
 
     void FrameBuilder::Next() {
+        // Increase local keyframe position
         m_position++;
+
+        // Update static elements, cleanup temporary shapes, etc
         m_static_elements.Update();
+
+        // Update shape tweener if exists
         UpdateShapeTweener();
     }
 
@@ -285,9 +300,10 @@ namespace Animate::Publisher {
         frameElements->Count(frameElementsCount);
         m_elements.reserve(frameElementsCount);
 
+        uint32_t frameElementsCounter = 0;
         auto addElement = [&](uint32_t index) {
             FrameBuilderElement element;
-            DeclareFrameElement(frameElements[index], element, base_transform, false, offset);
+            DeclareFrameElement(frameElements[index], frameElementsCounter++, element, base_transform, false, offset);
 
             if (element.reference)
                 m_elements.push_back(element);
@@ -306,8 +322,9 @@ namespace Animate::Publisher {
     }
 
     void FrameBuilder::DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
+                                           uint32_t frameElementIndex,
                                            FrameBuilderElement& element,
-                                           std::optional<Matrix_t> base_transform,
+                                           std::optional<Matrix_t> baseMatrix,
                                            bool singleFrame,
                                            uint32_t offset) {
         using namespace Animate::DOM::FrameElement;
@@ -319,10 +336,12 @@ namespace Animate::Publisher {
         Matrix_t matrix;
         frameElement->GetMatrix(matrix);
 
-        if (base_transform) {
-            matrix += *base_transform;
+        // Multiply with base transform if exists (for nested symbols and extended writing)
+        if (baseMatrix) {
+            matrix += *baseMatrix;
         }
 
+        // TODO: add base color multiply
         std::optional<Color_t> color;
 
         // Game "guess who i am"
@@ -362,8 +381,7 @@ namespace Animate::Publisher {
             AutoPtr<DOM::LibraryItem::IMediaItem> mediaItem = libraryItem;
             AutoPtr<DOM::LibraryItem::ISymbolItem> symbolItem = libraryItem;
 
-            SymbolContext librarySymbol(libraryItem);
-
+            element.symbol = SymbolContext(libraryItem);
             if (symbolInstanceItem) {
                 color = Color_t();
                 symbolInstanceItem->GetColorMatrix(*color);
@@ -381,19 +399,46 @@ namespace Animate::Publisher {
 
             // Looping params
             LoopingContext::LoopMode loopMode = LoopingContext::LoopMode::ANIMATION_LOOP;
+
+            // True if symbol uses looping properties at all (different loop mode, start frame, end frame)
             bool hasLoopMode = false;
+
+            // Is looping properties creates single frame copy of symbol
             bool singleFrameLoop = false;
+
             if (graphicItem) {
-                librarySymbol.looping = LoopingContext(graphicItem);
-                bool hasEndFrame = librarySymbol.looping.GetEndFrame() != 0xFFFFFFFF;
-                loopMode = librarySymbol.looping.GetMode();
+                element.symbol->looping = LoopingContext(graphicItem);
+
+                bool hasEndFrame = element.symbol->looping.GetEndFrame() != 0xFFFFFFFF;
+                loopMode = element.symbol->looping.GetMode();
                 singleFrameLoop = loopMode == LoopingContext::LoopMode::ANIMATION_SINGLE_FRAME;
-                hasLoopMode = loopMode != LoopingContext::LoopMode::ANIMATION_LOOP;
+                hasLoopMode = loopMode != LoopingContext::LoopMode::ANIMATION_LOOP || element.symbol->looping.GetStartFrame() != 0 || hasEndFrame;
 
                 // Set our own end frame to export less frames if user has not already set this
-                if (!hasEndFrame) {
-                    librarySymbol.looping =
-                        LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame(), librarySymbol.looping.GetStartFrame() + m_duration);
+                if (!hasEndFrame && hasLoopMode) {
+                    // Optimization
+                    // Problem: Looping properties are often used in classic tween animations, where each keyframe is a separate symbol instance with its own
+                    // start frame. If you process each keyframe separately, that is, create a new looping object for each keyframe, this will create a *LOT* of
+                    // objects.
+                    // Fix: We can try reading the following frames to see if they contain the same instance and if we can export a single object
+                    // instead of a bunch of small ones
+                    // To get a wider range of frames that should contain the object in other words
+
+                    // Trying to find existing element in current queue
+                    auto it = std::ranges::find_if(m_elements | std::views::drop(frameElementIndex), [&](const FrameBuilderElement& other) {
+                        return element.symbol->name == other.symbol->name && other.framesCount;
+                    });
+
+                    if (it != m_elements.end()) {
+                        // Element already in queue, skip creating new element
+                        it->matrix = matrix;
+                        it->color = color;
+                        return;
+                    }
+
+                    uint32_t endFrame = GetGraphicEndFrame(*element.symbol, element.symbol->looping);
+                    element.symbol->looping = LoopingContext(element.symbol->looping.GetMode(), element.symbol->looping.GetStartFrame(), endFrame);
+                    hasLoopMode = true;
                 }
             }
 
@@ -413,7 +458,7 @@ namespace Animate::Publisher {
             // Post-processing looping properties
             if (element.iterator.has_value() && singleFrame) {
                 // Set single frame looping if requested single frame copy
-                librarySymbol.looping =
+                element.symbol->looping =
                     LoopingContext(LoopingContext::LoopMode::ANIMATION_PLAY_ONCE, element.iterator->CurrentFrame() - 1, element.iterator->CurrentFrame());
 
             } else if (hasLoopMode) {
@@ -424,19 +469,22 @@ namespace Animate::Publisher {
 
                 timeline->GetMaxFrameCount(symbolDuration);
 
-                element.iterator = FrameIterator(librarySymbol.looping, symbolDuration);
+                element.iterator = FrameIterator(element.symbol->looping, symbolDuration);
+                element.framesCount = element.iterator->Duration();
             }
 
             // Handling nested looping properties
+            // TODO: rewrite this SHIT i hate it so bad
             if (offset != 0) {
                 if (!singleFrameLoop) {
-                    librarySymbol.looping =
-                        LoopingContext(librarySymbol.looping.GetMode(), librarySymbol.looping.GetStartFrame() + offset, librarySymbol.looping.GetEndFrame());
+                    element.symbol->looping = LoopingContext(element.symbol->looping.GetMode(),
+                                                             element.symbol->looping.GetStartFrame() + offset,
+                                                             element.symbol->looping.GetEndFrame());
                 }
             }
 
             InvalidateStaticState();
-            element.reference = m_resources.AddLibraryItem(librarySymbol, libraryItem, is_required());
+            element.reference = m_resources.AddLibraryItem(*element.symbol, libraryItem, is_required());
         }
 
         // Textfield
@@ -475,7 +523,6 @@ namespace Animate::Publisher {
         }
 
         else {
-            // TODO: make it more detailed
             context.Trace("Unknown resource in library. Make sure symbols don't contain unsupported elements.");
             return;
         }
@@ -492,12 +539,60 @@ namespace Animate::Publisher {
         m_keyframe_static_state = StaticElementsState::Invalid;
     }
 
+    uint32_t FrameBuilder::GetGraphicEndFrame(const SymbolContext& targetSymbol, const LoopingContext& baseLooping) {
+        using namespace FCM;
+        using namespace Animate::DOM::FrameElement;
+
+        uint32_t last_frame = baseLooping.GetStartFrame();
+        for (uint32_t i = m_layer_builder.m_keyframeIndex; m_layer_builder.m_keyframeCount > i; i++) {
+            FCM::AutoPtr<DOM::IFrame> frame = m_layer_builder.m_keyframes[i];
+
+            uint32_t frame_duration = 0;
+            frame->GetDuration(frame_duration);
+
+            FCM::FCMListPtr frame_elements;
+            frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frame_elements.m_Ptr);
+
+            uint32_t frameElementsCount = 0;
+            frame_elements->Count(frameElementsCount);
+
+            bool hasMatches = false;
+            for (uint32_t t = 0; frameElementsCount > t; t++) {
+                AutoPtr<IInstance> libraryElement = frame_elements[t];
+                AutoPtr<IGraphic> graphicItem = frame_elements[t];
+
+                if (libraryElement && graphicItem) {
+                    AutoPtr<DOM::ILibraryItem> libraryItem;
+                    libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+
+                    SymbolContext librarySymbol(libraryItem);
+                    if (librarySymbol.name != targetSymbol.name)
+                        continue;
+
+                    LoopingContext looping(graphicItem);
+                    if (last_frame == looping.GetStartFrame()) {
+                        last_frame += frame_duration;
+                        hasMatches = true;
+                        break;
+                    }
+                }
+            }
+
+            // Early out
+            // Theres is no matching instances
+            if (!hasMatches)
+                return last_frame;
+        }
+
+        return last_frame;
+    }
+
     bool FrameBuilder::operator==(const FrameBuilder& builder) const {
         Color_t color_a;
-        m_layer->GetColorTransformAtFrame(m_builder.iterator, color_a);
+        m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_a);
 
         Color_t color_b;
-        builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_b);
+        builder.m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_b);
 
         // Comparing color transforms of frames
         constexpr size_t colorMatrixSize = sizeof(color_a.colorArray) / sizeof(FCM::Float);
@@ -508,10 +603,10 @@ namespace Animate::Publisher {
 
         // Comparing frame blend modes
         FCM::BlendMode blend_a;
-        m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_a);
+        m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_a);
 
         FCM::BlendMode blend_b;
-        builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_b);
+        builder.m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_b);
         if (blend_a != blend_b)
             return false;
 

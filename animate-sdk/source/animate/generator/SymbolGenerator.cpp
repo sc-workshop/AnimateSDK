@@ -8,7 +8,10 @@ namespace Animate::Publisher {
         SymbolContext& symbol, LayerBuilderContext& context, FCM::FCMListPtr& layers, ResourcePublisher& resources, std::vector<LayerBuilder>& result) {
         uint32_t layerCount = 0;
         layers->Count(layerCount);
-        result.reserve(result.capacity() + layerCount);
+
+        uint32_t totalLayersCount = 0;
+        GetLayerCount(layers, totalLayersCount);
+        result.reserve(totalLayersCount);
 
         for (uint32_t i = 0; layerCount > i; i++) {
             FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
@@ -43,6 +46,41 @@ namespace Animate::Publisher {
 
                 result.emplace_back(context, layer, duration, resources, symbol);
             }
+        }
+    }
+
+    void SymbolGenerator::GetLayerCount(FCM::FCMListPtr& layers, uint32_t& count) {
+        uint32_t layerCount = 0;
+        layers->Count(layerCount);
+
+        for (uint32_t i = 0; layerCount > i; i++) {
+            FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
+            if (!layer) {
+                continue;
+            }
+
+            FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
+            layer->GetLayerType(unknownLayer.m_Ptr);
+
+            FCM::AutoPtr<DOM::Layer::ILayerMask> maskedLayer = unknownLayer;
+            FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
+            FCM::AutoPtr<DOM::Layer::ILayerFolder> folderLayer = unknownLayer;
+
+            FCM::FCMListPtr subLayers;
+            if (folderLayer) {
+                folderLayer->GetChildren(subLayers.m_Ptr);
+            } else if (guideLayer) {
+                guideLayer->GetChildren(subLayers.m_Ptr);
+            } else if (maskedLayer) {
+                maskedLayer->GetChildren(subLayers.m_Ptr);
+                count++;
+            } else {
+                count++;
+                continue;
+            }
+
+            if (subLayers)
+                GetLayerCount(subLayers, count);
         }
     };
 
