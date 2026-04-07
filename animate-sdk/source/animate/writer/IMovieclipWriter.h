@@ -11,6 +11,11 @@
 #include <vector>
 
 namespace Animate::Publisher {
+    struct DisplayObjectProperties {
+        bool visible = true;
+        FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
+    };
+
     class SharedMovieclipWriter : public IDisplayObjectWriter {
     public:
         SharedMovieclipWriter(SymbolContext& context) :
@@ -33,7 +38,7 @@ namespace Animate::Publisher {
         virtual void SetLabel(const std::u16string& label) = 0;
 
         virtual void AddFrameElement(ResourceReference ref,
-                                     FCM::BlendMode blending,
+                                     const DisplayObjectProperties& properties,
                                      const std::u16string& name,
                                      std::optional<DOM::Utils::MATRIX2D> matrix,
                                      std::optional<DOM::Utils::COLOR_MATRIX> color) = 0;

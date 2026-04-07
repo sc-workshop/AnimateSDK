@@ -37,6 +37,9 @@ namespace Animate::Publisher {
         // Element blending
         FCM::BlendMode blend_mode = FCM::BlendMode::NORMAL;
 
+        // Is visible element
+        FCM::Boolean visible = true;
+
         // Count of playing frames
         // Used for optimization purposes to create less object when using looping properties
         uint32_t framesCount = 0;

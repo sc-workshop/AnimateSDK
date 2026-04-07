@@ -197,6 +197,7 @@ namespace Animate::Publisher {
     void FrameBuilder::ReleaseFrameElement(SharedMovieclipWriter& writer, FrameBuilderElement& element) {
         FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
         FCM::BlendMode blend = element.blend_mode;
+        bool visible = (bool)element.visible;
         std::optional<Matrix_t> matrix = element.matrix;
         std::optional<Color_t> color = element.color;
 
@@ -245,7 +246,10 @@ namespace Animate::Publisher {
             ++(*element.iterator);
         }
 
-        writer.AddFrameElement(element.reference, blend, element.name, matrix, color);
+        DisplayObjectProperties properties;
+        properties.blend_mode = blend;
+        properties.visible = visible;
+        writer.AddFrameElement(element.reference, properties, element.name, matrix, color);
     }
 
     void FrameBuilder::operator()(SharedMovieclipWriter& writer) {
@@ -395,6 +399,7 @@ namespace Animate::Publisher {
                 element.name = context.falloc->GetString16(movieClipElement.m_Ptr, &DOM::FrameElement::IMovieClip::GetName);
 
                 movieClipElement->GetBlendMode(element.blend_mode);
+                movieClipElement->IsVisible(element.visible);
             }
 
             // Looping params

@@ -64,7 +64,8 @@ namespace Animate::Publisher {
     void LayerBuilder::AddModifier(SharedMovieclipWriter& writer, MaskedLayerState type) {
         ResourceReference reference = m_resources.AddModifier(type);
 
-        writer.AddFrameElement(reference, FCM::BlendMode::NORMAL, u"", std::nullopt, std::nullopt);
+        DisplayObjectProperties properties;
+        writer.AddFrameElement(reference, properties, u"", std::nullopt, std::nullopt);
     }
 
     void LayerBuilder::Next() {
