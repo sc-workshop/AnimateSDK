@@ -99,7 +99,10 @@ namespace Animate::Publisher {
         item->GetTimeLine(timeline.m_Ptr);
 
         auto writer = symbolGenerator.Generate(symbol, timeline, required);
-        return FinalizeWriter(writer, required);
+        if (writer)
+            return FinalizeWriter(writer, required);
+
+        return {};
     };
 
     ResourceReference ResourcePublisher::AddMediaSymbol(SymbolContext& symbol, FCM::AutoPtr<DOM::LibraryItem::IMediaItem> media_item, bool required) {

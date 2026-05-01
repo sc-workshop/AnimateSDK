@@ -85,9 +85,14 @@ namespace Animate::Publisher {
     };
 
     wk::Ref<IDisplayObjectWriter> SymbolGenerator::Generate(SymbolContext& symbol, FCM::AutoPtr<DOM::ITimeline1> timeline, bool required) {
+        FCM::Result status;
+
         // Parsing layers data
         uint32_t duration = 0;
-        timeline->GetMaxFrameCount(duration);
+        status = timeline->GetMaxFrameCount(duration);
+        if (FCM_FAILURE_CODE(status) || duration == 0) {
+            return nullptr;
+        }
 
         SlicingContext slice_scaling = SlicingContext(timeline);
         if (slice_scaling.IsEnabled()) {
@@ -95,7 +100,10 @@ namespace Animate::Publisher {
         }
 
         FCM::FCMListPtr layersList;
-        timeline->GetLayers(layersList.m_Ptr);
+        status = timeline->GetLayers(layersList.m_Ptr);
+        if (FCM_FAILURE_CODE(status) || !layersList) {
+            return nullptr;
+        }
 
         // Creating build context and creating builder wrapper
         LayerBuilderContext context;
