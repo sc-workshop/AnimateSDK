@@ -116,6 +116,7 @@ namespace Animate::Publisher {
                 FCM::FCMGUID matrixGuid;
                 FCM::FCMGUID colorGuid;
                 FCM::FCMGUID shapeGuid;
+                FCM::FCMGUID filterGuid;
 
                 auto checkTweener = [&tweenerDict](FCM::String8Key key, FCM::FCMGUID& result) {
                     FCM::U_Int32 valueLen;
@@ -137,6 +138,7 @@ namespace Animate::Publisher {
                 bool hasMatrixTweener = checkTweener(DOM::Service::Tween::kDOMGeometricProperty, matrixGuid);
                 bool hasColorTweener = checkTweener(DOM::Service::Tween::kDOMColorProperty, colorGuid);
                 bool hasShapeTweener = checkTweener(DOM::Service::Tween::kDOMShapeProperty, shapeGuid);
+                bool hasFilterTweener = checkTweener(DOM::Service::Tween::kDOMFilterProperty, filterGuid);
 
                 FCM::AutoPtr<DOM::Service::Tween::ITweenerService> TweenerService =
                     context.GetService<DOM::Service::Tween::ITweenerService>(DOM::Service::Tween::TWEENER_SERVICE);
@@ -153,6 +155,10 @@ namespace Animate::Publisher {
                 if (hasShapeTweener) {
                     TweenerService->GetTweener(shapeGuid, nullptr, unknownTweener.m_Ptr);
                     m_shape_tweener = unknownTweener;
+                }
+                if (hasFilterTweener) {
+                    TweenerService->GetTweener(filterGuid, nullptr, unknownTweener.m_Ptr);
+                    m_filter_tweener = unknownTweener;
                 }
             }
         }
@@ -197,7 +203,7 @@ namespace Animate::Publisher {
     void FrameBuilder::ReleaseFrameElement(SharedMovieclipWriter& writer, FrameBuilderElement& element) {
         FCM::AutoPtr<DOM::ILayer> rigging_layer = nullptr;
         FCM::BlendMode blend = element.blend_mode;
-        bool visible = (bool)element.visible;
+        bool visible = (bool) element.visible;
         std::optional<Matrix_t> matrix = element.matrix;
         std::optional<Color_t> color = element.color;
 
@@ -258,15 +264,22 @@ namespace Animate::Publisher {
             i--;
 
             FrameBuilderElement& element = m_elements[i];
+            FCM::FCMListPtr filters;
+            if (m_filter_tweener) {
+                m_filter_tweener->GetFilters(m_base_tween, m_position, filters.m_Ptr);
+            }
 
             // Check if symbol has local iterator for looping properties
             // If it is time to create single frame copy of movieclip - do it and remove iterator to prevent future checks
             if (element.iterator.has_value() && element.iterator->Static()) {
                 // Create single frame copy of movieclip
-                DeclareFrameElement(m_frame_elements[elementIndex], 0, element, std::nullopt, true);
+                DeclareFrameElement(m_frame_elements[elementIndex], 0, element, std::nullopt, true, 0, filters);
 
                 // Reset iterator
                 element.iterator = std::nullopt;
+            } else if (m_filter_tweener && filters) {
+                // Re-Declare element with applied filters
+                DeclareFrameElement(m_frame_elements[elementIndex], 0, element, std::nullopt, false, 0, filters);
             }
 
             // Single frame copy can be empty or invalid, so check reference and skip if it is null
@@ -330,7 +343,8 @@ namespace Animate::Publisher {
                                            FrameBuilderElement& element,
                                            std::optional<Matrix_t> baseMatrix,
                                            bool singleFrame,
-                                           uint32_t offset) {
+                                           uint32_t offset,
+                                           std::optional<FCM::FCMListPtr> filtersOverride) {
         using namespace Animate::DOM::FrameElement;
         using namespace FCM;
 
@@ -359,8 +373,8 @@ namespace Animate::Publisher {
         AutoPtr<IGraphic> graphicItem = frameElement;
         AutoPtr<IGroup> groupedElemenets = frameElement;
 
-        std::optional<FCMListPtr> filters;
-        if (filterableElement) {
+        std::optional<FCMListPtr> filters = filtersOverride;
+        if (filterableElement && !filtersOverride.has_value()) {
             filters = FCMListPtr();
             filterableElement->GetGraphicFilters(filters->m_Ptr);
         }

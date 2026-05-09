@@ -92,6 +92,7 @@ namespace Animate::Publisher {
         FCM::AutoPtr<DOM::Service::Tween::IGeometricTweener> m_matrix_tweener = nullptr;
         FCM::AutoPtr<DOM::Service::Tween::IColorTweener> m_color_tweener = nullptr;
         FCM::AutoPtr<DOM::Service::Tween::IShapeTweener> m_shape_tweener = nullptr;
+        FCM::AutoPtr<DOM::Service::Tween::IFilterTweener> m_filter_tweener = nullptr;
 
         // Current frame
         // Mostly for child layers feature
@@ -165,7 +166,8 @@ namespace Animate::Publisher {
                                  FrameBuilderElement& element,
                                  std::optional<Matrix_t> base_transform = std::nullopt,
                                  bool singleFrame = false,
-                                 uint32_t offset = 0);
+                                 uint32_t offset = 0,
+                                 std::optional<FCM::FCMListPtr> filtersOverride = std::nullopt);
 
         uint32_t GetGraphicEndFrame(const SymbolContext& targetSymbol, const LoopingContext& baseLooping);
     };
