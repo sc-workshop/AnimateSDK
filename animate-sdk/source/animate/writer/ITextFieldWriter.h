@@ -27,6 +27,7 @@ namespace Animate::Publisher {
         DOM::FrameElement::AA_MODE_PROP renderingMode;
         FCM::Boolean isSelectable;
         DOM::FrameElement::LineMode lineMode;
+        bool dynamic = false;
     };
 
     class SharedTextFieldWriter : public IDisplayObjectWriter {

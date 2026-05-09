@@ -23,6 +23,9 @@ namespace Animate::Publisher {
                 modifiableTextfieldBehaviour->GetLineMode(element.lineMode);
             }
 
+            FCM::AutoPtr<DOM::FrameElement::IDynamicTextBehaviour> dynamicTextfieldBehaviour = textfieldElementBehaviour;
+            element.dynamic = dynamicTextfieldBehaviour != nullptr;
+
             writer->Initialize(element);
         }
 

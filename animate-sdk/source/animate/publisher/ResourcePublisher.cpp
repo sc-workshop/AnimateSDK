@@ -162,16 +162,38 @@ namespace Animate::Publisher {
             filters.value()->Count(filterCount);
 
             for (uint32_t i = 0; filterCount > i; i++) {
-                FCM::AutoPtr<DOM::GraphicFilter::IGlowFilter> glowFilter = filters.value()[i];
+                FCM::IFCMUnknown* filterUnknown = (*filters.value())[i];
+                FCM::AutoPtr<DOM::GraphicFilter::IGlowFilter> glowFilter = filterUnknown;
+                FCM::AutoPtr<DOM::GraphicFilter::IDropShadowFilter> shadowFilter = filterUnknown;
 
                 if (glowFilter) {
                     GlowFilter filter;
+                    glowFilter->IsEnabled((FCM::Boolean&) filter.enabled);
+                    glowFilter->GetInnerShadow((FCM::Boolean&) filter.inner_shadow);
+                    glowFilter->GetKnockout((FCM::Boolean&) filter.knockout);
+                    glowFilter->GetStrength(filter.strength);
+                    glowFilter->GetQuality(filter.quality);
                     glowFilter->GetBlurX(filter.blurX);
                     glowFilter->GetBlurY(filter.blurY);
                     glowFilter->GetShadowColor(filter.color);
                     glowFilter->GetStrength(filter.strength);
 
                     writer->SetGlowFilter(filter);
+                } else if (shadowFilter) {
+                    DropShadowFilter filter;
+                    shadowFilter->IsEnabled((FCM::Boolean&) filter.enabled);
+                    shadowFilter->GetBlurX(filter.blurX);
+                    shadowFilter->GetBlurY(filter.blurY);
+                    shadowFilter->GetStrength(filter.strength);
+                    shadowFilter->GetShadowColor(filter.color);
+                    shadowFilter->GetQuality(filter.quality);
+
+                    shadowFilter->GetAngle(filter.angle);
+                    shadowFilter->GetDistance(filter.distance);
+                    shadowFilter->GetInnerShadow((FCM::Boolean&) filter.inner_shadow);
+                    shadowFilter->GetKnockout((FCM::Boolean&) filter.knockout);
+
+                    writer->SetDropShadowFilter(filter);
                 }
             }
         }
