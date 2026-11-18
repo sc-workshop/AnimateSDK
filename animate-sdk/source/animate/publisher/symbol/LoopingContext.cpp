@@ -7,13 +7,14 @@ namespace Animate::Publisher {
 
     }
 
-    LoopingContext::LoopingContext(FCM::AutoPtr<DOM::FrameElement::IGraphic> graphic) {
+    LoopingContext::LoopingContext(DOM::FrameElement::IGraphic* graphic) {
         AdobeWheelchair& wheelchair = AdobeWheelchair::Instance();
         if (!wheelchair.IsWheelchairMoving() || !wheelchair.CPicGraphic_stageFrameEndOffset)
             return;
 
         // Let the magic happen
-        DOM::FrameElement::IGraphic* wrapper = graphic.m_Ptr;
+        FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+        DOM::FrameElement::IGraphic* wrapper = graphic;
 
         uintptr_t* pic_graphic = nullptr;
         // offsets here should be the same across hompilers :hope:

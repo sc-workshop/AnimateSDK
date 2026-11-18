@@ -3,7 +3,10 @@
 #include "AnimateDOM.h"
 #include "animate/publisher/ResourceReference.h"
 
+#include <atomic>
+#include <cstdint>
 #include <functional>
+#include <unordered_map>
 
 namespace Animate::Publisher {
     struct Filter {
@@ -79,7 +82,7 @@ namespace Animate::Publisher {
     };
 
     struct DisplayObjectWriterHasher {
-        static inline std::size_t counter = 0;
+        static inline std::atomic<std::size_t> counter = 0;
         size_t operator()(const std::size_t& key) const { return key; }
     };
 
@@ -121,6 +124,24 @@ namespace Animate::Publisher {
          * Its purpose is to let the object know that it must complete all its actions now.
          */
         virtual void PreFinalize() {};
+
+        /**
+         * @brief Reports whether the object contains any content.
+         *
+         * Contentless objects that are not marked as required are never added to the library,
+         * so callers can skip them early instead of finalizing them.
+         * @return True when the object has content
+         */
+        virtual bool HasContent() const { return true; }
+
+        /**
+         * @brief Remaps provisional child references to their final identifiers.
+         *
+         * Called on the publishing thread right before hashing and finalizing, after all
+         * children have been committed. Only objects that reference other objects need it.
+         * @param remap Provisional to final identifier map
+         */
+        virtual void ApplyResourceRemap(const std::unordered_map<uint16_t, uint16_t>& /*remap*/) {};
 
         /**
          * @brief Writer must finalize object and add it to its own resource palette here

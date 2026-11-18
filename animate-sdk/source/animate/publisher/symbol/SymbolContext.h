@@ -19,7 +19,7 @@ namespace Animate::Publisher {
         };
 
     public:
-        SymbolContext(FCM::AutoPtr<DOM::ILibraryItem> item);
+        SymbolContext(const FCM::AutoPtr<DOM::ILibraryItem>& item);
         SymbolContext(const std::u16string& name, SymbolType type);
 
     public:
@@ -49,6 +49,14 @@ namespace Animate::Publisher {
         static std::u16string GetName(FCM::AutoPtr<DOM::ILibraryItem> symbol);
         static std::string GetLinkage(FCM::AutoPtr<DOM::ILibraryItem> symbol);
         static SymbolType GetType(FCM::AutoPtr<DOM::ILibraryItem> symbol);
+
+        /**
+         * @brief Drops the memoised per-library-item metadata.
+         *
+         * The cache is keyed by the host item pointer, so it must not outlive the document
+         * that owns those objects. Call once per publish, before any symbol is prepared.
+         */
+        static void ClearCache();
 
     public:
         bool operator==(const SymbolContext& other) const;

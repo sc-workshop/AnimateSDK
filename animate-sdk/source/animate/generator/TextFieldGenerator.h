@@ -9,6 +9,6 @@ namespace Animate::Publisher {
 
     class TextFieldGenerator {
     public:
-        static void Generate(wk::Ref<SharedTextFieldWriter> writer, FCM::AutoPtr<DOM::FrameElement::IClassicText> textFieldData);
+        static void Generate(wk::Ref<SharedTextFieldWriter> writer, const FCM::AutoPtr<DOM::FrameElement::IClassicText>& textFieldData);
     };
 }

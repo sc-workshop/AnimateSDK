@@ -7,20 +7,28 @@ namespace Animate::Publisher {
     void SymbolGenerator::GetLayerBuilder(
         SymbolContext& symbol, LayerBuilderContext& context, FCM::FCMListPtr& layers, ResourcePublisher& resources, std::vector<LayerBuilder>& result) {
         uint32_t layerCount = 0;
-        layers->Count(layerCount);
+        {
+            FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+            layers->Count(layerCount);
+        }
 
         uint32_t totalLayersCount = 0;
         GetLayerCount(layers, totalLayersCount);
         result.reserve(totalLayersCount);
 
         for (uint32_t i = 0; layerCount > i; i++) {
-            FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
+            FCM::AutoPtr<DOM::ILayer2> layer;
+            FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
+            {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                layer = layers[i];
+                if (layer)
+                    layer->GetLayerType(unknownLayer.m_Ptr);
+            }
+
             if (!layer) {
                 continue;
             }
-
-            FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
-            layer->GetLayerType(unknownLayer.m_Ptr);
 
             FCM::AutoPtr<DOM::Layer::ILayerNormal> normalLayer = unknownLayer;
             FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
@@ -28,19 +36,28 @@ namespace Animate::Publisher {
 
             if (folderLayer) {
                 FCM::FCMListPtr folderLayers;
-                folderLayer->GetChildren(folderLayers.m_Ptr);
+                {
+                    FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                    folderLayer->GetChildren(folderLayers.m_Ptr);
+                }
 
                 SymbolGenerator::GetLayerBuilder(symbol, context, folderLayers, resources, result);
                 continue;
             } else if (guideLayer) {
                 FCM::FCMListPtr guideChildren;
-                guideLayer->GetChildren(guideChildren.m_Ptr);
+                {
+                    FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                    guideLayer->GetChildren(guideChildren.m_Ptr);
+                }
 
                 SymbolGenerator::GetLayerBuilder(symbol, context, guideChildren, resources, result);
                 continue;
             } else if (normalLayer) {
                 uint32_t duration = 0;
-                normalLayer->GetTotalDuration(duration);
+                {
+                    FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                    normalLayer->GetTotalDuration(duration);
+                }
                 if (duration <= 0)
                     continue;
 
@@ -51,16 +68,24 @@ namespace Animate::Publisher {
 
     void SymbolGenerator::GetLayerCount(FCM::FCMListPtr& layers, uint32_t& count) {
         uint32_t layerCount = 0;
-        layers->Count(layerCount);
+        {
+            FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+            layers->Count(layerCount);
+        }
 
         for (uint32_t i = 0; layerCount > i; i++) {
-            FCM::AutoPtr<DOM::ILayer2> layer = layers[i];
+            FCM::AutoPtr<DOM::ILayer2> layer;
+            FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
+            {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                layer = layers[i];
+                if (layer)
+                    layer->GetLayerType(unknownLayer.m_Ptr);
+            }
+
             if (!layer) {
                 continue;
             }
-
-            FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
-            layer->GetLayerType(unknownLayer.m_Ptr);
 
             FCM::AutoPtr<DOM::Layer::ILayerMask> maskedLayer = unknownLayer;
             FCM::AutoPtr<DOM::Layer::ILayerGuide> guideLayer = unknownLayer;
@@ -68,10 +93,13 @@ namespace Animate::Publisher {
 
             FCM::FCMListPtr subLayers;
             if (folderLayer) {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
                 folderLayer->GetChildren(subLayers.m_Ptr);
             } else if (guideLayer) {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
                 guideLayer->GetChildren(subLayers.m_Ptr);
             } else if (maskedLayer) {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
                 maskedLayer->GetChildren(subLayers.m_Ptr);
                 count++;
             } else {
@@ -100,7 +128,10 @@ namespace Animate::Publisher {
         }
 
         FCM::FCMListPtr layersList;
-        status = timeline->GetLayers(layersList.m_Ptr);
+        {
+            FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+            status = timeline->GetLayers(layersList.m_Ptr);
+        }
         if (FCM_FAILURE_CODE(status) || !layersList) {
             return nullptr;
         }

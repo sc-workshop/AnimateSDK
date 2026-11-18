@@ -9,11 +9,16 @@ namespace Animate::Publisher {
         m_matrix = matrix;
         FCM::AutoPtr<DOM::ILibraryItem> library_item = media_item;
 
-        m_name = context.falloc->GetString16(library_item.m_Ptr, &DOM::ILibraryItem::GetName);
+        {
+            FCM::PluginModule::HostGate library_gate(FCM::PluginModule::HostScope::Library);
+            m_name = context.falloc->GetString16(library_item.m_Ptr, &DOM::ILibraryItem::GetName);
+        }
     }
 
     void BitmapElement::ExportImage(std::filesystem::path path) const {
         FCM::PluginModule& context = FCM::PluginModule::Instance();
+
+        FCM::PluginModule::HostGate library_gate(FCM::PluginModule::HostScope::Library);
 
         auto service = context.GetService<DOM::Service::Image::IBitmapExportService>(DOM::FLA_BITMAP_SERVICE);
 

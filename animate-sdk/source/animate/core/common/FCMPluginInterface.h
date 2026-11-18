@@ -40,11 +40,20 @@
 #include "assert.h"
 #include "core/exception/exception.h"
 
+#include <array>
+#include <atomic>
+#include <cstring>
 #include <exception>
 #include <filesystem>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <string>
+#include <thread>
+
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+#include <intrin.h>
+#endif
 
 #include "animate/core/common/FCMPreConfig.h"
 
@@ -103,6 +112,109 @@ namespace FCM {
     /** @endcond */
 
     /**
+     * @brief Recursive spin lock used as the host lifetime mutex.
+     *
+     * Shared by host object lifetime operations and host calls. `AddRef`/`Release` are not
+     * passive: releasing the last reference of a host object runs host destruction code that
+     * mutates document-global state, exactly like a DOM call does. If those run concurrently
+     * with a DOM call from another thread the document heap is corrupted (observed as an
+     * abort inside `FCMCalloc::Free`), so both kinds of access take this one mutex.
+     *
+     * The host mutex is taken ~16 million times per publish, and it is only ever held for one
+     * host call (a few hundred nanoseconds). At that frequency a kernel-handoff mutex costs
+     * more than the critical section itself: measured on the 103-root document, 30 s of the
+     * 4-worker prepare was spent *waiting* for this lock versus 11 s holding it.
+     *
+     * Holders never block on another worker's symbol (PrepareSymbol enforces that), so a
+     * waiter always makes progress; spinning is therefore safe. The spin backs off to
+     * `yield()` so a holder that blocks inside the host cannot burn a core indefinitely.
+     */
+    class HostRecursiveSpinLock {
+    public:
+        void lock() {
+            const uint32_t me = ThreadTag();
+            if (m_owner.load(std::memory_order_relaxed) == me) {
+                ++m_depth;
+                return;
+            }
+
+            for (int spins = 0;; ++spins) {
+                uint32_t expected = 0;
+                if (m_owner.compare_exchange_weak(expected, me, std::memory_order_acquire,
+                                                  std::memory_order_relaxed)) {
+                    m_depth = 1;
+                    return;
+                }
+
+                if (spins < 1024)
+                    CpuPause();
+                else
+                    std::this_thread::yield();
+            }
+        }
+
+        void unlock() {
+            if (--m_depth == 0)
+                m_owner.store(0, std::memory_order_release);
+        }
+
+    private:
+        static void CpuPause() {
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+            _mm_pause();
+#endif
+        }
+
+        static uint32_t ThreadTag() {
+            static thread_local uint32_t tag = NextThreadTag();
+            return tag;
+        }
+
+        static uint32_t NextThreadTag() {
+            static std::atomic<uint32_t> counter{0};
+            return counter.fetch_add(1, std::memory_order_relaxed) + 1;
+        }
+
+        std::atomic<uint32_t> m_owner{0};
+        // Only the owning thread touches the depth, so it needs no atomic.
+        uint32_t m_depth = 0;
+    };
+
+    inline HostRecursiveSpinLock& HostLifetimeMutex() {
+        static HostRecursiveSpinLock mutex;
+        return mutex;
+    }
+
+    /**
+     * @brief RAII lock for HostLifetimeMutex(), with per-thread nesting accounting.
+     *
+     * The nesting depth is how a caller can tell whether it currently owns the host mutex.
+     * That matters for deadlock detection: a worker must never block on another worker's
+     * symbol while it owns the host mutex, because the other worker will need the same mutex
+     * to finish building it.
+     */
+    struct HostLifetimeLock {
+        HostLifetimeLock() {
+            HostLifetimeMutex().lock();
+            ++Depth();
+        }
+
+        ~HostLifetimeLock() {
+            --Depth();
+            HostLifetimeMutex().unlock();
+        }
+
+        HostLifetimeLock(const HostLifetimeLock&) = delete;
+        HostLifetimeLock& operator=(const HostLifetimeLock&) = delete;
+
+        /// Nesting depth of the host mutex on the calling thread; zero means "not held".
+        static int& Depth() {
+            static thread_local int depth = 0;
+            return depth;
+        }
+    };
+
+    /**
      * @brief This defines smart pointer to manage <tt>AddRef</tt> and <tt>Release</tt>
      *        calls to FCM objects. In <tt> AutoPtr<T> </tt>, T has to be an
      *        interface derived from IFCMUnknown. <tt> AutoPtr<T> </tt> can be
@@ -111,9 +223,6 @@ namespace FCM {
      */
     template <typename T>
     class AutoPtr {
-    protected:
-        inline static std::mutex guard;
-
     public:
         /** Raw pointer */
         T* m_Ptr;
@@ -131,7 +240,7 @@ namespace FCM {
         AutoPtr(T* p) {
             this->m_Ptr = p;
 
-            std::lock_guard lock(guard);
+            HostLifetimeLock lock;
             FCM_ADDREF(this->m_Ptr);
         }
 
@@ -146,7 +255,7 @@ namespace FCM {
         AutoPtr(const AutoPtr<T>& pObj) {
             this->m_Ptr = pObj.m_Ptr;
 
-            std::lock_guard lock(guard);
+            HostLifetimeLock lock;
             FCM_ADDREF(this->m_Ptr);
         }
 
@@ -309,7 +418,7 @@ namespace FCM {
          *
          */
         void Reset() {
-            std::lock_guard lock(guard);
+            HostLifetimeLock lock;
             FCM_RELEASE(this->m_Ptr);
         }
 
@@ -333,6 +442,8 @@ namespace FCM {
          */
         template <typename Q>
         bool IsSameUnknown(Q* pArg) {
+            HostLifetimeLock lock;
+
             if ((pArg == 0) && (0 == this->m_Ptr))
                 return true;
             if ((pArg == 0) || (0 == this->m_Ptr))
@@ -354,7 +465,7 @@ namespace FCM {
 
     private:
         void AssignPtrWithOwnership(T*& pDest, T* pSource) {
-            std::lock_guard lock(guard);
+            HostLifetimeLock lock;
 
             FCM_RELEASE(this->m_Ptr);
             FCM_ADDREF(pSource);
@@ -362,7 +473,7 @@ namespace FCM {
         }
 
         void AssignPtrWithQIOwnership(T*& pDest, PIFCMUnknown pSource) {
-            std::lock_guard lock(guard);
+            HostLifetimeLock lock;
 
             FCM_RELEASE(this->m_Ptr);
             if (pSource)
@@ -419,6 +530,9 @@ namespace FCM {
             ClassNode* next;
         };
 
+        /// Raw 16-byte representation of an FCM::SRVCID, usable as a map key.
+        using ServiceKey = std::array<FCM::U_Int8, 16>;
+
     public:
         // FCM Memory Control
         FCM::AutoPtr<FCM::IFCMCalloc> falloc = nullptr;
@@ -431,9 +545,16 @@ namespace FCM {
 
     protected:
         ClassNode* m_firstNode;
-        FCM::U_Int32 m_objectCounter;
+        std::atomic<FCM::U_Int32> m_objectCounter;
         PIFCMCallback m_callback;
         const Animate::ModuleInfo& m_module;
+
+        // Service resolution is not thread-safe inside the host (IFCMCallback::GetService
+        // inserts into an unsynchronised std::map), so it is serialised here and memoised.
+        // The cache also keeps the hot path (per-keyframe service lookups) lock-free of the
+        // host: after the first resolution the mutex is only taken for a map lookup.
+        std::recursive_mutex m_serviceMutex;
+        std::map<ServiceKey, FCM::AutoPtr<FCM::IFCMUnknown>> m_serviceCache;
 
         PluginModule(PIFCMCallback pCallback, const Animate::ModuleInfo& module);
 
@@ -453,15 +574,84 @@ namespace FCM {
     public:
         static PluginModule& Instance() { return *PluginModule::m_instance; }
 
-        template <typename T>
-        FCM::AutoPtr<T> GetService(const FCM::SRVCID& id) {
-            FCM::AutoPtr<FCM::IFCMUnknown> service;
+        static ServiceKey MakeServiceKey(const FCM::SRVCID& id) {
+            static_assert(sizeof(FCM::SRVCID) == sizeof(ServiceKey), "Unexpected SRVCID size");
+            ServiceKey key;
+            std::memcpy(key.data(), &id, sizeof(ServiceKey));
+            return key;
+        }
 
+        /**
+         * @brief Categories of host calls, each with its own gate.
+         *
+         * The host keeps document-global, unsynchronised caches behind APIs such as
+         * `IFrame::GetFrameElementsByType` and the shape/region services. Resolving a
+         * service is not enough: the *calls themselves* mutate that shared state, so every
+         * thread that issues one has to be serialised. Not every call touches the same
+         * state, so the gate is split by category.
+         */
+        enum class HostScope : uint32_t {
+            Structure = 0, // timeline / layer traversal
+            Frames,        // frame element enumeration and frame state
+            Elements,      // per-element instance / tweener calls
+            Shape,         // shape + region services
+            Library,       // library traversal, item properties, media info
+            Count
+        };
+
+        /**
+         * @brief RAII gate for one host call category.
+         *
+         * Recursive, so a gated call may issue further gated calls of the same category on the
+         * same thread. Every category takes the same host lifetime mutex (see
+         * HostLifetimeMutex): the scope only documents which kind of call is being serialised.
+         * A whole-symbol ("job") gate would deadlock, because a build waits on symbols owned by
+         * other workers and those workers need the same mutex to finish.
+         */
+        class HostGate {
+        public:
+            explicit HostGate(HostScope /*scope*/) {}
+
+            HostGate(const HostGate&) = delete;
+            HostGate& operator=(const HostGate&) = delete;
+
+        private:
+            HostLifetimeLock m_lock;
+        };
+
+        /**
+         * @brief Resolves a service through the host, memoising it for later calls.
+         *
+         * Safe to call from multiple threads. The host-side call is serialised.
+         */
+        FCM::AutoPtr<FCM::IFCMUnknown> GetServiceRaw(const FCM::SRVCID& id) {
+            const ServiceKey key = MakeServiceKey(id);
+
+            // Lock order is host mutex -> m_serviceMutex, matching every other path: an
+            // AutoPtr created or destroyed while m_serviceMutex is held takes the host mutex,
+            // so taking m_serviceMutex first inverts the order and deadlocks against a thread
+            // that already owns the host mutex and is resolving a service.
+            HostLifetimeLock host_lock;
+            std::lock_guard<std::recursive_mutex> lock(m_serviceMutex);
+
+            auto cached = m_serviceCache.find(key);
+            if (cached != m_serviceCache.end()) {
+                return cached->second;
+            }
+
+            FCM::AutoPtr<FCM::IFCMUnknown> service;
             FCM::Result res = m_callback->GetService(id, service.m_Ptr);
             if (FCM_FAILURE_CODE(res)) {
                 throw wk::Exception("Failed to initialize FCM Service");
             }
 
+            m_serviceCache.emplace(key, service);
+            return service;
+        }
+
+        template <typename T>
+        FCM::AutoPtr<T> GetService(const FCM::SRVCID& id) {
+            FCM::AutoPtr<FCM::IFCMUnknown> service = GetServiceRaw(id);
             return (FCM::AutoPtr<T>) service;
         };
 
@@ -606,7 +796,7 @@ namespace FCM {
     template <typename IntfImpl>
     class FCMObject : public IntfImpl, public IFCMNoAggregationUnknown {
     private:
-        FCM::U_Int32 mRefCount;
+        std::atomic<FCM::U_Int32> mRefCount;
         PIFCMCallback m_pPIFCMCallback;
         PIFCMUnknown m_pUnknownOuter;
         PluginModule* m_pModule;

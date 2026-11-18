@@ -3,7 +3,7 @@
 #include "animate/publisher/symbol/SymbolContext.h"
 
 namespace Animate::Publisher {
-    FilledElement::FilledElement(SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape, const std::optional<DOM::Utils::MATRIX2D> matrix) :
+    FilledElement::FilledElement(SymbolContext& symbol, const FCM::AutoPtr<DOM::FrameElement::IShape>& shape, const std::optional<DOM::Utils::MATRIX2D> matrix) :
         StaticElement(symbol) {
         FCM::PluginModule& context = FCM::PluginModule::Instance();
 
@@ -16,20 +16,27 @@ namespace Animate::Publisher {
         auto region_generator = context.GetService<DOM::Service::Shape::IRegionGeneratorService>(DOM::FLA_REGION_GENERATOR_SERVICE);
 
         {
-            FCM::FCMListPtr regions;
-            region_generator->GetFilledRegions(shape, regions.m_Ptr);
+            // The shape and region services share document-global shape caches which are not
+            // safe to touch from two threads. Conversion and region building also keep the
+            // returned region list backed by host memory, so all of it stays under the gate.
+            FCM::PluginModule::HostGate host_gate(FCM::PluginModule::HostScope::Shape);
 
-            AddRegions(symbol, regions, fill);
-        }
+            {
+                FCM::FCMListPtr regions;
+                region_generator->GetFilledRegions(shape, regions.m_Ptr);
 
-        {
-            FCM::AutoPtr<DOM::FrameElement::IShape> stroke_fill;
-            stroke_generator->ConvertStrokeToFill(shape, stroke_fill.m_Ptr);
+                AddRegions(symbol, regions, fill);
+            }
 
-            FCM::FCMListPtr regions;
-            region_generator->GetFilledRegions(stroke_fill, regions.m_Ptr);
+            {
+                FCM::AutoPtr<DOM::FrameElement::IShape> stroke_fill;
+                stroke_generator->ConvertStrokeToFill(shape, stroke_fill.m_Ptr);
 
-            AddRegions(symbol, regions, stroke);
+                FCM::FCMListPtr regions;
+                region_generator->GetFilledRegions(stroke_fill, regions.m_Ptr);
+
+                AddRegions(symbol, regions, stroke);
+            }
         }
     }
 

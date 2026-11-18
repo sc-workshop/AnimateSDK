@@ -26,7 +26,7 @@ namespace Animate::Publisher {
         using Contour = std::vector<FilledElementRegion>;
 
     public:
-        FilledElement(SymbolContext& symbol, FCM::AutoPtr<DOM::FrameElement::IShape> shape, const std::optional<DOM::Utils::MATRIX2D> matrix = std::nullopt);
+        FilledElement(SymbolContext& symbol, const FCM::AutoPtr<DOM::FrameElement::IShape>& shape, const std::optional<DOM::Utils::MATRIX2D> matrix = std::nullopt);
 
     public:
         bool operator==(const FilledElement& other) const;

@@ -12,11 +12,15 @@ namespace Animate::Publisher {
         m_resources(resources),
         frameBuilder(symbol, *this, context, resources) {
         FCM::AutoPtr<FCM::IFCMUnknown> unknownLayer;
-        layer->GetLayerType(unknownLayer.m_Ptr);
-        FCM::AutoPtr<DOM::Layer::ILayerNormal> normal_layer = unknownLayer;
+        {
+            FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
 
-        normal_layer->GetKeyFrames(m_keyframes.m_Ptr);
-        m_keyframes->Count(m_keyframeCount);
+            layer->GetLayerType(unknownLayer.m_Ptr);
+            FCM::AutoPtr<DOM::Layer::ILayerNormal> normal_layer = unknownLayer;
+
+            normal_layer->GetKeyFrames(m_keyframes.m_Ptr);
+            m_keyframes->Count(m_keyframeCount);
+        }
 
         // Should get right keyframe index if start frame is non-zero
         if (context.iterator != 0) {
@@ -28,7 +32,10 @@ namespace Animate::Publisher {
         FCM::AutoPtr<DOM::Layer::ILayerMask> maskLayer = unknownLayer;
         if (maskLayer) {
             FCM::FCMListPtr maskedLayers;
-            maskLayer->GetChildren(maskedLayers.m_Ptr);
+            {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                maskLayer->GetChildren(maskedLayers.m_Ptr);
+            }
 
             maskContext = wk::CreateRef<MaskedLayerContext>();
 
@@ -44,7 +51,10 @@ namespace Animate::Publisher {
         for (uint32_t i = 0; m_keyframeCount > i; i++) {
             FCM::AutoPtr<DOM::IFrame> frame = m_keyframes[i];
             uint32_t frame_duration = 0;
-            frame->GetDuration(frame_duration);
+            {
+                FCM::PluginModule::HostGate structure_gate(FCM::PluginModule::HostScope::Structure);
+                frame->GetDuration(frame_duration);
+            }
 
             if (total_duration + frame_duration > target_frame) {
                 m_keyframeIndex = i;

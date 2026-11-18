@@ -64,17 +64,6 @@ namespace Animate {
             virtual FCM::Result _FCMCALL GetDepth(FCM::U_Int32& depth) = 0;
 
             /**
-             * @brief  This function returns the object space bounding rect of Display
-             *         item in the frame.
-             *
-             * @param  rect (OUT)
-             *         Object space bounding rect of Display item.
-             *
-             * @return On success, FCM_SUCCESS is returned, else an error code is returned.
-             */
-            virtual FCM::Result _FCMCALL GetObjectSpaceBounds(Utils::RECT& rect) = 0;
-
-            /**
              * @brief  This function returns the axis aligned bounding rect of Display
              *         item in the frame.
              *
@@ -84,6 +73,17 @@ namespace Animate {
              * @return On success, FCM_SUCCESS is returned, else an error code is returned.
              */
             virtual FCM::Result _FCMCALL GetBounds(Utils::RECT& rect) = 0;
+
+            /**
+             * @brief  This function returns the object space bounding rect of Display
+             *         item in the frame.
+             *
+             * @param  rect (OUT)
+             *         Object space bounding rect of Display item.
+             *
+             * @return On success, FCM_SUCCESS is returned, else an error code is returned.
+             */
+            virtual FCM::Result _FCMCALL GetObjectSpaceBounds(Utils::RECT& rect) = 0;
 
             /**
              * @brief  This function returns the geometric matrix of Display item in the frame.

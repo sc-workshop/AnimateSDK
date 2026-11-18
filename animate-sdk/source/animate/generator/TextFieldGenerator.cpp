@@ -1,12 +1,13 @@
 #include "TextFieldGenerator.h"
 
 namespace Animate::Publisher {
-    void TextFieldGenerator::Generate(wk::Ref<SharedTextFieldWriter> writer, FCM::AutoPtr<DOM::FrameElement::IClassicText> textfieldData) {
+    void TextFieldGenerator::Generate(wk::Ref<SharedTextFieldWriter> writer, const FCM::AutoPtr<DOM::FrameElement::IClassicText>& textfieldData) {
         FCM::PluginModule& context = FCM::PluginModule::Instance();
+        FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
 
         {
             TextElement element;
-            ((FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement>) textfieldData)->GetObjectSpaceBounds(element.bound);
+            ((FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement>) textfieldData)->GetBounds(element.bound);
 
             element.text = context.falloc->GetString16(textfieldData.m_Ptr, &DOM::FrameElement::IClassicText::GetText);
 

@@ -4,10 +4,90 @@
 #include "animate/publisher/ResourcePublisher.h"
 #include "animate/publisher/wheelchair/AdobeWheelchair.h"
 
+#include <memory>
+#include <mutex>
 #include <ranges>
+#include <unordered_map>
 
 namespace Animate::Publisher {
-    std::u16string FrameBuilder::GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> item) {
+    namespace {
+        using namespace Animate::DOM::FrameElement;
+
+        /**
+         * @brief The interfaces a frame element supports, probed once per element object.
+         *
+         * There is no "what kind of element is this" call in the DOM, so the builder has to ask
+         * for every candidate interface ("guess who i am"). Each of those probes is a
+         * QueryInterface plus a Release, and both take the process-wide host lock, so the same
+         * element was costing ~20 host-lock acquisitions every time it appeared in a frame.
+         * Elements are immutable during a publish and are revisited across the timeline builds
+         * (4 568 builds for 2 119 names), so the answers are memoised per element object.
+         *
+         * The cache holds references, so a cached pointer stays valid even if the host drops its
+         * own reference. It is cleared once per document, while the document is still open.
+         */
+        struct FrameElementInterfaces {
+            explicit FrameElementInterfaces(const FCM::AutoPtr<IFrameDisplayElement>& element) :
+                instance(element),
+                filterable(element),
+                classic_text(element),
+                movie_clip(element),
+                symbol_instance(element),
+                shape(element),
+                graphic(element),
+                group(element) {}
+
+            FCM::AutoPtr<IInstance> instance;
+            FCM::AutoPtr<DOM::IFilterable> filterable;
+            FCM::AutoPtr<IClassicText> classic_text;
+            FCM::AutoPtr<IMovieClip> movie_clip;
+            FCM::AutoPtr<ISymbolInstance> symbol_instance;
+            FCM::AutoPtr<IShape> shape;
+            FCM::AutoPtr<IGraphic> graphic;
+            FCM::AutoPtr<IGroup> group;
+        };
+
+        std::mutex& ElementInterfaceMutex() {
+            static std::mutex mutex;
+            return mutex;
+        }
+
+        std::unordered_map<const void*, std::unique_ptr<FrameElementInterfaces>>& ElementInterfaceCache() {
+            static std::unordered_map<const void*, std::unique_ptr<FrameElementInterfaces>> cache;
+            return cache;
+        }
+
+        const FrameElementInterfaces& GetFrameElementInterfaces(const FCM::AutoPtr<IFrameDisplayElement>& element) {
+            const void* key = element.m_Ptr;
+
+            {
+                std::lock_guard<std::mutex> lock(ElementInterfaceMutex());
+                auto cached = ElementInterfaceCache().find(key);
+                if (cached != ElementInterfaceCache().end())
+                    return *cached->second;
+            }
+
+            // Probing takes the host lock, so it must not run while holding the cache mutex:
+            // every other host call site takes those locks in the opposite order.
+            auto built = std::make_unique<FrameElementInterfaces>(element);
+
+            std::lock_guard<std::mutex> lock(ElementInterfaceMutex());
+            auto inserted = ElementInterfaceCache().emplace(key, std::move(built));
+            return *inserted.first->second;
+        }
+    } // namespace
+
+    void FrameBuilder::ClearInterfaceCache() {
+        // Releasing the cached references is a host operation, so do it without the cache mutex
+        // held: a destructor that calls back into the host would otherwise invert the lock order.
+        std::unordered_map<const void*, std::unique_ptr<FrameElementInterfaces>> released;
+        {
+            std::lock_guard<std::mutex> lock(ElementInterfaceMutex());
+            released.swap(ElementInterfaceCache());
+        }
+    }
+
+    std::u16string FrameBuilder::GetInstanceName(DOM::FrameElement::ISymbolInstance* item) {
         AdobeWheelchair& wheelchair = AdobeWheelchair::Instance();
         if (!wheelchair.CPicObj_IsButton || !wheelchair.CPicSprite_GetName)
             return u"";
@@ -15,7 +95,7 @@ namespace Animate::Publisher {
 
         std::uintptr_t page;
         {
-            std::uintptr_t wrapper = (std::uintptr_t) item.m_Ptr;
+            std::uintptr_t wrapper = (std::uintptr_t) item;
             std::uintptr_t nativeWrapper = wrapper + 24;
             using GetObjectFN = void (*)(std::uintptr_t, std::uintptr_t&);
             GetObjectFN getObject = *(GetObjectFN*) (*(std::uintptr_t*) (nativeWrapper) + 32);
@@ -94,6 +174,9 @@ namespace Animate::Publisher {
 
         m_position = offset;
 
+        {
+        FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+
         // Frame Label
         {
             DOM::KeyFrameLabelType labelType = DOM::KeyFrameLabelType::KEY_FRAME_LABEL_NONE;
@@ -162,6 +245,7 @@ namespace Animate::Publisher {
                 }
             }
         }
+        }
 
         // Update current frame
         m_frame = frame;
@@ -175,7 +259,10 @@ namespace Animate::Publisher {
 
     void FrameBuilder::UpdateFrameElements(uint32_t offset) {
         m_frame_elements = FCM::FCMListPtr();
-        m_frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, m_frame_elements.m_Ptr);
+        {
+            FCM::PluginModule::HostGate host_gate(FCM::PluginModule::HostScope::Frames);
+            m_frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, m_frame_elements.m_Ptr);
+        }
 
         // Add child elements to processing queue
         DeclareFrameElements(m_frame_elements, std::nullopt, false, offset);
@@ -187,7 +274,10 @@ namespace Animate::Publisher {
 
         m_static_elements.Clear();
         FCM::AutoPtr<DOM::FrameElement::IShape> filledShape = nullptr;
-        m_shape_tweener->GetShape(m_base_tween, m_position, filledShape.m_Ptr);
+        {
+            FCM::PluginModule::HostGate shape_gate(FCM::PluginModule::HostScope::Shape);
+            m_shape_tweener->GetShape(m_base_tween, m_position, filledShape.m_Ptr);
+        }
 
         if (filledShape) {
             // Remove all previous elements
@@ -209,6 +299,8 @@ namespace Animate::Publisher {
 
         FCM::BlendMode frame_blend;
         Color_t frame_color;
+        {
+        FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
         m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, frame_color);
         m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, frame_blend);
 
@@ -233,6 +325,7 @@ namespace Animate::Publisher {
             uint32_t position = m_builder.iterator;
             m_frame->GetRigProperties(position, props);
             matrix = *matrix * props.matrix;
+        }
         }
 
         if (frame_color.Identity()) {
@@ -266,6 +359,7 @@ namespace Animate::Publisher {
             FrameBuilderElement& element = m_elements[i];
             FCM::FCMListPtr filters;
             if (m_filter_tweener) {
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
                 m_filter_tweener->GetFilters(m_base_tween, m_position, filters.m_Ptr);
             }
 
@@ -273,13 +367,23 @@ namespace Animate::Publisher {
             // If it is time to create single frame copy of movieclip - do it and remove iterator to prevent future checks
             if (element.iterator.has_value() && element.iterator->Static()) {
                 // Create single frame copy of movieclip
-                DeclareFrameElement(m_frame_elements[elementIndex], 0, element, std::nullopt, true, 0, filters);
+                FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frame_element;
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    frame_element = m_frame_elements[elementIndex];
+                }
+                DeclareFrameElement(frame_element, 0, element, std::nullopt, true, 0, filters);
 
                 // Reset iterator
                 element.iterator = std::nullopt;
             } else if (m_filter_tweener && filters) {
                 // Re-Declare element with applied filters
-                DeclareFrameElement(m_frame_elements[elementIndex], 0, element, std::nullopt, false, 0, filters);
+                FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frame_element;
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    frame_element = m_frame_elements[elementIndex];
+                }
+                DeclareFrameElement(frame_element, 0, element, std::nullopt, false, 0, filters);
             }
 
             // Single frame copy can be empty or invalid, so check reference and skip if it is null
@@ -314,13 +418,21 @@ namespace Animate::Publisher {
 
     void FrameBuilder::DeclareFrameElements(FCM::FCMListPtr frameElements, std::optional<Matrix_t> base_transform, bool reverse, uint32_t offset) {
         uint32_t frameElementsCount = 0;
-        frameElements->Count(frameElementsCount);
+        {
+            FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+            frameElements->Count(frameElementsCount);
+        }
         m_elements.reserve(frameElementsCount);
 
         uint32_t frameElementsCounter = 0;
         auto addElement = [&](uint32_t index) {
             FrameBuilderElement element;
-            DeclareFrameElement(frameElements[index], frameElementsCounter++, element, base_transform, false, offset);
+            FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement;
+            {
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                frameElement = frameElements[index];
+            }
+            DeclareFrameElement(frameElement, frameElementsCounter++, element, base_transform, false, offset);
 
             if (element.reference)
                 m_elements.push_back(element);
@@ -338,7 +450,7 @@ namespace Animate::Publisher {
         }
     }
 
-    void FrameBuilder::DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
+    void FrameBuilder::DeclareFrameElement(const FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement>& frameElement,
                                            uint32_t frameElementIndex,
                                            FrameBuilderElement& element,
                                            std::optional<Matrix_t> baseMatrix,
@@ -352,7 +464,10 @@ namespace Animate::Publisher {
 
         // Transform
         Matrix_t matrix;
-        frameElement->GetMatrix(matrix);
+        {
+            FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+            frameElement->GetMatrix(matrix);
+        }
 
         // Multiply with base transform if exists (for nested symbols and extended writing)
         if (baseMatrix) {
@@ -362,20 +477,22 @@ namespace Animate::Publisher {
         // TODO: add base color multiply
         std::optional<Color_t> color;
 
-        // Game "guess who i am"
-        AutoPtr<IInstance> libraryElement = frameElement;
-        AutoPtr<DOM::IFilterable> filterableElement = frameElement;
-        AutoPtr<IClassicText> textfieldElement = frameElement;
-
-        AutoPtr<IMovieClip> movieClipElement = frameElement;
-        AutoPtr<ISymbolInstance> symbolInstanceItem = frameElement;
-        AutoPtr<IShape> filledShapeItem = frameElement;
-        AutoPtr<IGraphic> graphicItem = frameElement;
-        AutoPtr<IGroup> groupedElemenets = frameElement;
+        // Game "guess who i am". The probes are memoised per element object (they never change
+        // during a publish), and the cached references outlive this call, so these are borrowed.
+        const FrameElementInterfaces& interfaces = GetFrameElementInterfaces(frameElement);
+        IInstance* libraryElement = interfaces.instance;
+        DOM::IFilterable* filterableElement = interfaces.filterable;
+        IClassicText* textfieldElement = interfaces.classic_text;
+        IMovieClip* movieClipElement = interfaces.movie_clip;
+        ISymbolInstance* symbolInstanceItem = interfaces.symbol_instance;
+        IShape* filledShapeItem = interfaces.shape;
+        IGraphic* graphicItem = interfaces.graphic;
+        IGroup* groupedElemenets = interfaces.group;
 
         std::optional<FCMListPtr> filters = filtersOverride;
         if (filterableElement && !filtersOverride.has_value()) {
             filters = FCMListPtr();
+            FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
             filterableElement->GetGraphicFilters(filters->m_Ptr);
         }
 
@@ -394,7 +511,10 @@ namespace Animate::Publisher {
         // Symbol
         if (libraryElement) {
             AutoPtr<DOM::ILibraryItem> libraryItem;
-            libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+            {
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+            }
 
             AutoPtr<DOM::LibraryItem::IMediaItem> mediaItem = libraryItem;
             AutoPtr<DOM::LibraryItem::ISymbolItem> symbolItem = libraryItem;
@@ -402,7 +522,10 @@ namespace Animate::Publisher {
             element.symbol = SymbolContext(libraryItem);
             if (symbolInstanceItem) {
                 color = Color_t();
-                symbolInstanceItem->GetColorMatrix(*color);
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    symbolInstanceItem->GetColorMatrix(*color);
+                }
 
                 if (!movieClipElement)
                     element.name = GetInstanceName(symbolInstanceItem);
@@ -410,10 +533,13 @@ namespace Animate::Publisher {
 
             if (movieClipElement) {
                 // Instance name
-                element.name = context.falloc->GetString16(movieClipElement.m_Ptr, &DOM::FrameElement::IMovieClip::GetName);
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    element.name = context.falloc->GetString16(movieClipElement, &DOM::FrameElement::IMovieClip::GetName);
 
-                movieClipElement->GetBlendMode(element.blend_mode);
-                movieClipElement->IsVisible(element.visible);
+                    movieClipElement->GetBlendMode(element.blend_mode);
+                    movieClipElement->IsVisible(element.visible);
+                }
             }
 
             // Looping params
@@ -463,7 +589,10 @@ namespace Animate::Publisher {
 
             if (mediaItem) {
                 AutoPtr<IFCMUnknown> mediaInfo;
-                mediaItem->GetMediaInfo(mediaInfo.m_Ptr);
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    mediaItem->GetMediaInfo(mediaInfo.m_Ptr);
+                }
 
                 AutoPtr<DOM::MediaInfo::IBitmapInfo> bitmapMedia = mediaInfo;
                 m_static_elements.AddElement<BitmapElement>(m_symbol, mediaItem, matrix);
@@ -484,9 +613,12 @@ namespace Animate::Publisher {
                 uint32_t symbolDuration = 0;
 
                 FCM::AutoPtr<DOM::ITimeline> timeline;
-                symbolItem->GetTimeLine(timeline.m_Ptr);
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    symbolItem->GetTimeLine(timeline.m_Ptr);
 
-                timeline->GetMaxFrameCount(symbolDuration);
+                    timeline->GetMaxFrameCount(symbolDuration);
+                }
 
                 element.iterator = FrameIterator(element.symbol->looping, symbolDuration);
                 element.framesCount = element.iterator->Duration();
@@ -510,9 +642,10 @@ namespace Animate::Publisher {
         else if (textfieldElement) {
             InvalidateStaticState();
 
-            element.reference = m_resources.AddTextField(m_symbol, textfieldElement, filters);
+            element.reference = m_resources.AddTextField(m_symbol, interfaces.classic_text, filters);
             if (element.reference) {
                 AutoPtr<ITextBehaviour> textfieldElementBehaviour;
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
                 textfieldElement->GetTextBehaviour(textfieldElementBehaviour.m_Ptr);
 
                 AutoPtr<IModifiableTextBehaviour> modifiableTextfieldBehaviour = textfieldElementBehaviour;
@@ -524,7 +657,7 @@ namespace Animate::Publisher {
 
         // Fills / Stroke
         else if (filledShapeItem) {
-            m_static_elements.AddFilledElement(m_symbol, filledShapeItem, matrix);
+            m_static_elements.AddFilledElement(m_symbol, interfaces.shape, matrix);
 
             if (!release_static(element.name)) {
                 m_static_state = StaticElementsState::Valid;
@@ -535,7 +668,10 @@ namespace Animate::Publisher {
         // Groups
         else if (groupedElemenets) {
             FCMListPtr groupElements;
-            groupedElemenets->GetMembers(groupElements.m_Ptr);
+            {
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                groupedElemenets->GetMembers(groupElements.m_Ptr);
+            }
 
             DeclareFrameElements(groupElements, matrix, true);
             return;
@@ -564,25 +700,42 @@ namespace Animate::Publisher {
 
         uint32_t last_frame = baseLooping.GetStartFrame();
         for (uint32_t i = m_layer_builder.m_keyframeIndex; m_layer_builder.m_keyframeCount > i; i++) {
-            FCM::AutoPtr<DOM::IFrame> frame = m_layer_builder.m_keyframes[i];
-
+            FCM::AutoPtr<DOM::IFrame> frame;
             uint32_t frame_duration = 0;
-            frame->GetDuration(frame_duration);
+            {
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                frame = m_layer_builder.m_keyframes[i];
+                frame->GetDuration(frame_duration);
+            }
 
             FCM::FCMListPtr frame_elements;
-            frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frame_elements.m_Ptr);
+            {
+                FCM::PluginModule::HostGate host_gate(FCM::PluginModule::HostScope::Frames);
+                frame->GetFrameElementsByType(DOM::FrameElement::IID_IFRAME_DISPLAY_ELEMENT, frame_elements.m_Ptr);
+            }
 
             uint32_t frameElementsCount = 0;
-            frame_elements->Count(frameElementsCount);
+            {
+                FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                frame_elements->Count(frameElementsCount);
+            }
 
             bool hasMatches = false;
             for (uint32_t t = 0; frameElementsCount > t; t++) {
-                AutoPtr<IInstance> libraryElement = frame_elements[t];
-                AutoPtr<IGraphic> graphicItem = frame_elements[t];
+                AutoPtr<IInstance> libraryElement;
+                AutoPtr<IGraphic> graphicItem;
+                {
+                    FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                    libraryElement = frame_elements[t];
+                    graphicItem = frame_elements[t];
+                }
 
                 if (libraryElement && graphicItem) {
                     AutoPtr<DOM::ILibraryItem> libraryItem;
-                    libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+                    {
+                        FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+                        libraryElement->GetLibraryItem(libraryItem.m_Ptr);
+                    }
 
                     SymbolContext librarySymbol(libraryItem);
                     if (librarySymbol.name != targetSymbol.name)
@@ -608,10 +761,16 @@ namespace Animate::Publisher {
 
     bool FrameBuilder::operator==(const FrameBuilder& builder) const {
         Color_t color_a;
-        m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_a);
-
         Color_t color_b;
-        builder.m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_b);
+        FCM::BlendMode blend_a;
+        FCM::BlendMode blend_b;
+        {
+            FCM::PluginModule::HostGate elements_gate(FCM::PluginModule::HostScope::Elements);
+            m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_a);
+            builder.m_layer_builder.m_layer->GetColorTransformAtFrame(m_builder.iterator, color_b);
+            m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_a);
+            builder.m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_b);
+        }
 
         // Comparing color transforms of frames
         constexpr size_t colorMatrixSize = sizeof(color_a.colorArray) / sizeof(FCM::Float);
@@ -621,11 +780,6 @@ namespace Animate::Publisher {
         }
 
         // Comparing frame blend modes
-        FCM::BlendMode blend_a;
-        m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_a);
-
-        FCM::BlendMode blend_b;
-        builder.m_layer_builder.m_layer->GetBlendModeAtFrame(m_builder.iterator, blend_b);
         if (blend_a != blend_b)
             return false;
 

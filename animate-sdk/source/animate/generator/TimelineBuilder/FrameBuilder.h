@@ -66,7 +66,10 @@ namespace Animate::Publisher {
 
     public:
         // A biiig workaround with magic numbers to get instance name from Graphic items
-        static std::u16string GetInstanceName(FCM::AutoPtr<DOM::FrameElement::ISymbolInstance> symbol);
+        static std::u16string GetInstanceName(DOM::FrameElement::ISymbolInstance* symbol);
+
+        /// Drops the memoised frame-element interface probes. Call once per document.
+        static void ClearInterfaceCache();
 
     private:
         SymbolContext& m_symbol;
@@ -161,7 +164,7 @@ namespace Animate::Publisher {
                                   bool reverse = false,
                                   uint32_t offset = 0);
 
-        void DeclareFrameElement(FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement> frameElement,
+        void DeclareFrameElement(const FCM::AutoPtr<DOM::FrameElement::IFrameDisplayElement>& frameElement,
                                  uint32_t frameElementIndex,
                                  FrameBuilderElement& element,
                                  std::optional<Matrix_t> base_transform = std::nullopt,

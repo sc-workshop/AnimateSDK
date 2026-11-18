@@ -9,6 +9,9 @@
 
 namespace FCM {
     IFCMUnknown* FCMListPtr::operator[](FCM::U_Int32 index) {
+        // Host list access resolves entries through document-global state, so it needs the
+        // same gate as the DOM calls that produced the list.
+        PluginModule::HostGate gate(PluginModule::HostScope::Elements);
         return this->m_Ptr->operator[](index);
     }
 
@@ -104,6 +107,15 @@ namespace FCM {
     }
 
     void PluginModule::Finalize() {
+        // Drop memoised service references before tearing the module down so that no
+        // service outlives the allocator we are about to release. Same lock order as
+        // GetServiceRaw: host mutex first, then the service mutex.
+        {
+            FCM::HostLifetimeLock host_lock;
+            std::lock_guard<std::recursive_mutex> lock(m_serviceMutex);
+            m_serviceCache.clear();
+        }
+
         if (!falloc)
             return;
 
