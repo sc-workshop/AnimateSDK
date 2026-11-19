@@ -7,6 +7,7 @@
 #include "animate/publisher/symbol/SymbolContext.h"
 
 #include <atomic>
+#include <functional>
 #include <future>
 #include <memory>
 #include <mutex>
@@ -228,6 +229,16 @@ namespace Animate::Publisher {
 
         SymbolGenerator symbolGenerator;
         uint32_t document_fps = 30;
+
+        /// @brief Cooperative cancellation hook, called at safe points between symbols.
+        /// The callback may throw whatever exception the host wants to unwind the publish with.
+        std::function<void()> cancellationPoint;
+
+        /// @brief Prepare-phase progress: (completed roots, total roots) for the current document.
+        std::function<void(size_t, size_t)> prepareProgress;
+
+        /// @brief Called once before the ordered serial commit of prepared roots.
+        std::function<void(size_t)> commitStarted;
 
     public:
         ResourcePublisher(SharedWriter& writer) :

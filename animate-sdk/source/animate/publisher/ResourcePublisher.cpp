@@ -48,15 +48,26 @@ namespace Animate::Publisher {
 
         std::vector<PreparedSymbol*> roots(symbols.size(), nullptr);
         std::vector<std::exception_ptr> errors(symbols.size());
+        std::atomic<size_t> preparedRoots {0};
+
+        if (prepareProgress)
+            prepareProgress(0, symbols.size());
+        if (cancellationPoint)
+            cancellationPoint();
 
         // Warm-up: build the first root on the publishing thread. This forces first-use plugin
         // loading and DOM class registration in FCM before any worker thread touches it.
         if (!symbols.empty()) {
+            if (cancellationPoint)
+                cancellationPoint();
             try {
                 roots[0] = PrepareRoot(symbols[0]);
             } catch (...) {
                 errors[0] = std::current_exception();
             }
+            preparedRoots.fetch_add(1);
+            if (prepareProgress)
+                prepareProgress(preparedRoots.load(), symbols.size());
         }
 
         // Extract every remaining root in parallel. One job per root symbol, recursion inside the
@@ -73,10 +84,15 @@ namespace Animate::Publisher {
             for (size_t i = 1; symbols.size() > i; i++) {
                 pool.detach_task([&, i]() {
                     try {
+                        if (cancellationPoint)
+                            cancellationPoint();
                         roots[i] = PrepareRoot(symbols[i]);
                     } catch (...) {
                         errors[i] = std::current_exception();
                     }
+                    preparedRoots.fetch_add(1);
+                    if (prepareProgress)
+                        prepareProgress(preparedRoots.load(), symbols.size());
                 });
             }
 
@@ -84,7 +100,11 @@ namespace Animate::Publisher {
         }
 
         // Commit everything on this thread in the recorded depth-first order.
+        if (commitStarted)
+            commitStarted(symbols.size());
         for (size_t i = 0; symbols.size() > i; i++) {
+            if (cancellationPoint)
+                cancellationPoint();
             if (errors[i])
                 std::rethrow_exception(errors[i]);
 
