@@ -14,6 +14,34 @@
 #include <vector>
 
 namespace Animate::Publisher {
+    namespace {
+        // Thrown by sibling preparation tasks once one root has failed, so they unwind instead of
+        // making the publishing thread wait for a full pass over every remaining symbol.
+        struct PreparationAborted : std::exception {};
+
+        bool IsPreparationAborted(const std::exception_ptr& error) {
+            if (!error)
+                return false;
+            try {
+                std::rethrow_exception(error);
+            } catch (const PreparationAborted&) {
+                return true;
+            } catch (...) {
+                return false;
+            }
+        }
+
+        struct CancellationPointGuard {
+            std::function<void()>& target;
+            std::function<void()> saved;
+
+            explicit CancellationPointGuard(std::function<void()>& point) :
+                target(point),
+                saved(point) {}
+
+            ~CancellationPointGuard() { target = std::move(saved); }
+        };
+    }
 
     void ResourcePublisher::PublishDocument(FCM::AutoPtr<DOM::IFLADocument> document) {
         // Library item metadata is memoised by host pointer; drop anything from an earlier run.
@@ -49,54 +77,74 @@ namespace Animate::Publisher {
         std::vector<PreparedSymbol*> roots(symbols.size(), nullptr);
         std::vector<std::exception_ptr> errors(symbols.size());
         std::atomic<size_t> preparedRoots {0};
+        std::atomic<bool> abortPreparation {false};
+
+        auto recordError = [&](size_t index) {
+            errors[index] = std::current_exception();
+            abortPreparation.store(true, std::memory_order_release);
+        };
 
         if (prepareProgress)
             prepareProgress(0, symbols.size());
-        if (cancellationPoint)
-            cancellationPoint();
 
-        // Warm-up: build the first root on the publishing thread. This forces first-use plugin
-        // loading and DOM class registration in FCM before any worker thread touches it.
-        if (!symbols.empty()) {
+        {
+            // Only the prepare phase uses the abort-aware hook. Commit must keep the host's
+            // original cancellation callback so a user cancel still unwinds as a cancellation.
+            CancellationPointGuard cancellationGuard(cancellationPoint);
+            std::function<void()> userCancellationPoint = cancellationGuard.saved;
+            cancellationPoint = [&] {
+                if (abortPreparation.load(std::memory_order_acquire))
+                    throw PreparationAborted();
+                if (userCancellationPoint)
+                    userCancellationPoint();
+            };
+
             if (cancellationPoint)
                 cancellationPoint();
-            try {
-                roots[0] = PrepareRoot(symbols[0]);
-            } catch (...) {
-                errors[0] = std::current_exception();
-            }
-            preparedRoots.fetch_add(1);
-            if (prepareProgress)
-                prepareProgress(preparedRoots.load(), symbols.size());
-        }
 
-        // Extract every remaining root in parallel. One job per root symbol, recursion inside the
-        // job stays serial, exactly like the original implementation.
-        if (symbols.size() > 1) {
-            // Measured on a 12-core machine: 4 workers is the fastest configuration. More
-            // workers only add host-mutex queueing - 8 workers was ~30 % slower than 4 - so
-            // the default is capped.
-            uint32_t threadCount = std::thread::hardware_concurrency();
-            threadCount = threadCount > 1 ? threadCount - 1 : 1;
-            threadCount = std::min<uint32_t>(threadCount, 4);
-
-            BS::thread_pool pool(threadCount);
-            for (size_t i = 1; symbols.size() > i; i++) {
-                pool.detach_task([&, i]() {
-                    try {
-                        if (cancellationPoint)
-                            cancellationPoint();
-                        roots[i] = PrepareRoot(symbols[i]);
-                    } catch (...) {
-                        errors[i] = std::current_exception();
-                    }
-                    preparedRoots.fetch_add(1);
-                    if (prepareProgress)
-                        prepareProgress(preparedRoots.load(), symbols.size());
-                });
+            // Warm-up: build the first root on the publishing thread. This forces first-use plugin
+            // loading and DOM class registration in FCM before any worker thread touches it.
+            if (!symbols.empty()) {
+                if (cancellationPoint)
+                    cancellationPoint();
+                try {
+                    roots[0] = PrepareRoot(symbols[0]);
+                } catch (...) {
+                    recordError(0);
+                }
+                preparedRoots.fetch_add(1);
+                if (prepareProgress)
+                    prepareProgress(preparedRoots.load(), symbols.size());
             }
 
-            pool.wait();
+            // Extract every remaining root in parallel. One job per root symbol, recursion inside
+            // the job stays serial, exactly like the original implementation.
+            if (symbols.size() > 1) {
+                // Measured on a 12-core machine: 4 workers is the fastest configuration. More
+                // workers only add host-mutex queueing - 8 workers was ~30 % slower than 4 - so
+                // the default is capped.
+                uint32_t threadCount = std::thread::hardware_concurrency();
+                threadCount = threadCount > 1 ? threadCount - 1 : 1;
+                threadCount = std::min<uint32_t>(threadCount, 4);
+
+                BS::thread_pool pool(threadCount);
+                for (size_t i = 1; symbols.size() > i; i++) {
+                    pool.detach_task([&, i]() {
+                        try {
+                            if (cancellationPoint)
+                                cancellationPoint();
+                            roots[i] = PrepareRoot(symbols[i]);
+                        } catch (...) {
+                            recordError(i);
+                        }
+                        preparedRoots.fetch_add(1);
+                        if (prepareProgress)
+                            prepareProgress(preparedRoots.load(), symbols.size());
+                    });
+                }
+
+                pool.wait();
+            }
         }
 
         // Commit everything on this thread in the recorded depth-first order.
@@ -105,8 +153,11 @@ namespace Animate::Publisher {
         for (size_t i = 0; symbols.size() > i; i++) {
             if (cancellationPoint)
                 cancellationPoint();
-            if (errors[i])
+            if (errors[i]) {
+                if (IsPreparationAborted(errors[i]))
+                    continue;
                 std::rethrow_exception(errors[i]);
+            }
 
             PreparedSymbol* root = roots[i];
             if (!root) {
@@ -123,6 +174,11 @@ namespace Animate::Publisher {
 
         // Clear document library cache to avoid collision between different documents
         m_symbolClaims.clear();
+    }
+
+    void ResourcePublisher::CheckCancellation() {
+        if (cancellationPoint)
+            cancellationPoint();
     }
 
     void ResourcePublisher::GetExportSymbols(FCM::FCMListPtr libraryItems, std::vector<SymbolContext>& result) {
@@ -183,6 +239,7 @@ namespace Animate::Publisher {
     }
 
     ResourcePublisher::PreparedSymbol* ResourcePublisher::PrepareRoot(SymbolContext& symbol) {
+        CheckCancellation();
         FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> item = symbol.library_item;
         if (!item) {
             throw FCM::FCMPluginException(symbol, FCM::FCMPluginException::Reason::UNKNOWN_LIBRARY_ITEM);
@@ -194,6 +251,7 @@ namespace Animate::Publisher {
     ResourcePublisher::PreparedSymbol* ResourcePublisher::PrepareSymbol(SymbolContext& symbol,
                                                                        const FCM::AutoPtr<DOM::LibraryItem::ISymbolItem>& item,
                                                                        bool required) {
+        CheckCancellation();
         ResourceClaim claim;
         bool owner = false;
         std::shared_ptr<std::promise<PreparedResource*>> promise;
@@ -281,6 +339,7 @@ namespace Animate::Publisher {
                                                                         const FCM::AutoPtr<DOM::LibraryItem::ISymbolItem>& item,
                                                                         bool required,
                                                                         bool initial) {
+        CheckCancellation();
         Sink().push_back(&prepared);
 
         // There is deliberately no build-wide gate here. Host calls are serialised by the
@@ -354,6 +413,7 @@ namespace Animate::Publisher {
     ResourceReference ResourcePublisher::AddLibraryItem(SymbolContext& symbol,
                                                         const FCM::AutoPtr<DOM::ILibraryItem>& item,
                                                         bool required) {
+        CheckCancellation();
         FCM::AutoPtr<DOM::LibraryItem::ISymbolItem> symbol_item = item;
 
         if (symbol_item) {
@@ -381,6 +441,7 @@ namespace Animate::Publisher {
     ResourceReference ResourcePublisher::PrepareMediaSymbol(SymbolContext& symbol,
                                                             const FCM::AutoPtr<DOM::LibraryItem::IMediaItem>& media_item,
                                                             bool required) {
+        CheckCancellation();
         FCM::AutoPtr<FCM::IFCMUnknown> unknownMedia;
         {
             FCM::PluginModule::HostGate library_gate(FCM::PluginModule::HostScope::Library);
@@ -409,6 +470,7 @@ namespace Animate::Publisher {
     }
 
     ResourceReference ResourcePublisher::AddModifier(MaskedLayerState type) {
+        CheckCancellation();
         PreparedModifier* modifier = nullptr;
 
         {

@@ -174,6 +174,7 @@ namespace Animate::Publisher {
 
     private:
         // Phase A - preparation (parallel)
+        void CheckCancellation();
         PreparedSymbol* PrepareRoot(SymbolContext& symbol);
 
         PreparedSymbol* PrepareSymbol(SymbolContext& symbol, const FCM::AutoPtr<DOM::LibraryItem::ISymbolItem>& item, bool required);
