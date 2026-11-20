@@ -30,6 +30,10 @@ namespace FCM {
                 return "Failed to get FCM serivce";
             case Reason::SYMBOL_EXPORT_FAIL:
                 return "Failed to export symbol";
+            case Reason::BUTTON_UNSUPPORTED:
+                return "Button symbol instances are not supported";
+            case Reason::BITMAP_EXPORT_FAILED:
+                return "Failed to export bitmap to temporary file";
             default:
                 return "";
         }

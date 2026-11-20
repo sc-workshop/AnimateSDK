@@ -25,7 +25,7 @@ namespace Animate::Publisher {
         FCM::Result res = service->ExportToFile(m_media_item, (FCM::CStringRep16) path.u16string().c_str(), 100);
 
         if (FCM_FAILURE_CODE(res)) {
-            throw FCM::FCMPluginException(FCM::FCMPluginException::Reason::SERVICE_FAIL);
+            throw FCM::FCMPluginException(FCM::FCMPluginException::Reason::BITMAP_EXPORT_FAILED);
         }
     }
 

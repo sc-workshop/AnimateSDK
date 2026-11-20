@@ -110,7 +110,7 @@ namespace Animate::Publisher {
         }
 
         if (isButton) {
-            throw FCM::FCMPluginException(FCM::FCMPluginException::Reason::SERVICE_FAIL);
+            throw FCM::FCMPluginException(FCM::FCMPluginException::Reason::BUTTON_UNSUPPORTED);
         } else {
             // CPicSprite::GetName
 

@@ -15,7 +15,9 @@ namespace FCM {
             UNKNOWN_LIBRARY_ITEM,
             UNKNOWN_FILL_STYLE,
             SERVICE_FAIL,
-            SYMBOL_EXPORT_FAIL
+            SYMBOL_EXPORT_FAIL,
+            BUTTON_UNSUPPORTED,
+            BITMAP_EXPORT_FAILED
         };
 
     public:
